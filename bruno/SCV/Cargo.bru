@@ -1,0 +1,26 @@
+meta {
+  name: Cargo
+  type: http
+  seq: 2
+}
+
+post {
+  url: http://localhost:3333/cargos
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "nomeCargo": "Adamastor",
+    "descricao": "admistrador",
+    "hierarquia": 1,
+    "salario": 5000.00
+    
+  }
+  
+}
