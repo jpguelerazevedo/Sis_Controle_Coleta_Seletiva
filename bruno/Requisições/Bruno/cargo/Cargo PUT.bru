@@ -1,0 +1,25 @@
+meta {
+  name: Cargo PUT
+  type: http
+  seq: 3
+}
+
+put {
+  url: http://localhost:3333/cargos/1
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "nomeCargo": "Supervisor",
+    "descricao": "Supervisiona setores",
+    "hierarquia": 2,
+    "salario": 6000
+  }
+  
+}

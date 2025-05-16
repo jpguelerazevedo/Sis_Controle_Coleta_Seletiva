@@ -1,0 +1,25 @@
+meta {
+  name: Material PUT
+  type: http
+  seq: 3
+}
+
+put {
+  url: http://localhost:3333/materiais/1
+  body: json
+  auth: inherit
+}
+
+body:json {
+    {
+      "nome": "Papel",
+      "descricao": "Papéis recicláveis",
+      "preco_por_kg": 1.75,
+      "quantidade_estoque": 300,
+      "unidade_medida": "kg",
+      "peso": 1.2,
+      "volume": 2.0,
+      "nivelDeRisco": "Baixo"
+    }
+  
+}

@@ -94,6 +94,27 @@ const seedDatabase = async() => {
                 email: 'zidane@email.com',
                 telefone: '(44) 44444-4444',
                 sexo: 'M'
+            }),
+            models.Pessoa.create({
+                cpf: '555.555.555-55',
+                nome: 'Ronaldo',
+                email: 'ronaldo@email.com',
+                telefone: '(55) 55555-5555',
+                sexo: 'M'
+            }),
+            models.Pessoa.create({
+                cpf: '666.666.666-66',
+                nome: 'Neymar',
+                email: 'neymar@email.com',
+                telefone: '(66) 66666-6666',
+                sexo: 'M'
+            }),
+            models.Pessoa.create({
+                cpf: '777.777.777-77',
+                nome: 'Messi',
+                email: 'messi@email.com',
+                telefone: '(77) 77777-7777',
+                sexo: 'M'
             })
         ]);
 
@@ -123,7 +144,7 @@ const seedDatabase = async() => {
         const materiais = await Promise.all([
             models.Material.create({
                 nome: 'Papel',
-                peso: 150.00,
+                peso: 50.00,
                 volume: 2.5,
                 nivelDeRisco: 'Baixo'
             }),

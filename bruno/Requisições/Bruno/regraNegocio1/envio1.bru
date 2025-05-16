@@ -1,0 +1,19 @@
+meta {
+  name: envio1
+  type: http
+  seq: 1
+}
+
+post {
+  url: http://localhost:3333/envios-material
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+      "idMaterial": 1,          // ID do material a ser enviado (deve existir)
+      "cnpj": "11.111.111/0001-11", // CNPJ da terceirizada (deve existir)
+      "pesoEnviado": 10      // Peso em kg (deve ser > 0 e <= estoque disponível)
+  }
+}

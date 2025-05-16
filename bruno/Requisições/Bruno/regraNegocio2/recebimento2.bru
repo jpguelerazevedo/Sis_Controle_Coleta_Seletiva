@@ -1,0 +1,21 @@
+meta {
+  name: recebimento2
+  type: http
+  seq: 3
+}
+
+post {
+  url: http://localhost:3333/recebimentos-material
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+      "idMaterial": 1,              // ID do material recebido
+      "cpfCliente": "222.222.222-22",  // CPF do cliente (novo campo obrigatório)
+      "cpfColaborador": "444.444.444-44", // CPF do colaborador
+      "peso": 100,                 // Peso em kg (deve ser > 0)
+      "volume": 55                // Volume em m³ (deve ser > 0)
+  }
+}

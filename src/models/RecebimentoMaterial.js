@@ -23,6 +23,14 @@ class RecebimentoMaterial extends Model {
                     key: 'id_material'
                 }
             },
+            cpfCliente: {
+                type: DataTypes.STRING,
+                allowNull: false,
+                references: {
+                    model: 'clientes',
+                    key: 'cpf'
+                }
+            },
             cpfColaborador: {
                 type: DataTypes.STRING,
                 allowNull: false,
@@ -43,6 +51,10 @@ class RecebimentoMaterial extends Model {
         this.belongsTo(models.Material, {
             foreignKey: 'id_material',
             as: 'material'
+        });
+        this.belongsTo(models.Cliente, {
+            foreignKey: 'cpf_cliente',
+            as: 'cliente'
         });
         this.belongsTo(models.Colaborador, {
             foreignKey: 'cpf_colaborador',

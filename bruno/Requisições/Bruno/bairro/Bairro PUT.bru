@@ -1,0 +1,20 @@
+meta {
+  name: Bairro PUT
+  type: http
+  seq: 3
+}
+
+put {
+  url: http://localhost:3333/bairros/1
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "nome": "Centro",
+    "distancia_sede": 4.2,
+    "estado_de_acesso": "BOM"
+  }
+  
+}

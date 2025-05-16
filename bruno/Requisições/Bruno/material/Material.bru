@@ -1,0 +1,25 @@
+meta {
+  name: Material
+  type: http
+  seq: 1
+}
+
+post {
+  url: http://localhost:3333/materiais
+  body: json
+  auth: inherit
+}
+
+body:json {
+    {
+      "nome": "Papelão",
+      "descricao": "Papéis recicláveis",
+      "preco_por_kg": 1.75,
+      "quantidade_estoque": 3000,
+      "unidade_medida": "kg",
+      "peso": 1.2,
+      "volume": 2.0,
+      "nivelDeRisco": "Baixo"
+    }
+  
+}

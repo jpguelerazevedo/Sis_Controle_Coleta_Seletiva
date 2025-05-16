@@ -1,0 +1,21 @@
+meta {
+  name: Cliente POST
+  type: http
+  seq: 1
+}
+
+post {
+  url: http://localhost:3333/clientes
+  body: json
+  auth: inherit
+}
+
+body:json {
+    {
+      "cpf": "555.555.555-55",
+      "turno_preferido_de_coleta": "Noite",
+      "status_cliente": "Inativo",
+      "frequencia_de_pedidos": "Quinzenal",
+      "id_endereco": 4
+    }
+}

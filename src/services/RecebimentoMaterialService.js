@@ -1,12 +1,13 @@
 import { RecebimentoMaterial } from '../models/RecebimentoMaterial.js';
 import { Material } from '../models/Material.js';
 import { Colaborador } from '../models/Colaborador.js';
+import { Cliente } from '../models/Cliente.js';
 import { v4 as uuidv4 } from 'uuid';
 import { Op } from 'sequelize';
 
 class RecebimentoMaterialService {
     async createRecebimentoMaterial(data) {
-        const { peso, volume, idMaterial, cpfColaborador } = data;
+        const { peso, volume, idMaterial, cpfCliente, cpfColaborador } = data;
 
         // Validation 1: Check if material exists
         const material = await Material.findByPk(idMaterial);
@@ -14,13 +15,19 @@ class RecebimentoMaterialService {
             throw new Error('Material não encontrado.');
         }
 
-        // Validation 2: Check if colaborador exists
+        // Validation 2: Check if cliente exists
+        const cliente = await Cliente.findByPk(cpfCliente);
+        if (!cliente) {
+            throw new Error('Cliente não encontrado.');
+        }
+
+        // Validation 3: Check if colaborador exists
         const colaborador = await Colaborador.findByPk(cpfColaborador);
         if (!colaborador) {
             throw new Error('Colaborador não encontrado.');
         }
 
-        // Validation 3: Check monthly limit per client (100 kg)
+        // Validation 4: Check monthly limit per client (100 kg)
         const startOfMonth = new Date();
         startOfMonth.setDate(1);
         startOfMonth.setHours(0, 0, 0, 0);
@@ -30,29 +37,36 @@ class RecebimentoMaterialService {
         endOfMonth.setDate(0);
         endOfMonth.setHours(23, 59, 59, 999);
 
+        // Busca todos os recebimentos do cliente no mês
         const monthlyRecebimentos = await RecebimentoMaterial.findAll({
             where: {
-                cpfColaborador: cpfColaborador,
+                cpfCliente: cpfCliente, // Agora verifica por cliente
                 createdAt: {
                     [Op.gte]: startOfMonth,
                     [Op.lte]: endOfMonth
                 }
-            }
+            },
+            include: [
+                { association: 'material' },
+                { association: 'cliente' }
+            ]
         });
 
+        // Soma o peso total recebido pelo cliente no mês
         const totalMonthlyPeso = monthlyRecebimentos.reduce((sum, recebimento) => sum + recebimento.peso, 0);
         const newTotalMonthlyPeso = totalMonthlyPeso + peso;
 
         if (newTotalMonthlyPeso > 100) {
-            throw new Error(`Limite mensal de recebimento para este colaborador excedido. Total recebido este mês: ${totalMonthlyPeso} kg.`);
+            throw new Error(`Limite mensal de recebimento para este cliente excedido. Total recebido este mês: ${totalMonthlyPeso} kg. Limite: 100 kg.`);
         }
 
-        // Validation 4: Check daily total limit (2000 kg)
+        // Validation 5: Check daily total limit (2000 kg = 2 toneladas)
         const today = new Date();
         today.setHours(0, 0, 0, 0);
         const tomorrow = new Date(today);
         tomorrow.setDate(tomorrow.getDate() + 1);
 
+        // Busca todos os recebimentos do dia, independente do cliente ou material
         const dailyRecebimentos = await RecebimentoMaterial.findAll({
             where: {
                 createdAt: {
@@ -62,14 +76,15 @@ class RecebimentoMaterialService {
             }
         });
 
+        // Soma o peso total de todos os materiais recebidos no dia
         const totalDailyPeso = dailyRecebimentos.reduce((sum, recebimento) => sum + recebimento.peso, 0);
         const newTotalDailyPeso = totalDailyPeso + peso;
 
         if (newTotalDailyPeso > 2000) {
-            throw new Error(`Limite diário total de recebimento excedido. Total recebido hoje: ${totalDailyPeso} kg.`);
+            throw new Error(`Limite diário total de recebimento excedido. Total recebido hoje: ${totalDailyPeso} kg. Limite: 2000 kg (2 toneladas).`);
         }
 
-        // Validation 5: Check if peso and volume are valid
+        // Validation 6: Check if peso and volume are valid
         if (peso <= 0) {
             throw new Error('Peso deve ser maior que zero.');
         }
@@ -85,6 +100,7 @@ class RecebimentoMaterialService {
                 peso,
                 volume,
                 idMaterial,
+                cpfCliente,
                 cpfColaborador
             }, { transaction: t });
 

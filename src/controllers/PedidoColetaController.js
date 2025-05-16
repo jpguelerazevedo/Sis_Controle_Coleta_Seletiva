@@ -9,16 +9,20 @@ class PedidoColetaController {
       return res.status(201).json(pedidoColeta);
     } catch (error) {
       console.error('🔥 ERRO DETALHADO:', error.message, error.stack);
-
-      if (
-        error.message.includes('Cliente não cadastrado') ||
-        error.message.includes('Colaborador já solicitou')
-      ) {
+    
+      if (error.message.includes('Cliente não cadastrado')) {
         return res.status(400).json({ error: error.message });
       }
-
-      return res.status(500).json({ error: 'Erro ao criar pedido de coleta.' });
+    
+      if (error.message.includes('Colaborador não cadastrado')) {
+        return res.status(400).json({ error: error.message });
+      }
+    
+      return res.status(500).json({
+        details: error.message,
+      });
     }
+    
   }
 
   async findAll(req, res) {
