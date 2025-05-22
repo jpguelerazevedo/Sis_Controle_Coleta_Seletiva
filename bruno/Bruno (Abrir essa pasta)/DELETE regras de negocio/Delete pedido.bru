@@ -1,0 +1,15 @@
+meta {
+  name: Delete pedido
+  type: http
+  seq: 1
+}
+
+delete {
+  url: http://localhost:3333/pedidos-coleta/:idPedido
+  body: none
+  auth: inherit
+}
+
+params:path {
+  idPedido: 1
+}

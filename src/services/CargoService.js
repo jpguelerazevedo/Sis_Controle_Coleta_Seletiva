@@ -3,18 +3,22 @@ import { QueryTypes } from 'sequelize';
 import sequelize from '../config/database-connection.js';
 
 class CargoService {
-    static async findAll() {
-        const objs = await Cargo.findAll();
-        return objs;
+    async findAll() {
+        try {
+            const cargos = await Cargo.findAll();
+            return cargos;
+        } catch (error) {
+            throw new Error('Erro ao buscar cargos: ' + error.message);
+        }
     }
 
-    static async findByPk(req) {
+    async findByPk(req) {
         const { id_cargo } = req.params;
         const obj = await Cargo.findByPk(id_cargo);
         return obj;
     }
 
-    static async create(req) {
+    async create(req) {
         const { nomeCargo, descricao, hierarquia, salario } = req.body;
 
         const t = await sequelize.transaction();
@@ -35,10 +39,7 @@ class CargoService {
         }
     }
 
-
-
-
-    static async update(req) {
+    async update(req) {
         const { id_cargo } = req.params;
         const { nomeCargo, descricao, hierarquia, salario } = req.body;
 
@@ -63,16 +64,17 @@ class CargoService {
         }
     }
 
-    static async delete(req) {
-        const { id_cargo } = req.params;
-        const obj = await Cargo.findByPk(id_cargo);
-        if (!obj) throw 'Cargo não encontrado!';
-
+    async delete(req) {
         try {
-            await obj.destroy();
-            return obj;
+            const { id_cargo } = req.params;
+            const cargo = await Cargo.findByPk(id_cargo);
+            if (!cargo) {
+                throw new Error('Cargo não encontrado.');
+            }
+            await cargo.destroy();
+            return { message: 'Cargo deletado com sucesso.' };
         } catch (error) {
-            throw "Não é possível remover este cargo: " + error.message;
+            throw new Error('Erro ao deletar cargo: ' + error.message);
         }
     }
 }

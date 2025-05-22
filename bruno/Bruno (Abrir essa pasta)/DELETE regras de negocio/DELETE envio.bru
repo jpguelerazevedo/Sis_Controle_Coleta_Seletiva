@@ -1,0 +1,15 @@
+meta {
+  name: DELETE envio
+  type: http
+  seq: 3
+}
+
+delete {
+  url: http://localhost:3333/envios-material/:idEnvio
+  body: none
+  auth: inherit
+}
+
+params:path {
+  idEnvio: 1
+}

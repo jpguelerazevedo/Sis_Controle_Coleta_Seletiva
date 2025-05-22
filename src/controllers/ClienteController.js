@@ -1,55 +1,59 @@
 import { ClienteService } from "../services/ClienteService.js";
 
+const clienteService = new ClienteService();
+
 class ClienteController {
-  
-  static async findAll(req, res, next) {
-    try {
-      const clientes = await ClienteService.findAll();
-      res.json(clientes);
-    } catch (error) {
-      next(error);
+    async findAll(req, res) {
+        try {
+            const clientes = await clienteService.findAll();
+            return res.status(200).json(clientes);
+        } catch (error) {
+            return res.status(500).json({ error: error.message });
+        }
     }
-  }
 
-  static async findByPk(req, res, next) {
-    try {
-      const cliente = await ClienteService.findByPk(req);
-      if (!cliente) {
-        return res.status(404).json({ message: 'Cliente não encontrado' });
-      }
-      res.json(cliente);
-    } catch (error) {
-      next(error);
+    async findByPk(req, res) {
+        try {
+            const cliente = await clienteService.findByPk(req);
+            if (!cliente) {
+                return res.status(404).json({ message: 'Cliente não encontrado' });
+            }
+            return res.status(200).json(cliente);
+        } catch (error) {
+            return res.status(500).json({ error: error.message });
+        }
     }
-  }
 
-  static async create(req, res, next) {
-    try {
-      const cliente = await ClienteService.create(req);
-      res.status(201).json(cliente);
-    } catch (error) {
-      next(error);
+    async create(req, res) {
+        try {
+            const cliente = await clienteService.create(req);
+            return res.status(201).json(cliente);
+        } catch (error) {
+            return res.status(500).json({ error: error.message });
+        }
     }
-  }
 
-  static async update(req, res, next) {
-    try {
-      const cliente = await ClienteService.update(req);
-      res.json(cliente);
-    } catch (error) {
-      next(error);
+    async update(req, res) {
+        try {
+            const cliente = await clienteService.update(req);
+            return res.status(200).json(cliente);
+        } catch (error) {
+            return res.status(500).json({ error: error.message });
+        }
     }
-  }
 
-  static async delete(req, res, next) {
-    try {
-      const cliente = await ClienteService.delete(req);
-      res.json({ message: 'Cliente removido com sucesso', cliente });
-    } catch (error) {
-      next(error);
+    async delete(req, res) {
+        try {
+            const { cpf } = req.params;
+            const result = await clienteService.delete(cpf);
+            return res.status(200).json(result);
+        } catch (error) {
+            if (error.message.includes('não encontrado')) {
+                return res.status(404).json({ error: error.message });
+            }
+            return res.status(500).json({ error: error.message });
+        }
     }
-  }
-
 }
 
 export { ClienteController };

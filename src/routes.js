@@ -1,12 +1,13 @@
 import express from "express";
 import { Router } from 'express';
 
+// Controllers
 import { BairroController } from './controllers/BairroController.js';
 import { ClienteController } from './controllers/ClienteController.js';
 import { CargoController } from './controllers/CargoController.js';
 import { ColaboradorController } from './controllers/ColaboradorController.js';
 import { MaterialController } from './controllers/MaterialController.js';
-import { TercerizadaController } from './controllers/TercerizadaController.js';
+import { TerceirizadaController } from './controllers/TerceirizadaController.js';
 import { EnderecoController } from './controllers/EnderecoController.js';
 import { PedidoColetaController } from './controllers/PedidoColetaController.js';
 import { EnvioMaterialController } from './controllers/EnvioMaterialController.js';
@@ -14,74 +15,78 @@ import { RecebimentoMaterialController } from './controllers/RecebimentoMaterial
 
 const routes = Router();
 
-const bairroController = BairroController;
-const clienteController = ClienteController;
-const cargoController = CargoController;
-const colaboradorController = ColaboradorController;
-const materialController = MaterialController;
-const tercerizadaController = TercerizadaController;
-const enderecoController = EnderecoController;
+// Instanciação dos controllers
+const bairroController = new BairroController();
+const clienteController = new ClienteController();
+const cargoController = new CargoController();
+const colaboradorController = new ColaboradorController();
+const materialController = new MaterialController();
+const terceirizadaController = new TerceirizadaController();
+const enderecoController = new EnderecoController();
 const pedidoColetaController = new PedidoColetaController();
 const envioMaterialController = new EnvioMaterialController();
 const recebimentoMaterialController = new RecebimentoMaterialController();
 
+// Rotas de Gestão de Materiais
+routes.get('/materiais', (req, res) => materialController.findAll(req, res));
+routes.get('/materiais/:id_material', (req, res) => materialController.findByPk(req, res));
+routes.post('/materiais', (req, res) => materialController.create(req, res));
+routes.put('/materiais/:id_material', (req, res) => materialController.update(req, res));
+routes.delete('/materiais/:id_material', (req, res) => materialController.delete(req, res));
 
-routes.get('/enderecos', enderecoController.findAll);
-routes.get('/enderecos/:id_endereco', enderecoController.findByPk);
-routes.post('/enderecos', enderecoController.create);
-routes.put('/enderecos/:id_endereco', enderecoController.update);
-routes.delete('/enderecos/:id_endereco', enderecoController.delete);
+// Rotas de Gestão de Coleta e Envio
+routes.post('/pedidos-coleta', (req, res) => pedidoColetaController.create(req, res));
+routes.get('/pedidos-coleta', (req, res) => pedidoColetaController.findAll(req, res));
+routes.get('/pedidos-coleta/:idPedido', (req, res) => pedidoColetaController.findByPk(req, res));
+routes.delete('/pedidos-coleta/:idPedido', (req, res) => pedidoColetaController.delete(req, res));
 
+routes.post('/envios-material', (req, res) => envioMaterialController.create(req, res));
+routes.get('/envios-material', (req, res) => envioMaterialController.findAll(req, res));
+routes.get('/envios-material/:idEnvio', (req, res) => envioMaterialController.findByPk(req, res));
+routes.delete('/envios-material/:idEnvio', (req, res) => envioMaterialController.delete(req, res));
 
-routes.post('/pedidos-coleta', pedidoColetaController.create.bind(pedidoColetaController));
-routes.get('/pedidos-coleta', pedidoColetaController.findAll.bind(pedidoColetaController));
-routes.get('/pedidos-coleta/:idPedido', pedidoColetaController.findByPk.bind(pedidoColetaController));
+routes.post('/recebimentos-material', (req, res) => recebimentoMaterialController.create(req, res));
+routes.get('/recebimentos-material', (req, res) => recebimentoMaterialController.findAll(req, res));
+routes.get('/recebimentos-material/:idRecebimento', (req, res) => recebimentoMaterialController.findByPk(req, res));
+routes.delete('/recebimentos-material/:idRecebimento', (req, res) => recebimentoMaterialController.delete(req, res));
 
+// Rotas de Gestão de Localização
+routes.get('/bairros', (req, res) => bairroController.findAll(req, res));
+routes.get('/bairros/:id_bairro', (req, res) => bairroController.findByPk(req, res));
+routes.post('/bairros', (req, res) => bairroController.create(req, res));
+routes.put('/bairros/:id_bairro', (req, res) => bairroController.update(req, res));
+routes.delete('/bairros/:id_bairro', (req, res) => bairroController.delete(req, res));
 
-routes.post('/envios-material', envioMaterialController.create.bind(envioMaterialController));
-routes.get('/envios-material', envioMaterialController.findAll.bind(envioMaterialController));
-routes.get('/envios-material/:idEnvio', envioMaterialController.findByPk.bind(envioMaterialController));
+routes.get('/enderecos', (req, res) => enderecoController.findAll(req, res));
+routes.get('/enderecos/:id_endereco', (req, res) => enderecoController.findByPk(req, res));
+routes.post('/enderecos', (req, res) => enderecoController.create(req, res));
+routes.put('/enderecos/:id_endereco', (req, res) => enderecoController.update(req, res));
+routes.delete('/enderecos/:id_endereco', (req, res) => enderecoController.delete(req, res));
 
+// Rotas de Gestão de Pessoas
+routes.get('/clientes', (req, res) => clienteController.findAll(req, res));
+routes.get('/clientes/:cpf', (req, res) => clienteController.findByPk(req, res));
+routes.post('/clientes', (req, res) => clienteController.create(req, res));
+routes.put('/clientes/:cpf', (req, res) => clienteController.update(req, res));
+routes.delete('/clientes/:cpf', (req, res) => clienteController.delete(req, res));
 
-routes.post('/recebimentos-material', recebimentoMaterialController.create.bind(recebimentoMaterialController));
-routes.get('/recebimentos-material', recebimentoMaterialController.findAll.bind(recebimentoMaterialController));
-routes.get('/recebimentos-material/:idRecebimento', recebimentoMaterialController.findByPk.bind(recebimentoMaterialController));
+routes.get('/colaboradores', (req, res) => colaboradorController.findAll(req, res));
+routes.get('/colaboradores/:cpf', (req, res) => colaboradorController.findByPk(req, res));
+routes.post('/colaboradores', (req, res) => colaboradorController.create(req, res));
+routes.put('/colaboradores/:cpf', (req, res) => colaboradorController.update(req, res));
+routes.delete('/colaboradores/:cpf', (req, res) => colaboradorController.delete(req, res));
 
+routes.get('/cargos', (req, res) => cargoController.findAll(req, res));
+routes.get('/cargos/:id_cargo', (req, res) => cargoController.findByPk(req, res));
+routes.post('/cargos', (req, res) => cargoController.create(req, res));
+routes.put('/cargos/:id_cargo', (req, res) => cargoController.update(req, res));
+routes.delete('/cargos/:id_cargo', (req, res) => cargoController.delete(req, res));
 
-routes.get('/bairros', bairroController.findAll);
-routes.get('/bairros/:id_bairro', bairroController.findByPk);
-routes.post('/bairros', bairroController.create);
-routes.put('/bairros/:id_bairro', bairroController.update);
-routes.delete('/bairros/:id_bairro', bairroController.delete);
+// Rotas de Gestão de Terceirizadas
+routes.get('/terceirizadas', (req, res) => terceirizadaController.findAll(req, res));
+routes.get('/terceirizadas/:cnpj', (req, res) => terceirizadaController.findByPk(req, res));
+routes.post('/terceirizadas', (req, res) => terceirizadaController.create(req, res));
+routes.put('/terceirizadas/:cnpj', (req, res) => terceirizadaController.update(req, res));
+routes.delete('/terceirizadas/:cnpj', (req, res) => terceirizadaController.delete(req, res));
 
-routes.get('/clientes', clienteController.findAll);
-routes.get('/clientes/:cpf', clienteController.findByPk);
-routes.post('/clientes', clienteController.create);
-routes.put('/clientes/:cpf', clienteController.update);
-routes.delete('/clientes/:cpf', clienteController.delete);
-
-routes.get('/cargos', cargoController.findAll);
-routes.get('/cargos/:id_cargo', cargoController.findByPk);
-routes.post('/cargos', cargoController.create);
-routes.put('/cargos/:id_cargo', cargoController.update);
-routes.delete('/cargos/:id_cargo', cargoController.delete);
-
-routes.get('/colaboradores', colaboradorController.findAll);
-routes.get('/colaboradores/:cpf', colaboradorController.findByPk);
-routes.post('/colaboradores', colaboradorController.create);
-routes.put('/colaboradores/:cpf', colaboradorController.update);
-routes.delete('/colaboradores/:cpf', colaboradorController.delete);
-
-routes.get('/materiais', materialController.findAll);
-routes.get('/materiais/:id_material', materialController.findByPk);
-routes.post('/materiais', materialController.create);
-routes.put('/materiais/:id_material', materialController.update);
-routes.delete('/materiais/:id_material', materialController.delete);
-
-routes.get('/terceirizadas', tercerizadaController.findAll);
-routes.get('/terceirizadas/:cnpj', tercerizadaController.findByPk);
-routes.post('/terceirizadas', tercerizadaController.create);
-routes.put('/terceirizadas/:cnpj', tercerizadaController.update);
-routes.delete('/terceirizadas/:cnpj', tercerizadaController.delete);
-
-export default routes ;
+export default routes;

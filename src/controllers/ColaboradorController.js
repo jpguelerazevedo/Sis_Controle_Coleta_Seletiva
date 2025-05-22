@@ -1,53 +1,57 @@
 import { ColaboradorService } from "../services/ColaboradorService.js";
 
 class ColaboradorController {
-  static async findAll(req, res, next) {
-    try {
-      const colaboradores = await ColaboradorService.findAll();
-      res.json(colaboradores);
-    } catch (error) {
-      next(error);
+    constructor() {
+        this.colaboradorService = new ColaboradorService();
     }
-  }
 
-  static async findByPk(req, res, next) {
-    try {
-      const colaborador = await ColaboradorService.findByPk(req);
-      if (!colaborador) {
-        return res.status(404).json({ message: 'Colaborador não encontrado' });
-      }
-      res.json(colaborador);
-    } catch (error) {
-      next(error);
+    async findAll(req, res) {
+        try {
+            const colaboradores = await this.colaboradorService.findAll();
+            res.json(colaboradores);
+        } catch (error) {
+            res.status(500).json({ error: error.message });
+        }
     }
-  }
 
-  static async create(req, res, next) {
-    try {
-      const colaborador = await ColaboradorService.create(req);
-      res.status(201).json(colaborador);
-    } catch (error) {
-      next(error);
+    async findByPk(req, res) {
+        try {
+            const colaborador = await this.colaboradorService.findByPk(req);
+            if (!colaborador) {
+                return res.status(404).json({ message: 'Colaborador não encontrado' });
+            }
+            res.json(colaborador);
+        } catch (error) {
+            res.status(500).json({ error: error.message });
+        }
     }
-  }
 
-  static async update(req, res, next) {
-    try {
-      const colaborador = await ColaboradorService.update(req);
-      res.json(colaborador);
-    } catch (error) {
-      next(error);
+    async create(req, res) {
+        try {
+            const colaborador = await this.colaboradorService.create(req);
+            res.status(201).json(colaborador);
+        } catch (error) {
+            res.status(500).json({ error: error.message });
+        }
     }
-  }
 
-  static async delete(req, res, next) {
-    try {
-      const colaborador = await ColaboradorService.delete(req);
-      res.json({ message: 'Colaborador removido com sucesso', colaborador });
-    } catch (error) {
-      next(error);
+    async update(req, res) {
+        try {
+            const colaborador = await this.colaboradorService.update(req);
+            res.json(colaborador);
+        } catch (error) {
+            res.status(500).json({ error: error.message });
+        }
     }
-  }
+
+    async delete(req, res) {
+        try {
+            const colaborador = await this.colaboradorService.delete(req);
+            res.json({ message: 'Colaborador removido com sucesso', colaborador });
+        } catch (error) {
+            res.status(500).json({ error: error.message });
+        }
+    }
 }
 
-export { ColaboradorController }; 
+export { ColaboradorController };

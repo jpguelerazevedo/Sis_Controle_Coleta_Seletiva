@@ -4,98 +4,98 @@ import sequelize from '../config/database-connection.js';
 
 class BairroService {
 
-  static async findAll() {
-    const objs = await Bairro.findAll({
-      include: [
-        { association: 'enderecos' }
-      ]
-    });
-    return objs;
-  }
-
-  static async findByPk(req) {
-    const { id_bairro } = req.params;
-    const obj = await Bairro.findByPk(id_bairro, {
-      include: [
-        { association: 'enderecos' }
-      ]
-    });
-    return obj;
-  }
-
-  static async create(req) {
-    const { nome, distancia_sede, estado_de_acesso } = req.body;
-    const existing = await Bairro.findOne({ where: { nome } });
-    if (existing) {
-      throw "Já existe um bairro com esse nome!";
+    async findAll() {
+        const objs = await Bairro.findAll({
+            include: [
+                { association: 'enderecos' }
+            ]
+        });
+        return objs;
     }
 
-    const t = await sequelize.transaction();
-    try {
-      const obj = await Bairro.create({
-        nome,
-        distancia_sede,
-        estado_de_acesso,
-        qnt_pessoas_cadastradas: 0
-      }, { transaction: t });
-
-      await t.commit();
-      return await Bairro.findByPk(obj.id_bairro, {
-        include: [
-          { association: 'enderecos' }
-        ]
-      });
-    } catch (error) {
-      await t.rollback();
-      throw "Erro ao criar bairro: " + error.message;
+    async findByPk(req) {
+        const { id_bairro } = req.params;
+        const obj = await Bairro.findByPk(id_bairro, {
+            include: [
+                { association: 'enderecos' }
+            ]
+        });
+        return obj;
     }
-  }
 
-  static async update(req) {
-    const { id_bairro } = req.params;
-    const { nome, distancia_sede, estado_de_acesso } = req.body;
+    async create(req) {
+        const { nome, distancia_sede, estado_de_acesso } = req.body;
+        const existing = await Bairro.findOne({ where: { nome } });
+        if (existing) {
+            throw "Já existe um bairro com esse nome!";
+        }
 
-    const obj = await Bairro.findByPk(id_bairro, {
-      include: [
-        { association: 'enderecos' }
-      ]
-    });
+        const t = await sequelize.transaction();
+        try {
+            const obj = await Bairro.create({
+                nome,
+                distancia_sede,
+                estado_de_acesso,
+                qnt_pessoas_cadastradas: 0
+            }, { transaction: t });
 
-    if (!obj) throw 'Bairro não encontrado!';
-
-    const t = await sequelize.transaction();
-    try {
-      Object.assign(obj, {
-        nome,
-        distancia_sede,
-        estado_de_acesso
-      });
-
-      await obj.save({ transaction: t });
-      await t.commit();
-      return await Bairro.findByPk(obj.id_bairro, {
-        include: [
-          { association: 'enderecos' }
-        ]
-      });
-    } catch (error) {
-      await t.rollback();
-      throw "Erro ao atualizar bairro: " + error.message;
+            await t.commit();
+            return await Bairro.findByPk(obj.id_bairro, {
+                include: [
+                    { association: 'enderecos' }
+                ]
+            });
+        } catch (error) {
+            await t.rollback();
+            throw "Erro ao criar bairro: " + error.message;
+        }
     }
-  }
 
-  static async delete(req) {
-    const { id_bairro } = req.params;
-    const obj = await Bairro.findByPk(id_bairro);
-    if (!obj) throw 'Bairro não encontrado!';
+    async update(req) {
+        const { id_bairro } = req.params;
+        const { nome, distancia_sede, estado_de_acesso } = req.body;
 
-    try {
-      await obj.destroy();
-      return obj;
-    } catch (error) {
-      throw "Não é possível remover este bairro: " + error.message;
+        const obj = await Bairro.findByPk(id_bairro, {
+            include: [
+                { association: 'enderecos' }
+            ]
+        });
+
+        if (!obj) throw 'Bairro não encontrado!';
+
+        const t = await sequelize.transaction();
+        try {
+            Object.assign(obj, {
+                nome,
+                distancia_sede,
+                estado_de_acesso
+            });
+
+            await obj.save({ transaction: t });
+            await t.commit();
+            return await Bairro.findByPk(obj.id_bairro, {
+                include: [
+                    { association: 'enderecos' }
+                ]
+            });
+        } catch (error) {
+            await t.rollback();
+            throw "Erro ao atualizar bairro: " + error.message;
+        }
     }
-  }
+
+    async delete(req) {
+        const { id_bairro } = req.params;
+        const obj = await Bairro.findByPk(id_bairro);
+        if (!obj) throw 'Bairro não encontrado!';
+
+        try {
+            await obj.destroy();
+            return obj;
+        } catch (error) {
+            throw "Não é possível remover este bairro: " + error.message;
+        }
+    }
 
 }
 

@@ -6,7 +6,7 @@ class RecebimentoMaterialController {
     async create(req, res) {
         try {
             const recebimentoMaterial = await recebimentoMaterialService.createRecebimentoMaterial(req.body);
-            return res.status(201).json(recebimentoMaterial);
+            res.status(201).json(recebimentoMaterial);
         } catch (error) {
             console.error('🔥 ERRO DETALHADO:', error.message, error.stack);
 
@@ -21,34 +21,55 @@ class RecebimentoMaterialController {
                 return res.status(400).json({ error: error.message });
             }
 
-            return res.status(500).json({ error: 'Erro ao criar recebimento de material.' });
+            res.status(500).json({ error: error.message });
         }
     }
 
     async findAll(req, res) {
         try {
             const recebimentosMaterial = await recebimentoMaterialService.findAllRecebimentosMaterial();
-            return res.status(200).json(recebimentosMaterial);
+            res.status(200).json(recebimentosMaterial);
         } catch (error) {
-            return res.status(500).json({ error: 'Erro ao buscar recebimentos de material.' });
+            res.status(500).json({ error: error.message });
         }
     }
 
     async findByPk(req, res) {
-            try {
-                const { idRecebimento } = req.params;
-                const recebimentoMaterial = await recebimentoMaterialService.findRecebimentoMaterialByPk(idRecebimento);
+        try {
+            const { idRecebimento } = req.params;
+            const recebimentoMaterial = await recebimentoMaterialService.findRecebimentoMaterialByPk(idRecebimento);
 
-                if (!recebimentoMaterial) {
-                    return res.status(404).json({ error: 'Recebimento de material não encontrado.' });
-                }
-
-                return res.status(200).json(recebimentoMaterial);
-            } catch (error) {
-                return res.status(500).json({ error: 'Erro ao buscar recebimento de material por ID.' });
+            if (!recebimentoMaterial) {
+                return res.status(404).json({ error: 'Recebimento de material não encontrado.' });
             }
+
+            res.status(200).json(recebimentoMaterial);
+        } catch (error) {
+            res.status(500).json({ error: error.message });
         }
-        // Add other controller methods (findByPk, update, delete) as needed
+    }
+
+    async update(req, res) {
+        try {
+            const recebimento = await recebimentoMaterialService.updateRecebimentoMaterial(req.body);
+            res.json(recebimento);
+        } catch (error) {
+            res.status(500).json({ error: error.message });
+        }
+    }
+
+    async delete(req, res) {
+        try {
+            const { idRecebimento } = req.params;
+            const result = await recebimentoMaterialService.delete(idRecebimento);
+            res.status(200).json(result);
+        } catch (error) {
+            if (error.message.includes('não encontrado')) {
+                return res.status(404).json({ error: error.message });
+            }
+            res.status(500).json({ error: error.message });
+        }
+    }
 }
 
 export { RecebimentoMaterialController };

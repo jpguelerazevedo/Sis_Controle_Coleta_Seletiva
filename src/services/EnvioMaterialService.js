@@ -77,14 +77,18 @@ class EnvioMaterialService {
         }
     }
 
-    async findAllEnviosMaterial() {
-        const enviosMaterial = await EnvioMaterial.findAll({
-            include: [
-                { association: 'material' },
-                { association: 'terceirizada' }
-            ]
-        });
-        return enviosMaterial;
+    async findAll() {
+        try {
+            const envios = await EnvioMaterial.findAll({
+                include: [
+                    { association: 'material' },
+                    { association: 'terceirizada' }
+                ]
+            });
+            return envios;
+        } catch (error) {
+            throw new Error('Erro ao buscar envios de material: ' + error.message);
+        }
     }
 
     async findEnvioMaterialByPk(idEnvio) {
@@ -97,7 +101,20 @@ class EnvioMaterialService {
         return envioMaterial;
     }
 
-    // Add other service methods (update, delete) as needed
+    async delete(idEnvio) {
+        try {
+            const envio = await EnvioMaterial.findByPk(idEnvio);
+            if (!envio) {
+                throw new Error('Envio de material não encontrado.');
+            }
+            await envio.destroy();
+            return { message: 'Envio de material deletado com sucesso.' };
+        } catch (error) {
+            throw new Error('Erro ao deletar envio de material: ' + error.message);
+        }
+    }
+
+    // Add other service methods (update) as needed
 }
 
 export { EnvioMaterialService };

@@ -89,6 +89,33 @@ class PedidoColetaService {
         return pedidoColeta;
     }
 
+    async findAll() {
+        try {
+            const pedidos = await PedidoColeta.findAll({
+                include: [
+                    { association: 'cliente' },
+                    { association: 'colaborador' }
+                ]
+            });
+            return pedidos;
+        } catch (error) {
+            throw new Error('Erro ao buscar pedidos de coleta: ' + error.message);
+        }
+    }
+
+    async delete(idPedido) {
+        try {
+            const pedido = await PedidoColeta.findByPk(idPedido);
+            if (!pedido) {
+                throw new Error('Pedido de coleta não encontrado.');
+            }
+            await pedido.destroy();
+            return { message: 'Pedido de coleta deletado com sucesso.' };
+        } catch (error) {
+            throw new Error('Erro ao deletar pedido de coleta: ' + error.message);
+        }
+    }
+
     // Add other service methods (update, delete) as needed
 }
 

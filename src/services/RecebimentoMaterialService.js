@@ -141,6 +141,42 @@ class RecebimentoMaterialService {
         return recebimentoMaterial;
     }
 
+    async delete(idRecebimento) {
+        try {
+            const recebimento = await RecebimentoMaterial.findByPk(idRecebimento);
+            if (!recebimento) {
+                throw new Error('Recebimento de material não encontrado.');
+            }
+
+            // Inicia uma transação para garantir a consistência dos dados
+            const t = await Material.sequelize.transaction();
+            try {
+                // Atualiza o estoque do material
+                const material = await Material.findByPk(recebimento.idMaterial);
+                if (material) {
+                    await Material.update({
+                        peso: material.peso - recebimento.peso,
+                        volume: material.volume - recebimento.volume
+                    }, {
+                        where: { idMaterial: recebimento.idMaterial },
+                        transaction: t
+                    });
+                }
+
+                // Remove o recebimento
+                await recebimento.destroy({ transaction: t });
+                await t.commit();
+
+                return { message: 'Recebimento de material deletado com sucesso.' };
+            } catch (error) {
+                await t.rollback();
+                throw new Error('Erro ao deletar recebimento de material: ' + error.message);
+            }
+        } catch (error) {
+            throw new Error('Erro ao deletar recebimento de material: ' + error.message);
+        }
+    }
+
     // Add other service methods (update, delete) as needed
 }
 

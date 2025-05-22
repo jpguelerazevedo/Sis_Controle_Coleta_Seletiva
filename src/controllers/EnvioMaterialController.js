@@ -6,7 +6,7 @@ class EnvioMaterialController {
     async create(req, res) {
         try {
             const envioMaterial = await envioMaterialService.createEnvioMaterial(req.body);
-            return res.status(201).json(envioMaterial);
+            res.status(201).json(envioMaterial);
         } catch (error) {
             console.error('🔥 ERRO DETALHADO:', error.message, error.stack);
 
@@ -17,19 +17,19 @@ class EnvioMaterialController {
                 error.message.includes('Terceirizada já recebeu') ||
                 error.message.includes('Peso deve ser maior que zero')
             ) {
-                return res.status(400).json({ error: error.message });
+                res.status(400).json({ error: error.message });
+            } else {
+                res.status(500).json({ error: error.message });
             }
-
-            return res.status(500).json({ error: 'Erro ao criar envio de material.' });
         }
     }
 
     async findAll(req, res) {
         try {
-            const enviosMaterial = await envioMaterialService.findAllEnviosMaterial();
-            return res.status(200).json(enviosMaterial);
+            const envios = await envioMaterialService.findAll();
+            res.status(200).json(envios);
         } catch (error) {
-            return res.status(500).json({ error: 'Erro ao buscar envios de material.' });
+            res.status(500).json({ error: error.message });
         }
     }
 
@@ -42,9 +42,23 @@ class EnvioMaterialController {
                 return res.status(404).json({ error: 'Envio de material não encontrado.' });
             }
 
-            return res.status(200).json(envioMaterial);
+            res.status(200).json(envioMaterial);
         } catch (error) {
-            return res.status(500).json({ error: 'Erro ao buscar envio de material por ID.' });
+            res.status(500).json({ error: error.message });
+        }
+    }
+
+    async delete(req, res) {
+        try {
+            const { idEnvio } = req.params;
+            const result = await envioMaterialService.delete(idEnvio);
+            res.status(200).json(result);
+        } catch (error) {
+            if (error.message.includes('não encontrado')) {
+                res.status(404).json({ error: error.message });
+            } else {
+                res.status(500).json({ error: error.message });
+            }
         }
     }
 }
