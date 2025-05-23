@@ -1,0 +1,184 @@
+meta {
+  name: Regra de negocio 2
+  type: http
+  seq: 5
+}
+
+post {
+  url: http://localhost:3333/recebimentos-material
+  body: json
+  auth: inherit
+}
+
+body:json {
+  
+  
+  [
+  {
+      "idMaterial": 1,              // ID do material recebido
+      "cpfCliente": "222.222.222-22",  // CPF do cliente (novo campo obrigatório)
+      "cpfColaborador": "444.444.444-44", // CPF do colaborador
+      "peso": 100,                 // Peso em kg (deve ser > 0)
+      "volume": 55                // Volume em m³ (deve ser > 0)
+  },
+  {
+      "idMaterial": 1,
+      "cpfCliente": "111.111.111-11",
+      "cpfColaborador": "444.444.444-44",
+      "peso": 150,
+      "volume": 75
+  },
+  
+  // Collection 2
+  {
+      "idMaterial": 1,
+      "cpfCliente": "222.222.222-22",
+      "cpfColaborador": "444.444.444-44",
+      "peso": 200,
+      "volume": 100
+  },
+  
+  // Collection 3
+  {
+      "idMaterial": 1,
+      "cpfCliente": "333.333.333-33",
+      "cpfColaborador": "444.444.444-44",
+      "peso": 180,
+      "volume": 90
+  },
+  
+  // Collection 4
+  {
+      "idMaterial": 1,
+      "cpfCliente": "444.444.444-44",
+      "cpfColaborador": "444.444.444-44",
+      "peso": 120,
+      "volume": 60
+  },
+  // Collection 5
+  {
+      "idMaterial": 1,
+      "cpfCliente": "555.555.555-55",
+      "cpfColaborador": "444.444.444-44",
+      "peso": 250,
+      "volume": 125
+  },
+  
+  // Collection 6
+  {
+      "idMaterial": 1,
+      "cpfCliente": "666.666.666-66",
+      "cpfColaborador": "444.444.444-44",
+      "peso": 170,
+      "volume": 85
+  },
+  
+  // Collection 7
+  {
+      "idMaterial": 1,
+      "cpfCliente": "777.777.777-77",
+      "cpfColaborador": "444.444.444-44",
+      "peso": 190,
+      "volume": 95
+  },
+  
+  // Collection 8
+  {
+      "idMaterial": 1,
+      "cpfCliente": "888.888.888-88",
+      "cpfColaborador": "444.444.444-44",
+      "peso": 140,
+      "volume": 70
+  }
+  ,
+  // Collection 9
+  {
+      "idMaterial": 1,
+      "cpfCliente": "999.999.999-99",
+      "cpfColaborador": "444.444.444-44",
+      "peso": 160,
+      "volume": 80
+  },
+  
+  // Collection 10
+  {
+      "idMaterial": 1,
+      "cpfCliente": "101.101.101-10",
+      "cpfColaborador": "444.444.444-44",
+      "peso": 220,
+      "volume": 110
+  },
+  
+  // Collection 11
+  {
+      "idMaterial": 1,
+      "cpfCliente": "202.202.202-20",
+      "cpfColaborador": "444.444.444-44",
+      "peso": 130,
+      "volume": 65
+  },
+  
+  // Collection 12
+  {
+      "idMaterial": 1,
+      "cpfCliente": "303.303.303-30",
+      "cpfColaborador": "444.444.444-44",
+      "peso": 210,
+      "volume": 105
+  },
+  
+  // Collection 13
+  {
+      "idMaterial": 1,
+      "cpfCliente": "404.404.404-40",
+      "cpfColaborador": "444.444.444-44",
+      "peso": 145,
+      "volume": 72
+  },
+  
+  // Collection 14
+  {
+      "idMaterial": 1,
+      "cpfCliente": "505.505.505-50",
+      "cpfColaborador": "444.444.444-44",
+      "peso": 175,
+      "volume": 87
+  },
+  
+  // Collection 15
+  {
+      "idMaterial": 1,
+      "cpfCliente": "606.606.606-60",
+      "cpfColaborador": "444.444.444-44",
+      "peso": 195,
+      "volume": 97
+  },
+  
+  // Collection 16
+  {
+      "idMaterial": 1,
+      "cpfCliente": "707.707.707-70",
+      "cpfColaborador": "444.444.444-44",
+      "peso": 165,
+      "volume": 82
+  },
+  
+  // Collection 17
+  {
+      "idMaterial": 1,
+      "cpfCliente": "808.808.808-80",
+      "cpfColaborador": "444.444.444-44",
+      "peso": 185,
+      "volume": 92
+  },
+  
+  // Collection 18
+  {
+      "idMaterial": 1,
+      "cpfCliente": "909.909.909-90",
+      "cpfColaborador": "444.444.444-44",
+      "peso": 205,
+      "volume": 102
+   }
+  ]
+}

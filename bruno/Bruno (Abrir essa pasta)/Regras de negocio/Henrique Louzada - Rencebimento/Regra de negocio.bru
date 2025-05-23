@@ -1,7 +1,7 @@
 meta {
-  name: recebimento1
+  name: Regra de negocio
   type: http
-  seq: 3
+  seq: 2
 }
 
 post {
@@ -11,6 +11,8 @@ post {
 }
 
 body:json {
+  
+  
   {
       "idMaterial": 1,              // ID do material recebido
       "cpfCliente": "222.222.222-22",  // CPF do cliente (novo campo obrigatório)
@@ -18,4 +20,5 @@ body:json {
       "peso": 100,                 // Peso em kg (deve ser > 0)
       "volume": 55                // Volume em m³ (deve ser > 0)
   }
+  
 }

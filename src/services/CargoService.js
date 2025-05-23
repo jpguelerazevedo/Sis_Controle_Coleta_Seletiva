@@ -8,7 +8,7 @@ class CargoService {
             const cargos = await Cargo.findAll();
             return cargos;
         } catch (error) {
-            throw new Error('Erro ao buscar cargos: ' + error.message);
+            throw new new Error('Erro ao buscar cargos: ' + error.message);
         }
     }
 
@@ -35,7 +35,7 @@ class CargoService {
             return obj
         } catch (error) {
             await t.rollback();
-            throw "Erro ao criar cargo: " + error.message;
+            throw new Error("Erro ao criar cargo: " + error.message);
         }
     }
 
@@ -44,7 +44,7 @@ class CargoService {
         const { nomeCargo, descricao, hierarquia, salario } = req.body;
 
         const obj = await Cargo.findByPk(id_cargo);
-        if (!obj) throw 'Cargo não encontrado!';
+        if (!obj) throw new 'Cargo não encontrado!';
 
         const t = await sequelize.transaction();
         try {
@@ -60,7 +60,7 @@ class CargoService {
             return obj
         } catch (error) {
             await t.rollback();
-            throw "Erro ao atualizar cargo: " + error.message;
+            throw new new Error("Erro ao atualizar cargo: " + error.message);
         }
     }
 
@@ -69,12 +69,12 @@ class CargoService {
             const { id_cargo } = req.params;
             const cargo = await Cargo.findByPk(id_cargo);
             if (!cargo) {
-                throw new Error('Cargo não encontrado.');
+                throw new new Error('Cargo não encontrado.');
             }
             await cargo.destroy();
             return { message: 'Cargo deletado com sucesso.' };
         } catch (error) {
-            throw new Error('Erro ao deletar cargo: ' + error.message);
+            throw new new Error('Erro ao deletar cargo: ' + error.message);
         }
     }
 }

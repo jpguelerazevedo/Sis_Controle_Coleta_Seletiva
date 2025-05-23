@@ -26,7 +26,7 @@ class ColaboradorService {
     async create(req) {
         const { cpf, dataAdmissao, carga_horaria, nacionalidade, id_cargo } = req.body;
 
-        if (!id_cargo) throw 'O Cargo do Colaborador deve ser preenchido!';
+        if (!id_cargo) throw new Error('O Cargo do Colaborador deve ser preenchido!');
 
         const t = await sequelize.transaction();
         try {
@@ -48,7 +48,7 @@ class ColaboradorService {
             });
         } catch (error) {
             await t.rollback();
-            throw "Erro ao criar colaborador: " + error.message;
+            throw new Error("Erro ao criar colaborador: " + error.message);
         }
     }
 
@@ -63,7 +63,7 @@ class ColaboradorService {
             ]
         });
 
-        if (!obj) throw 'Colaborador não encontrado!';
+        if (!obj) throw new Error('Colaborador não encontrado!');
 
         const t = await sequelize.transaction();
         try {
@@ -85,20 +85,20 @@ class ColaboradorService {
             });
         } catch (error) {
             await t.rollback();
-            throw "Erro ao atualizar colaborador: " + error.message;
+            throw new Error("Erro ao atualizar colaborador: " + error.message);
         }
     }
 
     async delete(req) {
         const { cpf } = req.params;
         const obj = await Colaborador.findByPk(cpf);
-        if (!obj) throw 'Colaborador não encontrado!';
+        if (!obj) throw new Error('Colaborador não encontrado!');
 
         try {
             await obj.destroy();
             return obj;
         } catch (error) {
-            throw "Não é possível remover este colaborador: " + error.message;
+            throw new Error("Não é possível remover este colaborador: " + error.message);
         }
     }
 }

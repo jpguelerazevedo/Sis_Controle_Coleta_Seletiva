@@ -27,9 +27,9 @@ class BairroService {
         const { nome, distancia_sede, estado_de_acesso } = req.body;
         const existing = await Bairro.findOne({ where: { nome } });
         if (existing) {
-            throw "Já existe um bairro com esse nome!";
+            throw new Error("Já existe um bairro com esse nome!");
         }
-
+    
         const t = await sequelize.transaction();
         try {
             const obj = await Bairro.create({
@@ -38,8 +38,9 @@ class BairroService {
                 estado_de_acesso,
                 qnt_pessoas_cadastradas: 0
             }, { transaction: t });
-
+    
             await t.commit();
+    
             return await Bairro.findByPk(obj.id_bairro, {
                 include: [
                     { association: 'enderecos' }
@@ -47,9 +48,10 @@ class BairroService {
             });
         } catch (error) {
             await t.rollback();
-            throw "Erro ao criar bairro: " + error.message;
+            throw new Error("Erro ao criar bairro: " + error.message);
         }
     }
+    
 
     async update(req) {
         const { id_bairro } = req.params;
@@ -61,7 +63,7 @@ class BairroService {
             ]
         });
 
-        if (!obj) throw 'Bairro não encontrado!';
+        if (!obj) throw new Error('Bairro não encontrado!');
 
         const t = await sequelize.transaction();
         try {
@@ -80,20 +82,20 @@ class BairroService {
             });
         } catch (error) {
             await t.rollback();
-            throw "Erro ao atualizar bairro: " + error.message;
+            throw new Error("Erro ao atualizar bairro: " + error.message);
         }
     }
 
     async delete(req) {
         const { id_bairro } = req.params;
         const obj = await Bairro.findByPk(id_bairro);
-        if (!obj) throw 'Bairro não encontrado!';
+        if (!obj) throw new Error('Bairro não encontrado!');
 
         try {
             await obj.destroy();
             return obj;
         } catch (error) {
-            throw "Não é possível remover este bairro: " + error.message;
+            throw new Error("Não é possível remover este bairro: " + error.message);
         }
     }
 

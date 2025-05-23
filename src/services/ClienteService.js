@@ -26,7 +26,7 @@ class ClienteService {
 
     async create(req) {
         const { cpf, turno_preferido_de_coleta, status_cliente, frequencia_de_pedidos, id_endereco } = req.body;
-        if (!id_endereco) throw 'O Endereço do Cliente deve ser preenchido!';
+        if (!id_endereco) throw new 'O Endereço do Cliente deve ser preenchido!';
 
         const t = await sequelize.transaction();
         try {
@@ -48,7 +48,7 @@ class ClienteService {
             });
         } catch (error) {
             await t.rollback();
-            throw "Erro ao criar cliente: " + error.message;
+            throw new Error("Erro ao criar cliente: " + error.message);
         }
     }
 
@@ -63,7 +63,7 @@ class ClienteService {
             ]
         });
 
-        if (!obj) throw 'Cliente não encontrado!';
+        if (!obj) throw new Error('Cliente não encontrado!');
 
         const t = await sequelize.transaction();
         try {
@@ -84,20 +84,20 @@ class ClienteService {
             });
         } catch (error) {
             await t.rollback();
-            throw "Erro ao atualizar cliente: " + error.message;
+            throw new Error("Erro ao atualizar cliente: " + error.message);
         }
     }
 
     async delete(req) {
         const { cpf } = req.params;
         const obj = await Cliente.findByPk(cpf);
-        if (!obj) throw 'Cliente não encontrado!';
+        if (!obj) throw new 'Cliente não encontrado!';
 
         try {
             await obj.destroy();
             return obj;
         } catch (error) {
-            throw "Não é possível remover este cliente: " + error.message;
+            throw new Error("Não é possível remover este cliente: " + error.message);
         }
     }
 

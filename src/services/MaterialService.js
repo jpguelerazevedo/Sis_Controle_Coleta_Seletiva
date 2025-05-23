@@ -32,7 +32,7 @@ class MaterialService {
             return await Material.findByPk(obj.idMaterial);
         } catch (error) {
             await t.rollback();
-            throw "Erro ao criar material: " + error.message;
+            throw new Error("Erro ao criar material: " + error.message);
         }
     }
 
@@ -41,7 +41,7 @@ class MaterialService {
         const { nome, peso, volume, nivelDeRisco } = req.body;
 
         const obj = await Material.findByPk(id_material);
-        if (!obj) throw 'Material não encontrado!';
+        if (!obj) throw new Error('Material não encontrado!');
 
         const t = await sequelize.transaction();
         try {
@@ -57,20 +57,20 @@ class MaterialService {
             return await Material.findByPk(obj.idMaterial);
         } catch (error) {
             await t.rollback();
-            throw "Erro ao atualizar material: " + error.message;
+            throw new Error("Erro ao atualizar material: " + error.message);
         }
     }
 
     async delete(req) {
         const { id_material } = req.params;
         const obj = await Material.findByPk(id_material);
-        if (!obj) throw 'Material não encontrado!';
+        if (!obj) throw new Error('Material não encontrado!');
 
         try {
             await obj.destroy();
             return obj;
         } catch (error) {
-            throw "Não é possível remover este material: " + error.message;
+            throw new Error("Não é possível remover este material: " + error.message);
         }
     }
 }

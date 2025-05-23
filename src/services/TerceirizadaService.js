@@ -46,7 +46,7 @@ class TerceirizadaService {
             });
         } catch (error) {
             await t.rollback();
-            throw "Erro ao criar terceirizada: " + error.message;
+            throw new Error("Erro ao criar terceirizada: " + error.message);
         }
     }
 
@@ -60,7 +60,7 @@ class TerceirizadaService {
             ]
         });
 
-        if (!obj) throw 'Terceirizada não encontrada!';
+        if (!obj) throw new Error('Terceirizada não encontrada!');
 
         const t = await sequelize.transaction();
         try {
@@ -80,20 +80,20 @@ class TerceirizadaService {
             });
         } catch (error) {
             await t.rollback();
-            throw "Erro ao atualizar terceirizada: " + error.message;
+            throw new Error("Erro ao atualizar terceirizada: " + error.message);
         }
     }
 
     async delete(req) {
         const { cnpj } = req.params;
         const obj = await Terceirizada.findByPk(cnpj);
-        if (!obj) throw 'Terceirizada não encontrada!';
+        if (!obj) throw new Error('Terceirizada não encontrada!')   ;
 
         try {
             await obj.destroy();
             return obj;
         } catch (error) {
-            throw "Não é possível remover esta terceirizada: " + error.message;
+            throw new Error("Não é possível remover esta terceirizada: " + error.message);
         }
     }
 }
