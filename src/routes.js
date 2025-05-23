@@ -47,7 +47,7 @@ routes.delete('/envios-material/:idEnvio', (req, res) => envioMaterialController
 
 routes.post('/recebimentos-material', (req, res) => recebimentoMaterialController.create(req, res));
 routes.get('/recebimentos-material', (req, res) => recebimentoMaterialController.findAll(req, res));
-routes.get('/recebimentos-material/:idRecebimento', (req, res) => recebimentoMaterialController.findByPk(req, res));
+routes.get('/recebimentos-material/:idRecebimento', (req, res) => recebimentoMaterialController.findOne(req, res));
 routes.delete('/recebimentos-material/:idRecebimento', (req, res) => recebimentoMaterialController.delete(req, res));
 
 // Rotas de Gestão de Localização

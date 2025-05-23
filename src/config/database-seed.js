@@ -678,6 +678,27 @@ const seedDatabase = async() => {
             })
         ]);
 
+        const pedidos_coleta = await Promise.all([
+            models.PedidoColeta.create({
+                tipo: "Papel",
+                peso: 25.5,
+                volume: 10.2,
+                idMaterial: 1,
+                cpfCliente: "111.111.111-11",
+                cpfColaborador: "444.444.444-44"
+            })
+        ])
+
+        const EnvioMateriais = await Promise.all([
+            models.EnvioMaterial.create({
+                idMaterial: 2,
+                cnpj: "11.111.111/0001-11",
+                pesoEnviado: 50.5
+            })
+        ])
+
+
+
     } catch (error) {
         console.error('Erro ao inserir dados:', error);
     } finally {

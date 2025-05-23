@@ -11,9 +11,14 @@ post {
 }
 
 body:json {
+  
+  //Só poderá ser feito um envio de materiais diários por terceirizada.
+  
+  // Para fins de teste, foi inserido automaticamente um envio vinculado a esta tercerizada.
+  
   {
-      "idMaterial": 1,          // ID do material a ser enviado (deve existir)
-      "cnpj": "11.111.111/0001-11", // CNPJ da terceirizada (deve existir)
-      "pesoEnviado": 50.5      // Peso em kg (deve ser > 0 e <= estoque disponível)
+      "idMaterial": 2,          
+      "cnpj": "11.111.111/0001-11", 
+      "pesoEnviado": 50.5     
   }
 }

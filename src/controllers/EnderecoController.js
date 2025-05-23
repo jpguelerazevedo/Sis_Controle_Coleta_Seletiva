@@ -6,6 +6,7 @@ class EnderecoController {
             const enderecos = await EnderecoService.findAll();
             res.json(enderecos);
         } catch (error) {
+            console.error('🔥 ERRO DETALHADO:', error.message, error.stack);
             res.status(500).json({ error: error.message });
         }
     }
@@ -18,24 +19,72 @@ class EnderecoController {
             }
             res.json(endereco);
         } catch (error) {
+            console.error('🔥 ERRO DETALHADO:', error.message, error.stack);
             res.status(500).json({ error: error.message });
         }
     }
 
     async create(req, res) {
         try {
+            // Validar campos vazios
+            const { rua, numero, complemento, cep } = req.body;
+
+            if (!rua || rua.trim() === "") {
+                return res.status(400).json({ error: 'Rua não pode estar vazia' });
+            }
+            if (!numero || numero.trim() === "") {
+                return res.status(400).json({ error: 'Número não pode estar vazio' });
+            }
+            if (!cep || cep.trim() === "") {
+                return res.status(400).json({ error: 'CEP não pode estar vazio' });
+            }
+
             const endereco = await EnderecoService.create(req);
             res.status(201).json(endereco);
         } catch (error) {
+            console.error('🔥 ERRO DETALHADO:', error.message, error.stack);
+
+            if (error.message.includes('CEP inválido')) {
+                return res.status(400).json({ error: error.message });
+            }
+            if (error.message.includes('Bairro não encontrado')) {
+                return res.status(400).json({ error: error.message });
+            }
+
             res.status(500).json({ error: error.message });
         }
     }
 
     async update(req, res) {
         try {
+            // Validar campos vazios
+            const { rua, numero, complemento, cep } = req.body;
+
+            if (rua && rua.trim() === "") {
+                return res.status(400).json({ error: 'Rua não pode estar vazia' });
+            }
+            if (numero && numero.trim() === "") {
+                return res.status(400).json({ error: 'Número não pode estar vazio' });
+            }
+            if (cep && cep.trim() === "") {
+                return res.status(400).json({ error: 'CEP não pode estar vazio' });
+            }
+
             const endereco = await EnderecoService.update(req);
             res.json(endereco);
         } catch (error) {
+            console.error('🔥 ERRO DETALHADO:', error.message, error.stack);
+
+            if (error.message.includes('Endereço não encontrado')) {
+                return res.status(404).json({ error: error.message });
+            }
+            if (error.message.includes('CEP inválido')) {
+                return res.status(400).json({ error: error.message });
+            }
+            if (error.message.includes('Bairro não encontrado')) {
+                return res.status(400).json({ error: error.message });
+            }
+
             res.status(500).json({ error: error.message });
         }
     }
@@ -45,6 +94,15 @@ class EnderecoController {
             const endereco = await EnderecoService.delete(req);
             res.json({ message: 'Endereço removido com sucesso', endereco });
         } catch (error) {
+            console.error('🔥 ERRO DETALHADO:', error.message, error.stack);
+
+            if (error.message.includes('Endereço não encontrado')) {
+                return res.status(404).json({ error: error.message });
+            }
+            if (error.message.includes('Endereço em uso')) {
+                return res.status(400).json({ error: error.message });
+            }
+
             res.status(500).json({ error: error.message });
         }
     }

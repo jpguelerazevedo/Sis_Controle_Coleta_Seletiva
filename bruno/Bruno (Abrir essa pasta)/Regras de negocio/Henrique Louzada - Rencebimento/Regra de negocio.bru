@@ -12,13 +12,16 @@ post {
 
 body:json {
   
+  //A empresa só poderá receber no máximo 100 kg do mesmo cliente no mês.
   
+  
+  //executar duas vezes
   {
-      "idMaterial": 1,              // ID do material recebido
-      "cpfCliente": "222.222.222-22",  // CPF do cliente (novo campo obrigatório)
-      "cpfColaborador": "444.444.444-44", // CPF do colaborador
-      "peso": 100,                 // Peso em kg (deve ser > 0)
-      "volume": 55                // Volume em m³ (deve ser > 0)
+      "idMaterial": 1,            
+      "cpfColaborador": "444.444.444-44", 
+      "cpfCliente": "111.111.111-11",
+      "peso": 51,                 
+      "volume": 55                
   }
   
 }

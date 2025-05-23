@@ -1,7 +1,7 @@
 meta {
-  name: Regra de negocio
+  name: POST
   type: http
-  seq: 2
+  seq: 5
 }
 
 post {
@@ -12,19 +12,13 @@ post {
 
 body:json {
   
-  
-  
-  //O colaborador não poderá enviar o pedido de coleta de material de um mesmo cliente mais de uma vez ao dia.
-  
-  // Para fins de teste, foi inserido automaticamente um pedido vinculado a este cliente.
-  
     
   {
       "tipo": "Papel",    
       "peso": 25.5,              
       "volume": 10.2,              
       "idMaterial": 1,              
-      "cpfCliente": "111.111.111-11",  
+      "cpfCliente": "070.070.070-07",  
       "cpfColaborador": "444.444.444-44" 
   }
 }

@@ -1,0 +1,24 @@
+meta {
+  name: POST ERRO
+  type: http
+  seq: 6
+}
+
+post {
+  url: http://localhost:3333/pedidos-coleta
+  body: json
+  auth: inherit
+}
+
+body:json {
+  
+    
+  {
+      "tipo": "0",    
+      "peso": 10,              
+      "volume": 10.2,              
+      "idMaterial": 1,              
+      "cpfCliente": "080.080.080-08",  
+      "cpfColaborador": "444.444.444-44" 
+  }
+}

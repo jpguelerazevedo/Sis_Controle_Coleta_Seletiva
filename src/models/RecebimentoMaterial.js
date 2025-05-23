@@ -4,8 +4,9 @@ class RecebimentoMaterial extends Model {
     static init(sequelize) {
         return super.init({
             idRecebimento: {
-                type: DataTypes.STRING,
-                primaryKey: true
+                type: DataTypes.INTEGER,
+                primaryKey: true,
+                autoIncrement: true
             },
             peso: {
                 type: DataTypes.FLOAT,

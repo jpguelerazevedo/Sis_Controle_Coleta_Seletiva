@@ -11,9 +11,12 @@ post {
 }
 
 body:json {
+  
+  //Só poderá ser feito o envio de materiais para terceirizadas cadastradas.
+  
   {
-      "idMaterial": 1,          // ID do material a ser enviado (deve existir)
-      "cnpj": "11.111.111/0001-55", // CNPJ da terceirizada (deve existir)
-      "pesoEnviado": 50.5      // Peso em kg (deve ser > 0 e <= estoque disponível)
+      "idMaterial": 2,          
+      "cnpj": "11.111.111/0001-55", 
+      "pesoEnviado": 50.5   
   }
 }
