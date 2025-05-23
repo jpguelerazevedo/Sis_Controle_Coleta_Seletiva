@@ -5,6 +5,28 @@ const pedidoColetaService = new PedidoColetaService();
 class PedidoColetaController {
     async create(req, res) {
         try {
+            const { tipo, peso, volume, idMaterial, cpfCliente, cpfColaborador } = req.body;
+
+            // Validação dos campos obrigatórios
+            if (!tipo || tipo.trim() === "") {
+                return res.status(400).json({ error: 'Tipo do pedido não pode estar vazio' });
+            }
+            if (!peso || peso <= 0) {
+                return res.status(400).json({ error: 'Peso deve ser maior que zero' });
+            }
+            if (!volume || volume <= 0) {
+                return res.status(400).json({ error: 'Volume deve ser maior que zero' });
+            }
+            if (!idMaterial) {
+                return res.status(400).json({ error: 'Material deve ser especificado' });
+            }
+            if (!cpfCliente || cpfCliente.trim() === "") {
+                return res.status(400).json({ error: 'CPF do cliente não pode estar vazio' });
+            }
+            if (!cpfColaborador || cpfColaborador.trim() === "") {
+                return res.status(400).json({ error: 'CPF do colaborador não pode estar vazio' });
+            }
+
             const pedidoColeta = await pedidoColetaService.createPedidoColeta(req.body);
             res.status(201).json(pedidoColeta);
         } catch (error) {
@@ -13,8 +35,10 @@ class PedidoColetaController {
             if (error.message.includes('Cliente não cadastrado')) {
                 return res.status(400).json({ error: error.message });
             }
-
             if (error.message.includes('Colaborador não cadastrado')) {
+                return res.status(400).json({ error: error.message });
+            }
+            if (error.message.includes('Material não encontrado')) {
                 return res.status(400).json({ error: error.message });
             }
 

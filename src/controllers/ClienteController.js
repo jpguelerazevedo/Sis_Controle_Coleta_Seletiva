@@ -29,16 +29,22 @@ class ClienteController {
     async create(req, res) {
         try {
             // Validar campos vazios
-            const { cpf, telefone, email } = req.body;
+            const { cpf, turno_preferido_de_coleta, status_cliente, frequencia_de_pedidos, id_endereco } = req.body;
 
             if (!cpf || cpf.trim() === "") {
                 return res.status(400).json({ error: 'CPF não pode estar vazio' });
             }
-            if (!telefone || telefone.trim() === "") {
-                return res.status(400).json({ error: 'Telefone não pode estar vazio' });
+            if (!turno_preferido_de_coleta || turno_preferido_de_coleta.trim() === "") {
+                return res.status(400).json({ error: 'Turno preferido de coleta não pode estar vazio' });
             }
-            if (!email || email.trim() === "") {
-                return res.status(400).json({ error: 'Email não pode estar vazio' });
+            if (!status_cliente || status_cliente.trim() === "") {
+                return res.status(400).json({ error: 'Status do cliente não pode estar vazio' });
+            }
+            if (!frequencia_de_pedidos || frequencia_de_pedidos.trim() === "") {
+                return res.status(400).json({ error: 'Frequência de pedidos não pode estar vazia' });
+            }
+            if (!id_endereco) {
+                return res.status(400).json({ error: 'ID do endereço não pode estar vazio' });
             }
 
             const cliente = await clienteService.create(req);
@@ -49,13 +55,7 @@ class ClienteController {
             if (error.message.includes('CPF já cadastrado')) {
                 return res.status(400).json({ error: error.message });
             }
-            if (error.message.includes('Email já cadastrado')) {
-                return res.status(400).json({ error: error.message });
-            }
             if (error.message.includes('CPF inválido')) {
-                return res.status(400).json({ error: error.message });
-            }
-            if (error.message.includes('Email inválido')) {
                 return res.status(400).json({ error: error.message });
             }
 
@@ -66,15 +66,19 @@ class ClienteController {
     async update(req, res) {
         try {
             // Validar campos vazios
-            const { nome, telefone, email } = req.body;
-            if (nome && nome.trim() === "") {
-                return res.status(400).json({ error: 'Nome não pode estar vazio' });
+            const { turno_preferido_de_coleta, status_cliente, frequencia_de_pedidos, id_endereco } = req.body;
+
+            if (turno_preferido_de_coleta !== undefined && turno_preferido_de_coleta.trim() === "") {
+                return res.status(400).json({ error: 'Turno preferido de coleta não pode estar vazio' });
             }
-            if (telefone && telefone.trim() === "") {
-                return res.status(400).json({ error: 'Telefone não pode estar vazio' });
+            if (status_cliente !== undefined && status_cliente.trim() === "") {
+                return res.status(400).json({ error: 'Status do cliente não pode estar vazio' });
             }
-            if (email && email.trim() === "") {
-                return res.status(400).json({ error: 'Email não pode estar vazio' });
+            if (frequencia_de_pedidos !== undefined && frequencia_de_pedidos.trim() === "") {
+                return res.status(400).json({ error: 'Frequência de pedidos não pode estar vazia' });
+            }
+            if (id_endereco !== undefined && !id_endereco) {
+                return res.status(400).json({ error: 'ID do endereço não pode estar vazio' });
             }
 
             const cliente = await clienteService.update(req);
@@ -84,12 +88,6 @@ class ClienteController {
 
             if (error.message.includes('Cliente não encontrado')) {
                 return res.status(404).json({ error: error.message });
-            }
-            if (error.message.includes('Email já cadastrado')) {
-                return res.status(400).json({ error: error.message });
-            }
-            if (error.message.includes('Email inválido')) {
-                return res.status(400).json({ error: error.message });
             }
 
             return res.status(500).json({ error: error.message });

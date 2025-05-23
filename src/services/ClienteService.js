@@ -4,29 +4,21 @@ import sequelize from '../config/database-connection.js';
 
 class ClienteService {
     async findAll() {
-        const objs = await Cliente.findAll({
-            include: [
-                { association: 'pessoa' },
-                { association: 'endereco' }
-            ]
+        return await Cliente.findAll({
+            include: ['pessoa', 'endereco']
         });
-        return objs;
     }
 
-    async findByPk(req) {
-        const { cpf } = req.params;
-        const obj = await Cliente.findByPk(cpf, {
-            include: [
-                { association: 'pessoa' },
-                { association: 'endereco' }
-            ]
+    async findByPk(cpf) {
+        return await Cliente.findByPk(cpf, {
+            include: ['pessoa', 'endereco']
         });
-        return obj;
     }
 
     async create(req) {
         const { cpf, turno_preferido_de_coleta, status_cliente, frequencia_de_pedidos, id_endereco } = req.body;
-        if (!id_endereco) throw new 'O Endereço do Cliente deve ser preenchido!';
+
+        if (!id_endereco) throw new Error('O Endereço do Cliente deve ser preenchido!');
 
         const t = await sequelize.transaction();
         try {
@@ -36,18 +28,30 @@ class ClienteService {
                 status_cliente,
                 frequencia_de_pedidos,
                 id_endereco
-
             }, { transaction: t });
 
             await t.commit();
-            return await Cliente.findByPk(obj.cpf, {
-                include: [
-                    { association: 'pessoa' },
-                    { association: 'endereco' }
-                ]
-            });
+            return await this.findByPk(obj.cpf);
         } catch (error) {
             await t.rollback();
+            console.error('Erro detalhado:', error);
+
+            if (error.name === 'SequelizeValidationError') {
+                const validationErrors = error.errors.map(e => e.message).join(', ');
+                throw new Error(`Erro de validação: ${validationErrors}`);
+            }
+            if (error.name === 'SequelizeUniqueConstraintError') {
+                throw new Error('CPF já cadastrado');
+            }
+            if (error.name === 'SequelizeForeignKeyConstraintError') {
+                if (error.message.includes('pessoas')) {
+                    throw new Error('CPF não encontrado na tabela de pessoas');
+                }
+                if (error.message.includes('enderecos')) {
+                    throw new Error('Endereço não encontrado');
+                }
+            }
+
             throw new Error("Erro ao criar cliente: " + error.message);
         }
     }
@@ -56,13 +60,7 @@ class ClienteService {
         const { cpf } = req.params;
         const { turno_preferido_de_coleta, status_cliente, frequencia_de_pedidos, id_endereco } = req.body;
 
-        const obj = await Cliente.findByPk(cpf, {
-            include: [
-                { association: 'pessoa' },
-                { association: 'endereco' }
-            ]
-        });
-
+        const obj = await this.findByPk(cpf);
         if (!obj) throw new Error('Cliente não encontrado!');
 
         const t = await sequelize.transaction();
@@ -76,22 +74,16 @@ class ClienteService {
 
             await obj.save({ transaction: t });
             await t.commit();
-            return await Cliente.findByPk(obj.cpf, {
-                include: [
-                    { association: 'pessoa' },
-                    { association: 'endereco' }
-                ]
-            });
+            return await this.findByPk(obj.cpf);
         } catch (error) {
             await t.rollback();
             throw new Error("Erro ao atualizar cliente: " + error.message);
         }
     }
 
-    async delete(req) {
-        const { cpf } = req.params;
-        const obj = await Cliente.findByPk(cpf);
-        if (!obj) throw new 'Cliente não encontrado!';
+    async delete(cpf) {
+        const obj = await this.findByPk(cpf);
+        if (!obj) throw new Error('Cliente não encontrado!');
 
         try {
             await obj.destroy();
@@ -102,7 +94,13 @@ class ClienteService {
     }
 
     async findDevedores() {
-        const objs = await sequelize.query("SELECT clientes.*  FROM emprestimos INNER JOIN clientes ON emprestimos.cliente_id = clientes.id INNER JOIN multas ON emprestimos.id = multas.emprestimo_id WHERE multas.pago = false", { type: QueryTypes.SELECT });
+        const objs = await sequelize.query(`
+            SELECT DISTINCT clientes.* 
+            FROM emprestimos 
+            INNER JOIN clientes ON emprestimos.cliente_id = clientes.cpf 
+            INNER JOIN multas ON emprestimos.id = multas.emprestimo_id 
+            WHERE multas.pago = false
+        `, { type: QueryTypes.SELECT });
         return objs;
     }
 }

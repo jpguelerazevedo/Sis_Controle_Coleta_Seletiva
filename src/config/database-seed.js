@@ -402,7 +402,15 @@ const seedDatabase = async() => {
                 email: 'larissaferreira@email.com',
                 telefone: '(08) 08080-0808',
                 sexo: 'F'
-            })
+            }),
+            models.Pessoa.create({
+                cpf: '122.620.297-18',
+                nome: 'Ana Oliveira',
+                email: 'anaolivsira@email.com',
+                telefone: '(99) 99999-9999',
+                sexo: 'F'
+
+            }),
         ]);
 
         // Criar cargos
