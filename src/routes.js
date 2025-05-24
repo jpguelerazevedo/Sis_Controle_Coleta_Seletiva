@@ -12,6 +12,7 @@ import { EnderecoController } from './controllers/EnderecoController.js';
 import { PedidoColetaController } from './controllers/PedidoColetaController.js';
 import { EnvioMaterialController } from './controllers/EnvioMaterialController.js';
 import { RecebimentoMaterialController } from './controllers/RecebimentoMaterialController.js';
+import ReportsController from './controllers/ReportsController.js';
 
 const routes = Router();
 
@@ -88,5 +89,13 @@ routes.get('/terceirizadas/:cnpj', (req, res) => terceirizadaController.findByPk
 routes.post('/terceirizadas', (req, res) => terceirizadaController.create(req, res));
 routes.put('/terceirizadas/:cnpj', (req, res) => terceirizadaController.update(req, res));
 routes.delete('/terceirizadas/:cnpj', (req, res) => terceirizadaController.delete(req, res));
+
+// Rotas de Relatórios
+routes.get('/relatorios/materiais-coletados', (req, res) => ReportsController.getCollectedMaterials(req, res));
+routes.get('/relatorios/pedidos-por-bairro', (req, res) => ReportsController.getCollectionOrdersByNeighborhood(req, res));
+routes.get('/relatorios/pedidos-coleta', (req, res) => ReportsController.getAllCollectionOrders(req, res));
+routes.get('/relatorios/materiais-disponiveis/:depositoId', (req, res) => ReportsController.getAvailableMaterials(req, res));
+routes.get('/relatorios/materiais-enviados', (req, res) => ReportsController.getSentMaterials(req, res));
+routes.get('/relatorios/clientes-cadastrados', (req, res) => ReportsController.getRegisteredClients(req, res));
 
 export default routes;

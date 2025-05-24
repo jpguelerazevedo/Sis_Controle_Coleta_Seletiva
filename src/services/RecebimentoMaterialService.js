@@ -115,6 +115,12 @@ class RecebimentoMaterialService {
         try {
             console.log('🔄 Iniciando transação...');
 
+            // Lock the material row to prevent concurrent updates
+            const materialLocked = await Material.findByPk(idMaterial, {
+                lock: t.LOCK.UPDATE,
+                transaction: t
+            });
+
             const recebimentoMaterial = await RecebimentoMaterial.create({
                 peso,
                 volume,
@@ -126,15 +132,25 @@ class RecebimentoMaterialService {
             console.log('✅ Recebimento criado:', recebimentoMaterial.idRecebimento);
 
             // Update material's weight and volume
+            const newPeso = materialLocked.peso + peso;
+            const newVolume = materialLocked.volume + volume;
+
             await Material.update({
-                peso: material.peso + peso,
-                volume: material.volume + volume
+                peso: newPeso,
+                volume: newVolume
             }, {
                 where: { idMaterial },
                 transaction: t
             });
 
-            console.log('✅ Material atualizado');
+            console.log('✅ Material atualizado:', {
+                id: idMaterial,
+                nome: materialLocked.nome,
+                pesoAntigo: materialLocked.peso,
+                pesoNovo: newPeso,
+                volumeAntigo: materialLocked.volume,
+                volumeNovo: newVolume
+            });
 
             await t.commit();
             console.log('✅ Transação commitada com sucesso');

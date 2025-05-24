@@ -55,18 +55,35 @@ class EnvioMaterialService {
         // Create envio and update material in a transaction
         const t = await Material.sequelize.transaction();
         try {
+            // Lock the material row to prevent concurrent updates
+            const materialLocked = await Material.findByPk(idMaterial, {
+                lock: t.LOCK.UPDATE,
+                transaction: t
+            });
+
             const envioMaterial = await EnvioMaterial.create({
                 idMaterial,
                 cnpj,
                 pesoEnviado
             }, { transaction: t });
 
+            // Calculate new weight
+            const newPeso = materialLocked.peso - pesoEnviado;
+
             // Update material's weight
             await Material.update({
-                peso: material.peso - pesoEnviado
+                peso: newPeso
             }, {
                 where: { idMaterial },
                 transaction: t
+            });
+
+            console.log('✅ Material atualizado:', {
+                id: idMaterial,
+                nome: materialLocked.nome,
+                pesoAntigo: materialLocked.peso,
+                pesoNovo: newPeso,
+                pesoEnviado: pesoEnviado
             });
 
             await t.commit();
@@ -102,14 +119,48 @@ class EnvioMaterialService {
     }
 
     async delete(idEnvio) {
+        const t = await Material.sequelize.transaction();
         try {
-            const envio = await EnvioMaterial.findByPk(idEnvio);
+            const envio = await EnvioMaterial.findByPk(idEnvio, {
+                include: [{ association: 'material' }]
+            });
+
             if (!envio) {
                 throw new Error('Envio de material não encontrado.');
             }
-            await envio.destroy();
+
+            // Lock the material row to prevent concurrent updates
+            const materialLocked = await Material.findByPk(envio.idMaterial, {
+                lock: t.LOCK.UPDATE,
+                transaction: t
+            });
+
+            // Calculate new weight
+            const newPeso = materialLocked.peso + envio.pesoEnviado;
+
+            // Update material's weight
+            await Material.update({
+                peso: newPeso
+            }, {
+                where: { idMaterial: envio.idMaterial },
+                transaction: t
+            });
+
+            console.log('✅ Material atualizado:', {
+                id: envio.idMaterial,
+                nome: materialLocked.nome,
+                pesoAntigo: materialLocked.peso,
+                pesoNovo: newPeso,
+                pesoDevolvido: envio.pesoEnviado
+            });
+
+            // Delete the envio
+            await envio.destroy({ transaction: t });
+
+            await t.commit();
             return { message: 'Envio de material deletado com sucesso.' };
         } catch (error) {
+            await t.rollback();
             throw new Error('Erro ao deletar envio de material: ' + error.message);
         }
     }

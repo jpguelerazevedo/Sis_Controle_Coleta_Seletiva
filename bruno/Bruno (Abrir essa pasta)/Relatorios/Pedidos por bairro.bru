@@ -1,0 +1,19 @@
+meta {
+  name: Pedidos por bairro
+  type: http
+  seq: 2
+}
+
+get {
+  url: http://localhost:3333/relatorios/pedidos-por-bairro
+  body: json
+  auth: inherit
+}
+
+body:json {
+  //Se não houver datas, usa o mês atual como padrão
+  //A data inicial é o primeiro dia do mês
+  //A data final é o último dia do mês com hora 23:59:59.999
+  
+  {}
+}
