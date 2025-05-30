@@ -1,4 +1,4 @@
-import Reports from '../queries/reports.js';
+import Reports from '../reportService/reports.js';
 
 class ReportsController {
     // 1. Listar materiais coletados por data
