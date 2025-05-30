@@ -5,7 +5,15 @@ meta {
 }
 
 get {
-  url: http://localhost:3333/colaboradores/777.777.777-77
+  url: http://localhost:3333/colaboradores/:id
   body: json
   auth: inherit
+}
+
+params:path {
+  id: 
+}
+
+headers {
+  id: 222.222.222-22
 }

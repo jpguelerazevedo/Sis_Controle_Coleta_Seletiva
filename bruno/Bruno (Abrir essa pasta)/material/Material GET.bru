@@ -5,7 +5,15 @@ meta {
 }
 
 get {
-  url: http://localhost:3333/materiais/4
+  url: http://localhost:3333/materiais/:id
   body: json
   auth: inherit
+}
+
+params:path {
+  id: 
+}
+
+headers {
+  id: 1
 }

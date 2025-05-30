@@ -6,43 +6,36 @@ class Endereco extends Model {
       id_endereco: {
         type: DataTypes.INTEGER,
         primaryKey: true,
-        autoIncrement: true,
-        field: 'id_endereco'
+        autoIncrement: true
       },
       numero: {
         type: DataTypes.INTEGER,
-        allowNull: false,
-        field: 'numero'
+        allowNull: false
       },
       rua: {
         type: DataTypes.STRING,
-        allowNull: false,
-        field: 'rua'
+        allowNull: false
       },
       referencia: {
-        type: DataTypes.STRING,
-        field: 'referencia'
+        type: DataTypes.STRING
       },
       cep: {
         type: DataTypes.STRING,
-        allowNull: false,
-        field: 'cep'
+        allowNull: false
       },
       id_bairro: {
         type: DataTypes.INTEGER,
         allowNull: false,
-        field: 'id_bairro',
         references: {
-          model: 'bairros',
+          model: 'bairros', // nome exato da tabela
           key: 'id_bairro'
         }
       }
     }, {
       sequelize,
-      modelName: 'endereco',
+      modelName: 'Endereco',
       tableName: 'enderecos',
-      underscored: true,
-      
+      underscored: true
     });
   }
 

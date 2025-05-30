@@ -1,15 +1,11 @@
 import { sequelize, models } from '../models/index.js';
 
-
-const syncDatabase = async() => {
+const syncDatabase = async () => {
     try {
-        
-        await sequelize.query('PRAGMA foreign_keys = OFF;');
-
-        
-        await sequelize.sync({ force: true });
-
-        await sequelize.query('PRAGMA foreign_keys = ON;');
+        // Sincroniza os modelos com o banco
+        await sequelize.sync({ force: true }); 
+        // ⚠️ Atenção: force: true apaga e recria as tabelas. 
+        // Use { alter: true } se quiser atualizar sem apagar dados.
 
         console.log('Database synchronized successfully');
     } catch (error) {

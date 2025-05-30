@@ -12,7 +12,7 @@ app.use(cors());
 app.use(express.json());
 app.use(routes);
 
-sequelize.sync({ force: true, alter: true }).then(async() => {
+sequelize.sync({ force:true, alter: true }).then(async() => {
     console.log('Tabelas sincronizadas com sucesso!');
 
     await seedDatabase();
