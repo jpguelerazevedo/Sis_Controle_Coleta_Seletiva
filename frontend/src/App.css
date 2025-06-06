@@ -1,42 +1,277 @@
+/* Reset default margins and padding */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Ensure the base elements cover the full viewport */
+html,
+body,
 #root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+  height: 100vh;
+  width: 100vw;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden; /* Prevent horizontal scrollbar at the root */
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+/* Define layout variables */
+:root {
+  --sidebar-width: 250px;
+  --navbar-height: 56px; /* Approximate Bootstrap default navbar height */
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+/* Sidebar styles - fixed position */
+.sidebar {
+  width: var(--sidebar-width);
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 100;
+  overflow-y: auto; /* Allow vertical scrolling in sidebar if needed */
+  background-color: #343a40; /* Bootstrap dark background */
+  color: white;
+  transition: left 0.3s ease; /* Smooth transition for showing/hiding */
+  padding-top: var(--navbar-height); /* Add padding at the top for the fixed navbar */
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
+/* Class to hide sidebar off-screen on small devices */
+.sidebar.collapsed {
+  left: calc(-1 * var(--sidebar-width));
 }
 
+/* Navbar styles - fixed position */
+.navbar {
+  position: fixed;
+  top: 0;
+  left: var(--sidebar-width); /* Aligns with the end of sidebar */
+  right: 0;
+  height: var(--navbar-height);
+  z-index: 1000;
+  box-shadow: 0 2px 4px rgba(0,0,0,.1);
+  background-color: #fff; /* White background for navbar */
+  transition: left 0.3s ease; /* Smooth transition */
+}
+
+/* Adjust navbar left position when sidebar is collapsed */
+.navbar.sidebar-collapsed {
+  left: 0;
+}
+
+/* Main content area - Pushed by sidebar and navbar, handles vertical scrolling */
+.content-area {
+  margin-left: var(--sidebar-width); /* Push content right of sidebar */
+  margin-top: var(--navbar-height); /* Push content below navbar */
+  padding: 1rem; /* Add some padding inside the content area */
+  overflow-y: auto; /* Enable vertical scrolling */
+  overflow-x: hidden; /* Ensure no horizontal overflow within content area */
+  height: calc(100vh - var(--navbar-height)); /* Occupy remaining vertical space */
+  box-sizing: border-box; /* Include padding in element's total width and height */
+  transition: margin-left 0.3s ease; /* Smooth transition */
+}
+
+/* Adjust content area margin when sidebar is collapsed */
+.content-area.sidebar-collapsed {
+  margin-left: 0;
+}
+
+/* Compensate for Bootstrap's row margins within content area to prevent overflow */
+.content-area .row {
+  margin-left: 0;
+  margin-right: 0;
+}
+
+/* Style for active sidebar link to take full width */
+.sidebar .nav-link.active {
+  width: 100%;
+}
+
+/* Hover effect for sidebar links */
+.sidebar .nav-link:not(.active):hover {
+  background-color: rgba(255, 255, 255, 0.1); /* A slightly lighter shade for hover on non-active items */
+}
+
+/* General styles for components using Bootstrap */
+
+/* Table styles */
+.table-responsive {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,.05);
+}
+
+/* Card styles */
 .card {
-  padding: 2em;
+  border: none;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,.05);
 }
 
-.read-the-docs {
-  color: #888;
+/* Button styles */
+.btn {
+  border-radius: 4px;
+}
+
+/* Form styles */
+.form-control {
+  border-radius: 4px;
+}
+
+/* Modal styles */
+.modal-content {
+  border-radius: 8px;
+  border: none;
+}
+
+/* Alert styles */
+.alert {
+  border-radius: 4px;
+  border: none;
+}
+
+/* Badge styles */
+.badge {
+  padding: 6px 10px;
+  border-radius: 4px;
+}
+
+/* Styles for the logo image */
+.logo {
+  height: 40px; /* Set a fixed height */
+  width: auto; /* Maintain aspect ratio */
+  /* Removed padding */
+  /* Removed will-change and transition for simplicity */
+}
+
+/* Removed animation and hover effects for simplicity */
+/* .logo:hover { filter: drop-shadow(0 0 2em #646cffaa); } */
+/* .logo.react:hover { filter: drop-shadow(0 0 2em #61dafbaa); } */
+/* @keyframes logo-spin { ... } */
+/* @media (prefers-reduced-motion: no-preference) { ... } */
+
+/* Keep other custom styles */
+.hover-bg-light:hover {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Card hover effects */
+.card {
+  transition: transform 0.2s ease-in-out;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* List group item hover effect */
+.list-group-item {
+  transition: background-color 0.2s ease-in-out;
+}
+
+.list-group-item:hover {
+  background-color: #f8f9fa;
+}
+
+/* Custom button styles */
+.btn-primary {
+  background-color: #0d6efd;
+  border-color: #0d6efd;
+}
+
+.btn-primary:hover {
+  background-color: #0b5ed7;
+  border-color: #0a58ca;
+}
+
+/* Card title styles */
+.card-title {
+  color: #2c3e50;
+  font-weight: 600;
+}
+
+/* Stats card styles */
+.stats-card {
+  border: none;
+  border-radius: 10px;
+}
+
+.stats-card .card-body {
+  padding: 1.5rem;
+}
+
+/* Icon container styles */
+.icon-container {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+}
+
+/* Remove default #root styles that might interfere */
+#root {
+  margin: 0;
+  padding: 0;
+  text-align: left; /* Reset text-align */
+}
+
+/* Responsive adjustments - Sidebar hides by default on small screens */
+@media (max-width: 768px) {
+  .sidebar {
+    left: calc(-1 * var(--sidebar-width)); /* Hide sidebar off-screen by default */
+  }
+  
+  /* When sidebar is NOT collapsed, bring it into view */
+  .sidebar:not(.collapsed) {
+    left: 0;
+  }
+
+  .navbar,
+  .content-area {
+    margin-left: 0; /* Remove left margin */
+    left: 0; /* Navbar starts from the left edge */
+    width: 100vw; /* Content takes full viewport width */
+  }
+
+  .content-area {
+    padding-top: var(--navbar-height); /* Ensure content is below the navbar */
+    height: calc(100vh - var(--navbar-height)); /* Occupy remaining vertical space */
+  }
+  
+  /* Adjust positions when sidebar is NOT collapsed on small screens */
+  /* This ensures content is pushed to the right when sidebar is open */
+  .sidebar:not(.collapsed) ~ .main-content-wrapper .navbar,
+  .sidebar:not(.collapsed) ~ .main-content-wrapper .content-area {
+      margin-left: var(--sidebar-width); /* Push content right */
+  }
+
+  /* Ensure sidebar content is visible and correctly positioned when sidebar is open on small screens */
+  .sidebar:not(.collapsed) .nav {
+    display: flex !important; /* Ensure flex display overrides any other rule */
+    flex-direction: column; /* Maintain column direction */
+    opacity: 1; /* Ensure content is not transparent */
+    /* Add padding or adjust spacing if needed to ensure content is not behind the navbar */
+     padding-top: 1rem; /* Example: add some padding below the logo/hr line */
+  }
 }
