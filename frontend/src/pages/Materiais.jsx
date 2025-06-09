@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Table, Button, Modal, Form, Alert, Badge } from 'react-bootstrap';
+import { Table, Button, Modal, Form, Alert } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus, faEdit, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { endpoints } from '../services/api';
+import { DataGrid } from '@mui/x-data-grid';
 
 function Materiais() {
   const [materiais, setMateriais] = useState([]);
@@ -10,11 +11,9 @@ function Materiais() {
   const [selectedMaterial, setSelectedMaterial] = useState(null);
   const [formData, setFormData] = useState({
     nome: '',
-    tipo: '',
-    descricao: '',
-    preco_kg: '',
-    estoque: '',
-    status: 'ativo'
+    peso: '',
+    volume: '',
+    nivelDeRisco: ''
   });
   const [alert, setAlert] = useState({ show: false, message: '', variant: '' });
 
@@ -35,7 +34,7 @@ function Materiais() {
     e.preventDefault();
     try {
       if (selectedMaterial) {
-        await endpoints.materiais.update(selectedMaterial.id, formData);
+        await endpoints.materiais.update(selectedMaterial.idMaterial, formData);
         showAlert('Material atualizado com sucesso!', 'success');
       } else {
         await endpoints.materiais.create(formData);
@@ -52,11 +51,9 @@ function Materiais() {
     setSelectedMaterial(material);
     setFormData({
       nome: material.nome,
-      tipo: material.tipo,
-      descricao: material.descricao,
-      preco_kg: material.preco_kg,
-      estoque: material.estoque,
-      status: material.status
+      peso: material.peso,
+      volume: material.volume,
+      nivelDeRisco: material.nivelDeRisco
     });
     setShowModal(true);
   };
@@ -78,11 +75,9 @@ function Materiais() {
     setSelectedMaterial(null);
     setFormData({
       nome: '',
-      tipo: '',
-      descricao: '',
-      preco_kg: '',
-      estoque: '',
-      status: 'ativo'
+      peso: '',
+      volume: '',
+      nivelDeRisco: ''
     });
   };
 
@@ -91,14 +86,22 @@ function Materiais() {
     setTimeout(() => setAlert({ show: false, message: '', variant: '' }), 3000);
   };
 
-  const getStatusBadge = (status) => {
-    const variants = {
-      ativo: 'success',
-      inativo: 'danger',
-      em_estoque: 'warning'
-    };
-    return <Badge bg={variants[status] || 'secondary'}>{status}</Badge>;
-  };
+  const columns = [
+    { field: 'nome', headerName: 'Nome', width: 250 },
+    { field: 'peso', headerName: 'Peso', width: 150 },
+    { field: 'volume', headerName: 'Volume', width: 150 },
+    {
+      field: 'nivelDeRisco',
+      headerName: 'Nível de Risco',
+      width: 200,
+      valueGetter: (params) => params.row.nivelDeRisco || params.row.nivel_de_risco
+    }
+  ];
+
+  const rows = materiais.map(m => ({
+    ...m,
+    nivelDeRisco: m.nivelDeRisco || m.nivel_de_risco
+  }));
 
   return (
     <div>
@@ -116,50 +119,20 @@ function Materiais() {
         </Alert>
       )}
 
-      <Table striped bordered hover responsive>
-        <thead>
-          <tr>
-            <th>Nome</th>
-            <th>Tipo</th>
-            <th>Descrição</th>
-            <th>Preço/Kg</th>
-            <th>Estoque</th>
-            <th>Status</th>
-            <th>Ações</th>
-          </tr>
-        </thead>
-        <tbody>
-          {materiais.map((material) => (
-            <tr key={material.id}>
-              <td>{material.nome}</td>
-              <td>{material.tipo}</td>
-              <td>{material.descricao}</td>
-              <td>R$ {material.preco_kg}</td>
-              <td>{material.estoque} kg</td>
-              <td>{getStatusBadge(material.status)}</td>
-              <td>
-                <Button
-                  variant="outline-primary"
-                  size="sm"
-                  className="me-2"
-                  onClick={() => handleEdit(material)}
-                >
-                  <FontAwesomeIcon icon={faEdit} />
-                </Button>
-                <Button
-                  variant="outline-danger"
-                  size="sm"
-                  onClick={() => handleDelete(material.id)}
-                >
-                  <FontAwesomeIcon icon={faTrash} />
-                </Button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </Table>
+      <div style={{ height: 500, width: '100%', marginBottom: 24 }}>
+        <DataGrid
+          rows={rows}
+          columns={columns}
+          getRowId={row => row.idMaterial || row.id_material}
+          pageSize={10}
+          rowsPerPageOptions={[10, 20, 50]}
+          disableSelectionOnClick
+          filterMode="client"
+          autoHeight={false}
+        />
+      </div>
 
-      <Modal show={showModal} onHide={handleCloseModal}>
+      <Modal show={showModal} onHide={handleCloseModal} centered size="lg">
         <Modal.Header closeButton>
           <Modal.Title>
             {selectedMaterial ? 'Editar Material' : 'Novo Material'}
@@ -167,78 +140,58 @@ function Materiais() {
         </Modal.Header>
         <Modal.Body>
           <Form onSubmit={handleSubmit}>
-            <Form.Group className="mb-3">
-              <Form.Label>Nome</Form.Label>
-              <Form.Control
-                type="text"
-                value={formData.nome}
-                onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
-                required
-              />
-            </Form.Group>
-
-            <Form.Group className="mb-3">
-              <Form.Label>Tipo</Form.Label>
-              <Form.Select
-                value={formData.tipo}
-                onChange={(e) => setFormData({ ...formData, tipo: e.target.value })}
-                required
-              >
-                <option value="">Selecione um tipo</option>
-                <option value="papel">Papel</option>
-                <option value="plastico">Plástico</option>
-                <option value="vidro">Vidro</option>
-                <option value="metal">Metal</option>
-                <option value="outros">Outros</option>
-              </Form.Select>
-            </Form.Group>
-
-            <Form.Group className="mb-3">
-              <Form.Label>Descrição</Form.Label>
-              <Form.Control
-                as="textarea"
-                rows={3}
-                value={formData.descricao}
-                onChange={(e) => setFormData({ ...formData, descricao: e.target.value })}
-                required
-              />
-            </Form.Group>
-
-            <Form.Group className="mb-3">
-              <Form.Label>Preço por Kg (R$)</Form.Label>
-              <Form.Control
-                type="number"
-                step="0.01"
-                value={formData.preco_kg}
-                onChange={(e) => setFormData({ ...formData, preco_kg: e.target.value })}
-                required
-              />
-            </Form.Group>
-
-            <Form.Group className="mb-3">
-              <Form.Label>Estoque (kg)</Form.Label>
-              <Form.Control
-                type="number"
-                step="0.1"
-                value={formData.estoque}
-                onChange={(e) => setFormData({ ...formData, estoque: e.target.value })}
-                required
-              />
-            </Form.Group>
-
-            <Form.Group className="mb-3">
-              <Form.Label>Status</Form.Label>
-              <Form.Select
-                value={formData.status}
-                onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                required
-              >
-                <option value="ativo">Ativo</option>
-                <option value="inativo">Inativo</option>
-                <option value="em_estoque">Em Estoque</option>
-              </Form.Select>
-            </Form.Group>
-
+            <div className="row">
+              <div className="col-md-8">
+                <Form.Group className="mb-3" style={{ minWidth: 300 }}>
+                  <Form.Label>Nome</Form.Label>
+                  <Form.Control
+                    type="text"
+                    value={formData.nome}
+                    onChange={e => setFormData({ ...formData, nome: e.target.value })}
+                    required
+                  />
+                </Form.Group>
+              </div>
+              <div className="col-md-4">
+                <Form.Group className="mb-3" style={{ minWidth: 180 }}>
+                  <Form.Label>Nível de Risco</Form.Label>
+                  <Form.Select
+                    value={formData.nivelDeRisco}
+                    onChange={e => setFormData({ ...formData, nivelDeRisco: e.target.value })}
+                    required
+                  >
+                    <option value="">Selecione o nível de risco</option>
+                    <option value="baixo">Baixo</option>
+                    <option value="medio">Médio</option>
+                    <option value="alto">Alto</option>
+                  </Form.Select>
+                </Form.Group>
+              </div>
+            </div>
+            <div className="row">
+              <div className="col-md-6">
+                <Form.Group className="mb-3" style={{ minWidth: 180 }}>
+                  <Form.Label>Peso</Form.Label>
+                  <Form.Control
+                    type="number"
+                    value={formData.peso}
+                    onChange={e => setFormData({ ...formData, peso: e.target.value })}
+                    required
+                  />
+                </Form.Group>
+              </div>
+              <div className="col-md-6">
+                <Form.Group className="mb-3" style={{ minWidth: 180 }}>
+                  <Form.Label>Volume</Form.Label>
+                  <Form.Control
+                    type="number"
+                    value={formData.volume}
+                    onChange={e => setFormData({ ...formData, volume: e.target.value })}
+                    required
+                  />
+                </Form.Group>
+              </div>
+            </div>
             <div className="d-flex justify-content-end gap-2">
               <Button variant="secondary" onClick={handleCloseModal}>
                 Cancelar
@@ -254,4 +207,4 @@ function Materiais() {
   );
 }
 
-export default Materiais; 
+export default Materiais;

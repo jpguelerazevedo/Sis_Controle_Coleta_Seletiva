@@ -3,6 +3,7 @@ import { Table, Alert, Button, Modal, Form } from 'react-bootstrap';
 import { endpoints } from '../services/api';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
+import { DataGrid } from '@mui/x-data-grid';
 
 function Bairros() {
     const [bairros, setBairros] = useState([]);
@@ -51,6 +52,13 @@ function Bairros() {
         }
     };
 
+    const columns = [
+        { field: 'nome', headerName: 'Nome', width: 250 },
+        { field: 'distancia_sede', headerName: 'Distância Sede', width: 200 },
+        { field: 'qnt_pessoas_cadastradas', headerName: 'Qtd. Pessoas Cadastradas', width: 200 },
+        { field: 'estado_de_acesso', headerName: 'Estado de Acesso', width: 200 },
+    ];
+
     return (
         <div>
             <div className="d-flex justify-content-between align-items-center mb-4">
@@ -65,28 +73,18 @@ function Bairros() {
                     {alert.message}
                 </Alert>
             )}
-            <Table striped bordered hover responsive>
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Nome</th>
-                        <th>Distância Sede</th>
-                        <th>Qtd. Pessoas Cadastradas</th>
-                        <th>Estado de Acesso</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {bairros.map((bairro) => (
-                        <tr key={bairro.id_bairro}>
-                            <td>{bairro.id_bairro}</td>
-                            <td>{bairro.nome}</td>
-                            <td>{bairro.distancia_sede}</td>
-                            <td>{bairro.qnt_pessoas_cadastradas}</td>
-                            <td>{bairro.estado_de_acesso}</td>
-                        </tr>
-                    ))}
-                </tbody>
-            </Table>
+            <div style={{ height: 500, width: '100%', marginBottom: 24 }}>
+                <DataGrid
+                    rows={bairros}
+                    columns={columns}
+                    getRowId={row => row.id_bairro}
+                    pageSize={10}
+                    rowsPerPageOptions={[10, 20, 50]}
+                    disableSelectionOnClick
+                    filterMode="client"
+                    autoHeight={false}
+                />
+            </div>
 
             <Modal show={showModal} onHide={handleCloseModal}>
                 <Modal.Header closeButton>
@@ -123,12 +121,16 @@ function Bairros() {
                         </Form.Group>
                         <Form.Group className="mb-3">
                             <Form.Label>Estado de Acesso</Form.Label>
-                            <Form.Control
-                                type="text"
+                            <Form.Select
                                 value={formData.estado_de_acesso}
                                 onChange={e => setFormData({ ...formData, estado_de_acesso: e.target.value })}
                                 required
-                            />
+                            >
+                                <option value="">Selecione o estado de acesso</option>
+                                <option value="normal">Normal</option>
+                                <option value="obstruido">Obstruído</option>
+                                <option value="dificil acesso">Difícil acesso</option>
+                            </Form.Select>
                         </Form.Group>
                         <div className="d-flex justify-content-end gap-2">
                             <Button variant="secondary" onClick={handleCloseModal}>

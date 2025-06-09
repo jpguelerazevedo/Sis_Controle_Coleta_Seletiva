@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { Table, Alert, Button, Modal, Form } from 'react-bootstrap';
+import { Alert, Button, Modal, Form } from 'react-bootstrap';
 import { endpoints } from '../services/api';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
+import { DataGrid } from '@mui/x-data-grid';
 
 function RecebimentosMaterial() {
     const [recebimentos, setRecebimentos] = useState([]);
@@ -16,10 +17,14 @@ function RecebimentosMaterial() {
         cpfColaborador: ''
     });
     const [materiais, setMateriais] = useState([]);
+    const [clientes, setClientes] = useState([]);
+    const [colaboradores, setColaboradores] = useState([]);
 
     useEffect(() => {
         loadRecebimentos();
         loadMateriais();
+        loadClientes();
+        loadColaboradores();
     }, []);
 
     const loadRecebimentos = async () => {
@@ -37,6 +42,24 @@ function RecebimentosMaterial() {
             setMateriais(response.data);
         } catch (error) {
             setAlert({ show: true, message: 'Erro ao carregar materiais', variant: 'danger' });
+        }
+    };
+
+    const loadClientes = async () => {
+        try {
+            const response = await endpoints.clientes.list();
+            setClientes(response.data);
+        } catch (error) {
+            setAlert({ show: true, message: 'Erro ao carregar clientes', variant: 'danger' });
+        }
+    };
+
+    const loadColaboradores = async () => {
+        try {
+            const response = await endpoints.colaboradores.list();
+            setColaboradores(response.data);
+        } catch (error) {
+            setAlert({ show: true, message: 'Erro ao carregar colaboradores', variant: 'danger' });
         }
     };
 
@@ -64,6 +87,53 @@ function RecebimentosMaterial() {
         }
     };
 
+    const getClienteNomeByCpf = (cpf) => {
+        const cliente = clientes.find(c => c.cpf === cpf);
+        return cliente ? cliente.nome : cpf;
+    };
+
+    const getColaboradorNomeByCpf = (cpf) => {
+        const colaborador = colaboradores.find(c => c.cpf === cpf);
+        return colaborador ? colaborador.nome : cpf;
+    };
+
+    const getMaterialNomeById = (id) => {
+        const material = materiais.find(m => (m.id_material || m.id) === id);
+        return material ? material.nome : id;
+    };
+
+    const columns = [
+        { field: 'peso', headerName: 'Peso', width: 150 },
+        { field: 'volume', headerName: 'Volume', width: 150 },
+        {
+            field: 'idMaterial',
+            headerName: 'Material',
+            width: 250,
+            valueGetter: (params) => getMaterialNomeById(params.row.idMaterial || params.row.id_material)
+        },
+        {
+            field: 'cpfCliente',
+            headerName: 'Cliente',
+            width: 250,
+            valueGetter: (params) => getClienteNomeByCpf(params.row.cpfCliente || params.row.cpf_cliente)
+        },
+        {
+            field: 'cpfColaborador',
+            headerName: 'Colaborador',
+            width: 250,
+            valueGetter: (params) => getColaboradorNomeByCpf(params.row.cpfColaborador || params.row.cpf_colaborador)
+        }
+    ];
+
+    const rows = recebimentos.map(r => ({
+        idRecebimento: r.idRecebimento || r.id_recebimento,
+        peso: r.peso,
+        volume: r.volume,
+        idMaterial: r.idMaterial || r.id_material,
+        cpfCliente: r.cpfCliente || r.cpf_cliente,
+        cpfColaborador: r.cpfColaborador || r.cpf_colaborador
+    }));
+
     return (
         <div>
             <div className="d-flex justify-content-between align-items-center mb-4">
@@ -78,30 +148,18 @@ function RecebimentosMaterial() {
                     {alert.message}
                 </Alert>
             )}
-            <Table striped bordered hover responsive>
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Peso</th>
-                        <th>Volume</th>
-                        <th>Material</th>
-                        <th>Cliente</th>
-                        <th>Colaborador</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {recebimentos.map((rec) => (
-                        <tr key={rec.idRecebimento || rec.id_recebimento}>
-                            <td>{rec.idRecebimento || rec.id_recebimento}</td>
-                            <td>{rec.peso}</td>
-                            <td>{rec.volume}</td>
-                            <td>{rec.material?.nome || rec.idMaterial || rec.id_material}</td>
-                            <td>{rec.cliente?.nome || rec.cpfCliente || rec.cpf_cliente}</td>
-                            <td>{rec.colaborador?.nome || rec.cpfColaborador || rec.cpf_colaborador}</td>
-                        </tr>
-                    ))}
-                </tbody>
-            </Table>
+            <div style={{ height: 500, width: '100%', marginBottom: 24 }}>
+                <DataGrid
+                    rows={rows}
+                    columns={columns}
+                    getRowId={row => row.id}
+                    pageSize={10}
+                    rowsPerPageOptions={[10, 20, 50]}
+                    disableSelectionOnClick
+                    filterMode="client"
+                    autoHeight={false}
+                />
+            </div>
             <Modal show={showModal} onHide={handleCloseModal}>
                 <Modal.Header closeButton>
                     <Modal.Title>Novo Recebimento</Modal.Title>

@@ -3,12 +3,14 @@ import { Table, Alert, Button, Modal, Form } from 'react-bootstrap';
 import { endpoints } from '../services/api';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
+import { DataGrid } from '@mui/x-data-grid';
 
 function EnviosMaterial() {
     const [envios, setEnvios] = useState([]);
     const [alert, setAlert] = useState({ show: false, message: '', variant: '' });
     const [showModal, setShowModal] = useState(false);
     const [materiais, setMateriais] = useState([]);
+    const [terceirizadas, setTerceirizadas] = useState([]);
     const [formData, setFormData] = useState({
         idMaterial: '',
         pesoEnviado: '',
@@ -18,6 +20,7 @@ function EnviosMaterial() {
     useEffect(() => {
         loadEnvios();
         loadMateriais();
+        loadTerceirizadas();
     }, []);
 
     const loadEnvios = async () => {
@@ -35,6 +38,15 @@ function EnviosMaterial() {
             setMateriais(response.data);
         } catch (error) {
             setAlert({ show: true, message: 'Erro ao carregar materiais', variant: 'danger' });
+        }
+    };
+
+    const loadTerceirizadas = async () => {
+        try {
+            const response = await endpoints.terceirizadas.list();
+            setTerceirizadas(response.data);
+        } catch (error) {
+            setAlert({ show: true, message: 'Erro ao carregar terceirizadas', variant: 'danger' });
         }
     };
 
@@ -60,6 +72,29 @@ function EnviosMaterial() {
         }
     };
 
+    const getMaterialNomeById = (id) => {
+        const material = materiais.find(m => (m.id_material || m.id) === id);
+        return material ? material.nome : id;
+    };
+
+    const columns = [
+        {
+            field: 'idMaterial',
+            headerName: 'Material',
+            width: 250,
+            valueGetter: (params) => getMaterialNomeById(params.row.idMaterial || params.row.id_material)
+        },
+        { field: 'cnpj', headerName: 'CNPJ', width: 250 },
+        { field: 'pesoEnviado', headerName: 'Peso Enviado', width: 150, valueGetter: (params) => params.row.pesoEnviado || params.row.peso_enviado }
+    ];
+
+    const rows = envios.map(envio => ({
+        id: envio.idEnvio || envio.id_envio,
+        idMaterial: envio.idMaterial || envio.id_material,
+        cnpj: envio.cnpj,
+        pesoEnviado: envio.pesoEnviado || envio.peso_enviado
+    }));
+
     return (
         <div>
             <div className="d-flex justify-content-between align-items-center mb-4">
@@ -74,26 +109,18 @@ function EnviosMaterial() {
                     {alert.message}
                 </Alert>
             )}
-            <Table striped bordered hover responsive>
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Material</th>
-                        <th>Peso Enviado</th>
-                        <th>Terceirizada</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {envios.map((envio) => (
-                        <tr key={envio.idEnvio || envio.id_envio}>
-                            <td>{envio.idEnvio || envio.id_envio}</td>
-                            <td>{envio.material?.nome || envio.idMaterial || envio.id_material}</td>
-                            <td>{envio.pesoEnviado || envio.peso_enviado}</td>
-                            <td>{envio.terceirizada?.nome || envio.cnpj}</td>
-                        </tr>
-                    ))}
-                </tbody>
-            </Table>
+            <div style={{ height: 500, width: '100%', marginBottom: 24 }}>
+                <DataGrid
+                    rows={rows}
+                    columns={columns}
+                    getRowId={row => row.id}
+                    pageSize={10}
+                    rowsPerPageOptions={[10, 20, 50]}
+                    disableSelectionOnClick
+                    filterMode="client"
+                    autoHeight={false}
+                />
+            </div>
             <Modal show={showModal} onHide={handleCloseModal}>
                 <Modal.Header closeButton>
                     <Modal.Title>Novo Envio</Modal.Title>
@@ -126,12 +153,18 @@ function EnviosMaterial() {
                         </Form.Group>
                         <Form.Group className="mb-3">
                             <Form.Label>CNPJ Terceirizada</Form.Label>
-                            <Form.Control
-                                type="text"
+                            <Form.Select
                                 value={formData.cnpj}
                                 onChange={e => setFormData({ ...formData, cnpj: e.target.value })}
                                 required
-                            />
+                            >
+                                <option value="">Selecione a terceirizada</option>
+                                {terceirizadas.map((t) => (
+                                    <option key={t.cnpj} value={t.cnpj}>
+                                        {t.cnpj} - {t.nome}
+                                    </option>
+                                ))}
+                            </Form.Select>
                         </Form.Group>
                         <div className="d-flex justify-content-end gap-2">
                             <Button variant="secondary" onClick={handleCloseModal}>

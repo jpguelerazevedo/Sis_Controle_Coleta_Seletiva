@@ -3,6 +3,7 @@ import { Table, Button, Modal, Form, Alert, Badge } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus, faEdit, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { endpoints } from '../services/api';
+import { DataGrid } from '@mui/x-data-grid';
 
 function Terceirizadas() {
   const [terceirizadas, setTerceirizadas] = useState([]);
@@ -107,6 +108,13 @@ function Terceirizadas() {
     return cnpj.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, "$1.$2.$3/$4-$5");
   };
 
+  const columns = [
+    { field: 'nome', headerName: 'Nome', width: 250 },
+    { field: 'cnpj', headerName: 'CNPJ', width: 250 },
+    { field: 'email', headerName: 'Email', width: 250 },
+    { field: 'telefone', headerName: 'Telefone', width: 180 },
+  ];
+
   return (
     <div>
       <div className="d-flex justify-content-between align-items-center mb-4">
@@ -123,50 +131,20 @@ function Terceirizadas() {
         </Alert>
       )}
 
-      <Table striped bordered hover responsive>
-        <thead>
-          <tr>
-            <th>Nome</th>
-            <th>CNPJ</th>
-            <th>Email</th>
-            <th>Telefone</th>
-            <th>Tipo de Serviço</th>
-            <th>Status</th>
-            <th>Ações</th>
-          </tr>
-        </thead>
-        <tbody>
-          {terceirizadas.map((terceirizada) => (
-            <tr key={terceirizada.id}>
-              <td>{terceirizada.nome}</td>
-              <td>{formatCNPJ(terceirizada.cnpj)}</td>
-              <td>{terceirizada.email}</td>
-              <td>{terceirizada.telefone}</td>
-              <td>{terceirizada.tipo_servico}</td>
-              <td>{getStatusBadge(terceirizada.status)}</td>
-              <td>
-                <Button
-                  variant="outline-primary"
-                  size="sm"
-                  className="me-2"
-                  onClick={() => handleEdit(terceirizada)}
-                >
-                  <FontAwesomeIcon icon={faEdit} />
-                </Button>
-                <Button
-                  variant="outline-danger"
-                  size="sm"
-                  onClick={() => handleDelete(terceirizada.id)}
-                >
-                  <FontAwesomeIcon icon={faTrash} />
-                </Button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </Table>
+      <div style={{ height: 500, width: '100%', marginBottom: 24 }}>
+        <DataGrid
+          rows={terceirizadas}
+          columns={columns}
+          getRowId={row => row.id}
+          pageSize={10}
+          rowsPerPageOptions={[10, 20, 50]}
+          disableSelectionOnClick
+          filterMode="client"
+          autoHeight={false}
+        />
+      </div>
 
-      <Modal show={showModal} onHide={handleCloseModal}>
+      <Modal show={showModal} onHide={handleCloseModal} size="lg" centered>
         <Modal.Header closeButton>
           <Modal.Title>
             {selectedTerceirizada ? 'Editar Terceirizada' : 'Nova Terceirizada'}
@@ -174,86 +152,56 @@ function Terceirizadas() {
         </Modal.Header>
         <Modal.Body>
           <Form onSubmit={handleSubmit}>
-            <Form.Group className="mb-3">
-              <Form.Label>Nome</Form.Label>
-              <Form.Control
-                type="text"
-                value={formData.nome}
-                onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
-                required
-              />
-            </Form.Group>
-
-            <Form.Group className="mb-3">
-              <Form.Label>CNPJ</Form.Label>
-              <Form.Control
-                type="text"
-                value={formData.cnpj}
-                onChange={(e) => setFormData({ ...formData, cnpj: e.target.value })}
-                placeholder="00000000000000"
-                maxLength={14}
-                required
-              />
-            </Form.Group>
-
-            <Form.Group className="mb-3">
-              <Form.Label>Email</Form.Label>
-              <Form.Control
-                type="email"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                required
-              />
-            </Form.Group>
-
-            <Form.Group className="mb-3">
-              <Form.Label>Telefone</Form.Label>
-              <Form.Control
-                type="tel"
-                value={formData.telefone}
-                onChange={(e) => setFormData({ ...formData, telefone: e.target.value })}
-                required
-              />
-            </Form.Group>
-
-            <Form.Group className="mb-3">
-              <Form.Label>Endereço</Form.Label>
-              <Form.Control
-                type="text"
-                value={formData.endereco}
-                onChange={(e) => setFormData({ ...formData, endereco: e.target.value })}
-                required
-              />
-            </Form.Group>
-
-            <Form.Group className="mb-3">
-              <Form.Label>Tipo de Serviço</Form.Label>
-              <Form.Select
-                value={formData.tipo_servico}
-                onChange={(e) => setFormData({ ...formData, tipo_servico: e.target.value })}
-                required
-              >
-                <option value="">Selecione um tipo de serviço</option>
-                <option value="coleta">Coleta</option>
-                <option value="processamento">Processamento</option>
-                <option value="transporte">Transporte</option>
-                <option value="outros">Outros</option>
-              </Form.Select>
-            </Form.Group>
-
-            <Form.Group className="mb-3">
-              <Form.Label>Status</Form.Label>
-              <Form.Select
-                value={formData.status}
-                onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                required
-              >
-                <option value="ativo">Ativo</option>
-                <option value="inativo">Inativo</option>
-                <option value="pendente">Pendente</option>
-              </Form.Select>
-            </Form.Group>
-
+            <div className="row">
+              <div className="col-md-8">
+                <Form.Group className="mb-3" style={{ minWidth: 220 }}>
+                  <Form.Label>Nome</Form.Label>
+                  <Form.Control
+                    type="text"
+                    value={formData.nome}
+                    onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
+                    required
+                  />
+                </Form.Group>
+              </div>
+              <div className="col-md-4">
+                <Form.Group className="mb-3" style={{ minWidth: 180 }}>
+                  <Form.Label>CNPJ</Form.Label>
+                  <Form.Control
+                    type="text"
+                    value={formData.cnpj}
+                    onChange={(e) => setFormData({ ...formData, cnpj: e.target.value })}
+                    placeholder="00000000000000"
+                    maxLength={14}
+                    required
+                  />
+                </Form.Group>
+              </div>
+            </div>
+            <div className="row">
+              <div className="col-md-6">
+                <Form.Group className="mb-3" style={{ minWidth: 220 }}>
+                  <Form.Label>Email</Form.Label>
+                  <Form.Control
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    required
+                  />
+                </Form.Group>
+              </div>
+              <div className="col-md-6">
+                <Form.Group className="mb-3" style={{ minWidth: 220 }}>
+                  <Form.Label>Telefone</Form.Label>
+                  <Form.Control
+                    type="tel"
+                    value={formData.telefone}
+                    onChange={(e) => setFormData({ ...formData, telefone: e.target.value })}
+                    required
+                  />
+                </Form.Group>
+              </div>
+            </div>
             <div className="d-flex justify-content-end gap-2">
               <Button variant="secondary" onClick={handleCloseModal}>
                 Cancelar
@@ -269,4 +217,4 @@ function Terceirizadas() {
   );
 }
 
-export default Terceirizadas; 
+export default Terceirizadas;

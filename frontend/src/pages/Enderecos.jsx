@@ -3,6 +3,7 @@ import { Table, Alert, Button, Modal, Form } from 'react-bootstrap';
 import { endpoints } from '../services/api';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
+import { DataGrid } from '@mui/x-data-grid';
 
 function Enderecos() {
     const [enderecos, setEnderecos] = useState([]);
@@ -15,9 +16,11 @@ function Enderecos() {
         cep: '',
         id_bairro: ''
     });
+    const [bairros, setBairros] = useState([]);
 
     useEffect(() => {
         loadEnderecos();
+        loadBairros();
     }, []);
 
     const loadEnderecos = async () => {
@@ -26,6 +29,15 @@ function Enderecos() {
             setEnderecos(response.data);
         } catch (error) {
             setAlert({ show: true, message: 'Erro ao carregar endereços', variant: 'danger' });
+        }
+    };
+
+    const loadBairros = async () => {
+        try {
+            const response = await endpoints.bairros.list();
+            setBairros(response.data);
+        } catch (error) {
+            setAlert({ show: true, message: 'Erro ao carregar bairros', variant: 'danger' });
         }
     };
 
@@ -53,6 +65,26 @@ function Enderecos() {
         }
     };
 
+    const columns = [
+        { field: 'rua', headerName: 'Rua', width: 250 },
+        { field: 'numero', headerName: 'Número', width: 120 },
+        { field: 'referencia', headerName: 'Referência', width: 300 },
+        { field: 'cep', headerName: 'CEP', width: 180 },
+        {
+            field: 'bairro_nome',
+            headerName: 'Bairro',
+            width: 200,
+            valueGetter: (params) =>
+                params.row.bairro?.nome ||
+                (bairros.find(b => b.id_bairro === params.row.id_bairro)?.nome || '')
+        }
+    ];
+
+    const rows = enderecos.map(e => ({
+        ...e,
+        bairro_nome: e.bairro?.nome || (bairros.find(b => b.id_bairro === e.id_bairro)?.nome || '')
+    }));
+
     return (
         <div>
             <div className="d-flex justify-content-between align-items-center mb-4">
@@ -67,30 +99,18 @@ function Enderecos() {
                     {alert.message}
                 </Alert>
             )}
-            <Table striped bordered hover responsive>
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Rua</th>
-                        <th>Número</th>
-                        <th>Referência</th>
-                        <th>CEP</th>
-                        <th>Bairro</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {enderecos.map((endereco) => (
-                        <tr key={endereco.id_endereco}>
-                            <td>{endereco.id_endereco}</td>
-                            <td>{endereco.rua}</td>
-                            <td>{endereco.numero}</td>
-                            <td>{endereco.referencia}</td>
-                            <td>{endereco.cep}</td>
-                            <td>{endereco.bairro?.nome || endereco.id_bairro}</td>
-                        </tr>
-                    ))}
-                </tbody>
-            </Table>
+            <div style={{ height: 500, width: '100%', marginBottom: 24 }}>
+                <DataGrid
+                    rows={rows}
+                    columns={columns}
+                    getRowId={row => row.id_endereco}
+                    pageSize={10}
+                    rowsPerPageOptions={[10, 20, 50]}
+                    disableSelectionOnClick
+                    filterMode="client"
+                    autoHeight={false}
+                />
+            </div>
             <Modal show={showModal} onHide={handleCloseModal}>
                 <Modal.Header closeButton>
                     <Modal.Title>Novo Endereço</Modal.Title>
@@ -133,13 +153,19 @@ function Enderecos() {
                             />
                         </Form.Group>
                         <Form.Group className="mb-3">
-                            <Form.Label>ID Bairro</Form.Label>
-                            <Form.Control
-                                type="number"
+                            <Form.Label>Bairro</Form.Label>
+                            <Form.Select
                                 value={formData.id_bairro}
                                 onChange={e => setFormData({ ...formData, id_bairro: e.target.value })}
                                 required
-                            />
+                            >
+                                <option value="">Selecione o bairro</option>
+                                {bairros.map((bairro) => (
+                                    <option key={bairro.id_bairro} value={bairro.id_bairro}>
+                                        {bairro.nome}
+                                    </option>
+                                ))}
+                            </Form.Select>
                         </Form.Group>
                         <div className="d-flex justify-content-end gap-2">
                             <Button variant="secondary" onClick={handleCloseModal}>

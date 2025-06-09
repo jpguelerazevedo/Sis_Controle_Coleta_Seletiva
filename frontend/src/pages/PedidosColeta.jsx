@@ -3,6 +3,7 @@ import { Table, Button, Modal, Form, Alert, Badge } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus, faEdit, faTrash, faCheck, faTimes } from '@fortawesome/free-solid-svg-icons';
 import { endpoints } from '../services/api';
+import { DataGrid } from '@mui/x-data-grid';
 
 function PedidosColeta() {
   const [pedidos, setPedidos] = useState([]);
@@ -150,6 +151,16 @@ function PedidosColeta() {
     return material ? material.nome : 'Material não encontrado';
   };
 
+  // Defina as colunas para o DataGrid
+  const columns = [
+    { field: 'data_pedido', headerName: 'Data', width: 150, valueGetter: (params) => params.row.data_pedido ? new Date(params.row.data_pedido).toLocaleDateString() : '' },
+    { field: 'id_cliente', headerName: 'Cliente', width: 250, valueGetter: (params) => getClienteNome(params.row.id_cliente) },
+    { field: 'idMaterial', headerName: 'Material', width: 250, valueGetter: (params) => getMaterialNome(params.row.idMaterial) },
+    { field: 'tipo', headerName: 'Tipo', width: 200 },
+    { field: 'peso', headerName: 'Peso (kg)', width: 150 },
+    { field: 'volume', headerName: 'Volume (m³)', width: 150 },
+  ];
+
   return (
     <div>
       <div className="d-flex justify-content-between align-items-center mb-4">
@@ -166,80 +177,18 @@ function PedidosColeta() {
         </Alert>
       )}
 
-      <Table striped bordered hover responsive>
-        <thead>
-          <tr>
-            <th>Data</th>
-            <th>Cliente</th>
-            <th>Material</th>
-            <th>Tipo</th>
-            <th>Peso (kg)</th>
-            <th>Volume (m³)</th>
-            <th>Status</th>
-            <th>Ações</th>
-          </tr>
-        </thead>
-        <tbody>
-          {pedidos.map((pedido) => (
-            <tr key={pedido.id}>
-              <td>{new Date(pedido.data_pedido).toLocaleDateString()}</td>
-              <td>{getClienteNome(pedido.id_cliente)}</td>
-              <td>{getMaterialNome(pedido.idMaterial)}</td>
-              <td>{pedido.tipo}</td>
-              <td>{pedido.peso}</td>
-              <td>{pedido.volume}</td>
-              <td>{getStatusBadge(pedido.status)}</td>
-              <td>
-                <Button
-                  variant="outline-primary"
-                  size="sm"
-                  className="me-2"
-                  onClick={() => handleEdit(pedido)}
-                >
-                  <FontAwesomeIcon icon={faEdit} />
-                </Button>
-                {pedido.status === 'pendente' && (
-                  <>
-                    <Button
-                      variant="outline-success"
-                      size="sm"
-                      className="me-2"
-                      onClick={() => handleStatusChange(pedido.id, 'em_andamento')}
-                    >
-                      <FontAwesomeIcon icon={faCheck} />
-                    </Button>
-                    <Button
-                      variant="outline-danger"
-                      size="sm"
-                      className="me-2"
-                      onClick={() => handleStatusChange(pedido.id, 'cancelado')}
-                    >
-                      <FontAwesomeIcon icon={faTimes} />
-                    </Button>
-                  </>
-                )}
-                {pedido.status === 'em_andamento' && (
-                  <Button
-                    variant="outline-success"
-                    size="sm"
-                    className="me-2"
-                    onClick={() => handleStatusChange(pedido.id, 'concluido')}
-                  >
-                    <FontAwesomeIcon icon={faCheck} />
-                  </Button>
-                )}
-                <Button
-                  variant="outline-danger"
-                  size="sm"
-                  onClick={() => handleDelete(pedido.id)}
-                >
-                  <FontAwesomeIcon icon={faTrash} />
-                </Button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </Table>
+      <div style={{ height: 500, width: '100%', marginBottom: 24 }}>
+        <DataGrid
+          rows={pedidos}
+          columns={columns}
+          getRowId={row => row.id}
+          pageSize={10}
+          rowsPerPageOptions={[10, 20, 50]}
+          disableSelectionOnClick
+          filterMode="client"
+          autoHeight={false}
+        />
+      </div>
 
       <Modal show={showModal} onHide={handleCloseModal} size="lg">
         <Modal.Header closeButton>
@@ -249,110 +198,80 @@ function PedidosColeta() {
         </Modal.Header>
         <Modal.Body>
           <Form onSubmit={handleSubmit}>
+            {/* Data */}
+            <Form.Group className="mb-3">
+              <Form.Label>Data</Form.Label>
+              <Form.Control
+                type="date"
+                value={formData.data_pedido}
+                onChange={e => setFormData({ ...formData, data_pedido: e.target.value })}
+                required
+              />
+            </Form.Group>
+            {/* Cliente */}
             <Form.Group className="mb-3">
               <Form.Label>Cliente</Form.Label>
               <Form.Select
                 value={formData.id_cliente}
-                onChange={(e) => setFormData({ ...formData, id_cliente: e.target.value })}
+                onChange={e => setFormData({ ...formData, id_cliente: e.target.value })}
                 required
               >
                 <option value="">Selecione um cliente</option>
-                {clientes.map((cliente) => (
+                {clientes.map(cliente => (
                   <option key={cliente.id} value={cliente.id}>
-                    {cliente.nome}
+                    {cliente.nome} ({cliente.cpf})
                   </option>
                 ))}
               </Form.Select>
             </Form.Group>
-
+            {/* Material */}
             <Form.Group className="mb-3">
               <Form.Label>Material</Form.Label>
               <Form.Select
                 value={formData.idMaterial}
-                onChange={(e) => setFormData({ ...formData, idMaterial: e.target.value })}
+                onChange={e => setFormData({ ...formData, idMaterial: e.target.value })}
                 required
               >
                 <option value="">Selecione um material</option>
-                {materiais.map((material) => (
+                {materiais.map(material => (
                   <option key={material.id} value={material.id}>
                     {material.nome}
                   </option>
                 ))}
               </Form.Select>
             </Form.Group>
-
+            {/* Tipo */}
             <Form.Group className="mb-3">
-              <Form.Label>Data do Pedido</Form.Label>
+              <Form.Label>Tipo</Form.Label>
               <Form.Control
-                type="date"
-                value={formData.data_pedido}
-                onChange={(e) => setFormData({ ...formData, data_pedido: e.target.value })}
+                type="text"
+                value={formData.tipo}
+                onChange={e => setFormData({ ...formData, tipo: e.target.value })}
                 required
               />
             </Form.Group>
-
-            <Form.Group className="mb-3">
-              <Form.Label>Tipo</Form.Label>
-              <Form.Select
-                value={formData.tipo}
-                onChange={(e) => setFormData({ ...formData, tipo: e.target.value })}
-                required
-              >
-                <option value="">Selecione um tipo</option>
-                <option value="reciclavel">Reciclável</option>
-                <option value="nao_reciclavel">Não Reciclável</option>
-                <option value="especial">Especial</option>
-              </Form.Select>
-            </Form.Group>
-
+            {/* Peso */}
             <Form.Group className="mb-3">
               <Form.Label>Peso (kg)</Form.Label>
               <Form.Control
                 type="number"
                 step="0.1"
                 value={formData.peso}
-                onChange={(e) => setFormData({ ...formData, peso: e.target.value })}
+                onChange={e => setFormData({ ...formData, peso: e.target.value })}
                 required
               />
             </Form.Group>
-
+            {/* Volume */}
             <Form.Group className="mb-3">
               <Form.Label>Volume (m³)</Form.Label>
               <Form.Control
                 type="number"
                 step="0.1"
                 value={formData.volume}
-                onChange={(e) => setFormData({ ...formData, volume: e.target.value })}
+                onChange={e => setFormData({ ...formData, volume: e.target.value })}
                 required
               />
             </Form.Group>
-
-            <Form.Group className="mb-3">
-              <Form.Label>Observações</Form.Label>
-              <Form.Control
-                as="textarea"
-                rows={3}
-                value={formData.observacoes}
-                onChange={(e) => setFormData({ ...formData, observacoes: e.target.value })}
-              />
-            </Form.Group>
-
-            {selectedPedido && (
-              <Form.Group className="mb-3">
-                <Form.Label>Status</Form.Label>
-                <Form.Select
-                  value={formData.status}
-                  onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                  required
-                >
-                  <option value="pendente">Pendente</option>
-                  <option value="em_andamento">Em Andamento</option>
-                  <option value="concluido">Concluído</option>
-                  <option value="cancelado">Cancelado</option>
-                </Form.Select>
-              </Form.Group>
-            )}
-
             <div className="d-flex justify-content-end gap-2">
               <Button variant="secondary" onClick={handleCloseModal}>
                 Cancelar
@@ -368,4 +287,4 @@ function PedidosColeta() {
   );
 }
 
-export default PedidosColeta; 
+export default PedidosColeta;
