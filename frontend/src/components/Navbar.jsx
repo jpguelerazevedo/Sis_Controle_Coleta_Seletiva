@@ -26,16 +26,26 @@ function Navbar({ toggleSidebar, isSidebarCollapsed }) {
   }, []); // Empty dependency array means this effect runs once on mount and cleans up on unmount
 
   return (
-    // Use navbar class for fixed positioning via CSS
-    // Add sidebar-collapsed class to adjust position when sidebar is collapsed
-    <BootstrapNavbar className={`navbar bg-light shadow-sm ${isSidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
+    <BootstrapNavbar
+      className={`navbar bg-light shadow-sm ${isSidebarCollapsed ? 'sidebar-collapsed' : ''}`}
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        zIndex: 1050,
+        width: '100%',
+        marginLeft: isSmallScreen ? 0 : '250px', // Atualize para 250px para combinar com a sidebar maior
+        transition: 'margin-left 0.3s',
+      }}
+    >
       <Container fluid>
         {/* Toggle button for sidebar - visible only on small screens */}
         <Button variant="outline-secondary" onClick={toggleSidebar} className="d-md-none me-2">
           <FontAwesomeIcon icon={faBars} />
         </Button>
         <BootstrapNavbar.Brand href="#home">
-          {isSmallScreen ? 'SCV' : 'Sistema de Controle de Veículos'}
+          {isSmallScreen ? 'SCCS' : 'SISTEMA DE CONTROLE DE COLETA SELETIVA'}
         </BootstrapNavbar.Brand>
         {/* Add other navbar items here if needed */}
       </Container>
@@ -43,4 +53,4 @@ function Navbar({ toggleSidebar, isSidebarCollapsed }) {
   );
 }
 
-export default Navbar; 
+export default Navbar;

@@ -16,9 +16,11 @@ function Clientes() {
     bairro: ''
   });
   const [alert, setAlert] = useState({ show: false, message: '', variant: '' });
+  const [bairros, setBairros] = useState([]);
 
   useEffect(() => {
     loadClientes();
+    loadBairros();
   }, []);
 
   const loadClientes = async () => {
@@ -27,6 +29,15 @@ function Clientes() {
       setClientes(response.data);
     } catch (error) {
       showAlert('Erro ao carregar clientes', 'danger');
+    }
+  };
+
+  const loadBairros = async () => {
+    try {
+      const response = await endpoints.bairros.list();
+      setBairros(response.data);
+    } catch (error) {
+      showAlert('Erro ao carregar bairros', 'danger');
     }
   };
 
@@ -195,12 +206,18 @@ function Clientes() {
 
             <Form.Group className="mb-3">
               <Form.Label>Bairro</Form.Label>
-              <Form.Control
-                type="text"
+              <Form.Select
                 value={formData.bairro}
                 onChange={(e) => setFormData({ ...formData, bairro: e.target.value })}
                 required
-              />
+              >
+                <option value="">Selecione o bairro</option>
+                {bairros.map((bairro) => (
+                  <option key={bairro.id_bairro} value={bairro.nome}>
+                    {bairro.nome}
+                  </option>
+                ))}
+              </Form.Select>
             </Form.Group>
 
             <div className="d-flex justify-content-end gap-2">
@@ -218,4 +235,4 @@ function Clientes() {
   );
 }
 
-export default Clientes; 
+export default Clientes;

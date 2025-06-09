@@ -1,3 +1,11 @@
+/* Deixa todas as letras mais grossas */
+body,
+html,
+#root,
+* {
+  font-weight: 600 !important;
+}
+
 /* Reset default margins and padding */
 * {
   margin: 0;
@@ -13,13 +21,15 @@ body,
   width: 100vw;
   margin: 0;
   padding: 0;
-  overflow-x: hidden; /* Prevent horizontal scrollbar at the root */
+  overflow-x: hidden;
+  /* Prevent horizontal scrollbar at the root */
 }
 
 /* Define layout variables */
 :root {
   --sidebar-width: 250px;
-  --navbar-height: 56px; /* Approximate Bootstrap default navbar height */
+  --navbar-height: 56px;
+  /* Approximate Bootstrap default navbar height */
 }
 
 /* Sidebar styles - fixed position */
@@ -30,11 +40,15 @@ body,
   bottom: 0;
   left: 0;
   z-index: 100;
-  overflow-y: auto; /* Allow vertical scrolling in sidebar if needed */
-  background-color: #343a40; /* Bootstrap dark background */
+  overflow-y: auto;
+  /* Allow vertical scrolling in sidebar if needed */
+  background-color: #343a40;
+  /* Bootstrap dark background */
   color: white;
-  transition: left 0.3s ease; /* Smooth transition for showing/hiding */
-  padding-top: var(--navbar-height); /* Add padding at the top for the fixed navbar */
+  transition: left 0.3s ease;
+  /* Smooth transition for showing/hiding */
+  padding-top: var(--navbar-height);
+  /* Add padding at the top for the fixed navbar */
 }
 
 /* Class to hide sidebar off-screen on small devices */
@@ -46,13 +60,16 @@ body,
 .navbar {
   position: fixed;
   top: 0;
-  left: var(--sidebar-width); /* Aligns with the end of sidebar */
+  left: var(--sidebar-width);
+  /* Aligns with the end of sidebar */
   right: 0;
   height: var(--navbar-height);
   z-index: 1000;
-  box-shadow: 0 2px 4px rgba(0,0,0,.1);
-  background-color: #fff; /* White background for navbar */
-  transition: left 0.3s ease; /* Smooth transition */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, .1);
+  background-color: #fff;
+  /* White background for navbar */
+  transition: left 0.3s ease;
+  /* Smooth transition */
 }
 
 /* Adjust navbar left position when sidebar is collapsed */
@@ -62,14 +79,22 @@ body,
 
 /* Main content area - Pushed by sidebar and navbar, handles vertical scrolling */
 .content-area {
-  margin-left: var(--sidebar-width); /* Push content right of sidebar */
-  margin-top: var(--navbar-height); /* Push content below navbar */
-  padding: 1rem; /* Add some padding inside the content area */
-  overflow-y: auto; /* Enable vertical scrolling */
-  overflow-x: hidden; /* Ensure no horizontal overflow within content area */
-  height: calc(100vh - var(--navbar-height)); /* Occupy remaining vertical space */
-  box-sizing: border-box; /* Include padding in element's total width and height */
-  transition: margin-left 0.3s ease; /* Smooth transition */
+  margin-left: var(--sidebar-width);
+  /* Push content right of sidebar */
+  margin-top: var(--navbar-height);
+  /* Push content below navbar */
+  padding: 1rem;
+  /* Add some padding inside the content area */
+  overflow-y: auto;
+  /* Enable vertical scrolling */
+  overflow-x: hidden;
+  /* Ensure no horizontal overflow within content area */
+  height: calc(100vh - var(--navbar-height));
+  /* Occupy remaining vertical space */
+  box-sizing: border-box;
+  /* Include padding in element's total width and height */
+  transition: margin-left 0.3s ease;
+  /* Smooth transition */
 }
 
 /* Adjust content area margin when sidebar is collapsed */
@@ -86,11 +111,15 @@ body,
 /* Style for active sidebar link to take full width */
 .sidebar .nav-link.active {
   width: 100%;
+  background-color: #247444 !important;
+  color: #fff !important;
+  border-radius: 6px;
 }
 
 /* Hover effect for sidebar links */
 .sidebar .nav-link:not(.active):hover {
-  background-color: rgba(255, 255, 255, 0.1); /* A slightly lighter shade for hover on non-active items */
+  background-color: rgba(255, 255, 255, 0.1);
+  /* A slightly lighter shade for hover on non-active items */
 }
 
 /* General styles for components using Bootstrap */
@@ -99,14 +128,14 @@ body,
 .table-responsive {
   background-color: #fff;
   border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,.05);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, .05);
 }
 
 /* Card styles */
 .card {
   border: none;
   border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,.05);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, .05);
 }
 
 /* Button styles */
@@ -139,8 +168,10 @@ body,
 
 /* Styles for the logo image */
 .logo {
-  height: 40px; /* Set a fixed height */
-  width: auto; /* Maintain aspect ratio */
+  height: 40px;
+  /* Set a fixed height */
+  width: auto;
+  /* Maintain aspect ratio */
   /* Removed padding */
   /* Removed will-change and transition for simplicity */
 }
@@ -193,14 +224,19 @@ body,
 }
 
 /* Custom button styles */
+
 .btn-primary {
-  background-color: #0d6efd;
-  border-color: #0d6efd;
+  background-color: rgba(115, 188, 92, 0.85);
+  border-color: rgba(115, 188, 92, 0.85);
+  color: #247444 !important;
 }
 
-.btn-primary:hover {
-  background-color: #0b5ed7;
-  border-color: #0a58ca;
+.btn-primary:hover,
+.btn-primary:active,
+.btn-primary:focus:active {
+  background-color: rgba(94, 169, 74, 0.85);
+  border-color: rgba(94, 169, 74, 0.85);
+  color: #247444 !important;
 }
 
 /* Card title styles */
@@ -233,45 +269,57 @@ body,
 #root {
   margin: 0;
   padding: 0;
-  text-align: left; /* Reset text-align */
+  text-align: left;
+  /* Reset text-align */
 }
 
 /* Responsive adjustments - Sidebar hides by default on small screens */
-@media (max-width: 768px) {
+@media (max-width: 767.98px) {
   .sidebar {
-    left: calc(-1 * var(--sidebar-width)); /* Hide sidebar off-screen by default */
-  }
-  
-  /* When sidebar is NOT collapsed, bring it into view */
-  .sidebar:not(.collapsed) {
+    position: fixed;
+    top: 0;
     left: 0;
+    width: 80vw;
+    max-width: 320px;
+    height: 100vh;
+    z-index: 2000;
+    transform: translateX(-100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.15);
   }
 
-  .navbar,
+  .sidebar:not(.collapsed) {
+    transform: translateX(0);
+  }
+
+  .navbar {
+    left: 0;
+    width: 100vw;
+    z-index: 2100;
+  }
+
   .content-area {
-    margin-left: 0; /* Remove left margin */
-    left: 0; /* Navbar starts from the left edge */
-    width: 100vw; /* Content takes full viewport width */
+    margin-left: 0;
+    width: 100vw;
+    padding-top: var(--navbar-height);
+    height: calc(100vh - var(--navbar-height));
   }
 
-  .content-area {
-    padding-top: var(--navbar-height); /* Ensure content is below the navbar */
-    height: calc(100vh - var(--navbar-height)); /* Occupy remaining vertical space */
-  }
-  
-  /* Adjust positions when sidebar is NOT collapsed on small screens */
-  /* This ensures content is pushed to the right when sidebar is open */
-  .sidebar:not(.collapsed) ~ .main-content-wrapper .navbar,
-  .sidebar:not(.collapsed) ~ .main-content-wrapper .content-area {
-      margin-left: var(--sidebar-width); /* Push content right */
+  /* Overlay for sidebar when open */
+  .sidebar-overlay {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.3);
+    z-index: 1999;
+    transition: opacity 0.3s;
   }
 
-  /* Ensure sidebar content is visible and correctly positioned when sidebar is open on small screens */
-  .sidebar:not(.collapsed) .nav {
-    display: flex !important; /* Ensure flex display overrides any other rule */
-    flex-direction: column; /* Maintain column direction */
-    opacity: 1; /* Ensure content is not transparent */
-    /* Add padding or adjust spacing if needed to ensure content is not behind the navbar */
-     padding-top: 1rem; /* Example: add some padding below the logo/hr line */
+  .sidebar.collapsed+.sidebar-overlay {
+    display: none;
+    opacity: 0;
   }
 }
