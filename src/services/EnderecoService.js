@@ -1,16 +1,82 @@
 import { Endereco } from '../models/Endereco.js';
+import { Bairro } from '../models/Bairro.js';
+import { Cliente } from '../models/Cliente.js';
+import { Colaborador } from '../models/Colaborador.js';
 
 class EnderecoService {
     async findAll() {
         try {
             const enderecos = await Endereco.findAll({
-                include: [
-                    { association: 'bairro' }
-                ]
+                include: [{
+                    model: Bairro,
+                    as: 'bairro',
+                    attributes: ['id', 'nome']
+                }]
             });
             return enderecos;
         } catch (error) {
             throw new Error('Erro ao buscar endereços: ' + error.message);
+        }
+    }
+
+    async findByPk(idEndereco) {
+        try {
+            const endereco = await Endereco.findByPk(idEndereco, {
+                include: [{
+                    model: Bairro,
+                    as: 'bairro',
+                    attributes: ['id', 'nome']
+                }]
+            });
+
+            if (!endereco) {
+                throw new Error('Endereço não encontrado.');
+            }
+
+            return endereco;
+        } catch (error) {
+            throw new Error('Erro ao buscar endereço: ' + error.message);
+        }
+    }
+
+    async create(enderecoData) {
+        try {
+            // Verifica se o bairro existe
+            const bairro = await Bairro.findByPk(enderecoData.bairroId);
+            if (!bairro) {
+                throw new Error('Bairro não encontrado.');
+            }
+
+            const endereco = await Endereco.create(enderecoData);
+
+            // Retorna o endereço com os dados do bairro
+            return this.findByPk(endereco.id);
+        } catch (error) {
+            throw new Error('Erro ao criar endereço: ' + error.message);
+        }
+    }
+
+    async update(idEndereco, enderecoData) {
+        try {
+            const endereco = await Endereco.findByPk(idEndereco);
+            if (!endereco) {
+                throw new Error('Endereço não encontrado.');
+            }
+
+            // Se estiver atualizando o bairro, verifica se ele existe
+            if (enderecoData.bairroId) {
+                const bairro = await Bairro.findByPk(enderecoData.bairroId);
+                if (!bairro) {
+                    throw new Error('Bairro não encontrado.');
+                }
+            }
+
+            await endereco.update(enderecoData);
+
+            // Retorna o endereço atualizado com os dados do bairro
+            return this.findByPk(idEndereco);
+        } catch (error) {
+            throw new Error('Erro ao atualizar endereço: ' + error.message);
         }
     }
 
@@ -20,6 +86,21 @@ class EnderecoService {
             if (!endereco) {
                 throw new Error('Endereço não encontrado.');
             }
+
+            // Verifica se o endereço está em uso por algum cliente
+            const clienteComEndereco = await Cliente.findOne({
+                where: { enderecoId: idEndereco }
+            });
+
+            // Verifica se o endereço está em uso por algum colaborador
+            const colaboradorComEndereco = await Colaborador.findOne({
+                where: { enderecoId: idEndereco }
+            });
+
+            if (clienteComEndereco || colaboradorComEndereco) {
+                throw new Error('Não é possível deletar este endereço pois está em uso.');
+            }
+
             await endereco.destroy();
             return { message: 'Endereço deletado com sucesso.' };
         } catch (error) {
