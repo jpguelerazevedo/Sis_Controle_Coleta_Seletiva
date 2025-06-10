@@ -5,9 +5,8 @@ import { faBars } from '@fortawesome/free-solid-svg-icons';
 import '../App.css'; // Import App.css for navbar styles
 
 // Receive toggleSidebar and isSidebarCollapsed props
-function Navbar({ toggleSidebar, isSidebarCollapsed }) {
-  // Largura da sidebar (manter consistente com Sidebar.jsx e App.css)
-  const sidebarWidth = '250px';
+function Navbar({ toggleSidebar, isSidebarCollapsed }) { // Largura da sidebar (manter consistente com Sidebar.jsx e App.css)
+
 
   const mdBreakpoint = 768; // Bootstrap's md breakpoint
   const [isSmallScreen, setIsSmallScreen] = useState(window.innerWidth < mdBreakpoint);
@@ -27,7 +26,7 @@ function Navbar({ toggleSidebar, isSidebarCollapsed }) {
 
   return (
     <BootstrapNavbar
-      className={`navbar bg-light shadow-sm ${isSidebarCollapsed ? 'sidebar-collapsed' : ''}`}
+      className={`navbar bg-light shadow-lg ${isSidebarCollapsed ? 'sidebar-collapsed' : ''}`}
       style={{
         position: 'fixed',
         top: 0,
@@ -41,7 +40,31 @@ function Navbar({ toggleSidebar, isSidebarCollapsed }) {
     >
       <Container fluid>
         {/* Toggle button for sidebar - visible only on small screens */}
-        <Button variant="outline-secondary" onClick={toggleSidebar} className="d-md-none me-2">
+        <Button
+          variant="outline-secondary"
+          onClick={toggleSidebar}
+          className="d-md-none me-2"
+          style={{
+            borderColor: '#549d55',
+            color: '#549d55',
+            background: '#fff',
+          }}
+          onMouseDown={e => {
+            e.currentTarget.style.background = '#549d55';
+            e.currentTarget.style.color = '#fff';
+            e.currentTarget.style.borderColor = '#fff';
+          }}
+          onMouseUp={e => {
+            e.currentTarget.style.background = '#fff';
+            e.currentTarget.style.color = '#549d55';
+            e.currentTarget.style.borderColor = '#549d55';
+          }}
+          onMouseLeave={e => {
+            e.currentTarget.style.background = '#fff';
+            e.currentTarget.style.color = '#549d55';
+            e.currentTarget.style.borderColor = '#549d55';
+          }}
+        >
           <FontAwesomeIcon icon={faBars} />
         </Button>
         <BootstrapNavbar.Brand href="#home">

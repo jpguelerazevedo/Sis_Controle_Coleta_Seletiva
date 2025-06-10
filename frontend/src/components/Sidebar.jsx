@@ -6,7 +6,6 @@ import {
   faUsers,
   faRecycle,
   faTruck,
-  faUserTie,
   faBuilding,
   faMapMarkedAlt,
   faMapPin,
