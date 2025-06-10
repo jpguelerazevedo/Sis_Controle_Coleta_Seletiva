@@ -81,13 +81,16 @@ class EnderecoController {
             if (rua && rua.trim() === "") {
                 return res.status(400).json({ error: 'Rua não pode estar vazia' });
             }
-            if (numero && numero.trim() === "") {
-                return res.status(400).json({ error: 'Número não pode estar vazio' });
+
+            if (numero !== undefined) {
+                if (String(numero).trim() === "") {
+                    return res.status(400).json({ error: 'Número não pode estar vazio' });
+                }
             }
+
             if (cep && cep.trim() === "") {
                 return res.status(400).json({ error: 'CEP não pode estar vazio' });
             }
-
 
             const endereco = await enderecoService.update(req);
             res.json(endereco);
@@ -107,6 +110,7 @@ class EnderecoController {
             res.status(500).json({ error: error.message });
         }
     }
+
 
     async delete(req, res) {
         try {
