@@ -10,7 +10,7 @@ class EnderecoService {
                 include: [{
                     model: Bairro,
                     as: 'bairro',
-                    attributes: ['id', 'nome']
+                    attributes: ['id_bairro', 'nome'] // Ajustado para id_bairro
                 }]
             });
             return enderecos;
@@ -25,7 +25,7 @@ class EnderecoService {
                 include: [{
                     model: Bairro,
                     as: 'bairro',
-                    attributes: ['id', 'nome']
+                    attributes: ['id_bairro', 'nome'] // Ajustado para id_bairro
                 }]
             });
 
@@ -42,15 +42,22 @@ class EnderecoService {
     async create(enderecoData) {
         try {
             // Verifica se o bairro existe
-            const bairro = await Bairro.findByPk(enderecoData.bairroId);
+            const bairro = await Bairro.findByPk(enderecoData.id_bairro); // Ajustado para id_bairro
             if (!bairro) {
                 throw new Error('Bairro não encontrado.');
             }
 
-            const endereco = await Endereco.create(enderecoData);
+            // Cria o endereço com os campos corretos
+            const endereco = await Endereco.create({
+                rua: enderecoData.rua,
+                numero: enderecoData.numero,
+                cep: enderecoData.cep,
+                referencia: enderecoData.referencia,
+                id_bairro: enderecoData.id_bairro // Ajustado para id_bairro
+            });
 
             // Retorna o endereço com os dados do bairro
-            return this.findByPk(endereco.id);
+            return this.findByPk(endereco.id_endereco); // Ajustado para id_endereco
         } catch (error) {
             throw new Error('Erro ao criar endereço: ' + error.message);
         }
@@ -64,14 +71,21 @@ class EnderecoService {
             }
 
             // Se estiver atualizando o bairro, verifica se ele existe
-            if (enderecoData.bairroId) {
-                const bairro = await Bairro.findByPk(enderecoData.bairroId);
+            if (enderecoData.id_bairro) { // Ajustado para id_bairro
+                const bairro = await Bairro.findByPk(enderecoData.id_bairro);
                 if (!bairro) {
                     throw new Error('Bairro não encontrado.');
                 }
             }
 
-            await endereco.update(enderecoData);
+            // Atualiza com os campos corretos
+            await endereco.update({
+                rua: enderecoData.rua,
+                numero: enderecoData.numero,
+                cep: enderecoData.cep,
+                referencia: enderecoData.referencia,
+                id_bairro: enderecoData.id_bairro // Ajustado para id_bairro
+            });
 
             // Retorna o endereço atualizado com os dados do bairro
             return this.findByPk(idEndereco);
@@ -89,12 +103,12 @@ class EnderecoService {
 
             // Verifica se o endereço está em uso por algum cliente
             const clienteComEndereco = await Cliente.findOne({
-                where: { enderecoId: idEndereco }
+                where: { id_endereco: idEndereco } // Ajustado para id_endereco
             });
 
             // Verifica se o endereço está em uso por algum colaborador
             const colaboradorComEndereco = await Colaborador.findOne({
-                where: { enderecoId: idEndereco }
+                where: { id_endereco: idEndereco } // Ajustado para id_endereco
             });
 
             if (clienteComEndereco || colaboradorComEndereco) {
