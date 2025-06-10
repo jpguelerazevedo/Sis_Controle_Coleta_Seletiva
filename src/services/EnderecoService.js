@@ -41,24 +41,40 @@ class EnderecoService {
 
     async create(enderecoData) {
         try {
+            console.log('Dados recebidos no serviço:', enderecoData);
+
+            // Validação dos campos obrigatórios
+            if (!enderecoData.rua || !enderecoData.numero || !enderecoData.cep || !enderecoData.id_bairro) {
+                throw new Error('Todos os campos obrigatórios devem ser preenchidos.');
+            }
+
             // Verifica se o bairro existe
-            const bairro = await Bairro.findByPk(enderecoData.id_bairro); // Ajustado para id_bairro
+            const bairro = await Bairro.findByPk(enderecoData.id_bairro);
             if (!bairro) {
                 throw new Error('Bairro não encontrado.');
             }
 
+            // Converte o número para inteiro
+            const numero = parseInt(enderecoData.numero, 10);
+            if (isNaN(numero)) {
+                throw new Error('Número inválido.');
+            }
+
             // Cria o endereço com os campos corretos
             const endereco = await Endereco.create({
-                rua: enderecoData.rua,
-                numero: enderecoData.numero,
-                cep: enderecoData.cep,
-                referencia: enderecoData.referencia,
-                id_bairro: enderecoData.id_bairro // Ajustado para id_bairro
+                rua: enderecoData.rua.trim(),
+                numero: numero,
+                cep: enderecoData.cep.trim(),
+                referencia: enderecoData.referencia ? .trim() || null,
+                id_bairro: enderecoData.id_bairro
             });
 
+            console.log('Endereço criado:', endereco.toJSON());
+
             // Retorna o endereço com os dados do bairro
-            return this.findByPk(endereco.id_endereco); // Ajustado para id_endereco
+            return this.findByPk(endereco.id_endereco);
         } catch (error) {
+            console.error('Erro ao criar endereço:', error);
             throw new Error('Erro ao criar endereço: ' + error.message);
         }
     }
