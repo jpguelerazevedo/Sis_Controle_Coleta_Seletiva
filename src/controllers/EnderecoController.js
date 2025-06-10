@@ -27,15 +27,18 @@ class EnderecoController {
 
     async create(req, res) {
         try {
-            const { rua, numero, complemento, cep } = req.body;
+            const rua = typeof req.body.rua === 'string' ? req.body.rua.trim() : req.body.rua;
+            const numero = req.body.numero; // não faz trim se for número
+            const complemento = typeof req.body.complemento === 'string' ? req.body.complemento.trim() : req.body.complemento;
+            const cep = typeof req.body.cep === 'string' ? req.body.cep.trim() : req.body.cep;
 
-            if (!rua || rua.trim() === "") {
+            if (!rua) {
                 return res.status(400).json({ error: 'Rua não pode estar vazia' });
             }
-            if (!numero || numero.trim() === "") {
+            if (numero === undefined || numero === null || numero === '') {
                 return res.status(400).json({ error: 'Número não pode estar vazio' });
             }
-            if (!cep || cep.trim() === "") {
+            if (!cep) {
                 return res.status(400).json({ error: 'CEP não pode estar vazio' });
             }
 
