@@ -27,22 +27,38 @@ class EnderecoController {
 
     async create(req, res) {
         try {
-            const rua = typeof req.body.rua === 'string' ? req.body.rua.trim() : req.body.rua;
-            const numero = req.body.numero; // não faz trim se for número
-            const complemento = typeof req.body.complemento === 'string' ? req.body.complemento.trim() : req.body.complemento;
-            const cep = typeof req.body.cep === 'string' ? req.body.cep.trim() : req.body.cep;
+            console.log('Dados recebidos no controller:', req.body);
 
+            const rua = typeof req.body.rua === 'string' ? req.body.rua.trim() : req.body.rua;
+            const numero = parseInt(req.body.numero, 10);
+            const referencia = typeof req.body.referencia === 'string' ? req.body.referencia.trim() : req.body.referencia;
+            const cep = typeof req.body.cep === 'string' ? req.body.cep.trim() : req.body.cep;
+            const id_bairro = parseInt(req.body.id_bairro, 10);
+
+            // Validações
             if (!rua) {
                 return res.status(400).json({ error: 'Rua não pode estar vazia' });
             }
-            if (numero === undefined || numero === null || numero === '') {
-                return res.status(400).json({ error: 'Número não pode estar vazio' });
+            if (isNaN(numero) || numero <= 0) {
+                return res.status(400).json({ error: 'Número inválido' });
             }
             if (!cep) {
                 return res.status(400).json({ error: 'CEP não pode estar vazio' });
             }
+            if (isNaN(id_bairro) || id_bairro <= 0) {
+                return res.status(400).json({ error: 'Bairro inválido' });
+            }
 
-            const endereco = await enderecoService.create(req);
+            const enderecoData = {
+                rua,
+                numero,
+                referencia,
+                cep,
+                id_bairro
+            };
+
+            console.log('Dados formatados para criação:', enderecoData);
+            const endereco = await enderecoService.create(enderecoData);
             res.status(201).json(endereco);
         } catch (error) {
             console.error('🔥 ERRO DETALHADO:', error.message, error.stack);
@@ -60,7 +76,7 @@ class EnderecoController {
 
     async update(req, res) {
         try {
-            const { rua, numero, complemento, cep } = req.body;
+            const { rua, numero, referencia, cep } = req.body;
 
             if (rua && rua.trim() === "") {
                 return res.status(400).json({ error: 'Rua não pode estar vazia' });
@@ -71,6 +87,7 @@ class EnderecoController {
             if (cep && cep.trim() === "") {
                 return res.status(400).json({ error: 'CEP não pode estar vazio' });
             }
+
 
             const endereco = await enderecoService.update(req);
             res.json(endereco);
