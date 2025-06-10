@@ -12,6 +12,7 @@ import { EnderecoController } from './controllers/EnderecoController.js';
 import { PedidoColetaController } from './controllers/PedidoColetaController.js';
 import { EnvioMaterialController } from './controllers/EnvioMaterialController.js';
 import { RecebimentoMaterialController } from './controllers/RecebimentoMaterialController.js';
+import { PessoaController } from './controllers/PessoaController.js';
 import ReportsController from './controllers/ReportsController.js';
 
 const routes = Router();
@@ -27,6 +28,7 @@ const enderecoController = new EnderecoController();
 const pedidoColetaController = new PedidoColetaController();
 const envioMaterialController = new EnvioMaterialController();
 const recebimentoMaterialController = new RecebimentoMaterialController();
+const pessoaController = new PessoaController();
 
 // Rotas de Gestão de Materiais
 routes.get('/materiais', (req, res) => materialController.findAll(req, res));
@@ -65,6 +67,12 @@ routes.put('/enderecos/:id_endereco', (req, res) => enderecoController.update(re
 routes.delete('/enderecos/:id_endereco', (req, res) => enderecoController.delete(req, res));
 
 // Rotas de Gestão de Pessoas
+routes.get('/pessoas', (req, res) => pessoaController.findAll(req, res));
+routes.get('/pessoas/:cpf', (req, res) => pessoaController.findByPk(req, res));
+routes.post('/pessoas', (req, res) => pessoaController.create(req, res));
+routes.put('/pessoas/:cpf', (req, res) => pessoaController.update(req, res));
+routes.delete('/pessoas/:cpf', (req, res) => pessoaController.delete(req, res));
+
 routes.get('/clientes', (req, res) => clienteController.findAll(req, res));
 routes.get('/clientes/:cpf', (req, res) => clienteController.findByPk(req, res));
 routes.post('/clientes', (req, res) => clienteController.create(req, res));
