@@ -1,9 +1,10 @@
 import { EnderecoService } from '../services/EnderecoService.js';
+const enderecoService = new EnderecoService();
 
 class EnderecoController {
     async findAll(req, res) {
         try {
-            const enderecos = await EnderecoService.findAll();
+            const enderecos = await enderecoService.findAll();
             res.json(enderecos);
         } catch (error) {
             console.error('🔥 ERRO DETALHADO:', error.message, error.stack);
@@ -13,7 +14,7 @@ class EnderecoController {
 
     async findByPk(req, res) {
         try {
-            const endereco = await EnderecoService.findByPk(req);
+            const endereco = await enderecoService.findByPk(req);
             if (!endereco) {
                 return res.status(404).json({ message: 'Endereço não encontrado' });
             }
@@ -26,7 +27,6 @@ class EnderecoController {
 
     async create(req, res) {
         try {
-            // Validar campos vazios
             const { rua, numero, complemento, cep } = req.body;
 
             if (!rua || rua.trim() === "") {
@@ -39,7 +39,7 @@ class EnderecoController {
                 return res.status(400).json({ error: 'CEP não pode estar vazio' });
             }
 
-            const endereco = await EnderecoService.create(req);
+            const endereco = await enderecoService.create(req);
             res.status(201).json(endereco);
         } catch (error) {
             console.error('🔥 ERRO DETALHADO:', error.message, error.stack);
@@ -57,7 +57,6 @@ class EnderecoController {
 
     async update(req, res) {
         try {
-            // Validar campos vazios
             const { rua, numero, complemento, cep } = req.body;
 
             if (rua && rua.trim() === "") {
@@ -70,7 +69,7 @@ class EnderecoController {
                 return res.status(400).json({ error: 'CEP não pode estar vazio' });
             }
 
-            const endereco = await EnderecoService.update(req);
+            const endereco = await enderecoService.update(req);
             res.json(endereco);
         } catch (error) {
             console.error('🔥 ERRO DETALHADO:', error.message, error.stack);
@@ -91,7 +90,7 @@ class EnderecoController {
 
     async delete(req, res) {
         try {
-            const endereco = await EnderecoService.delete(req);
+            const endereco = await enderecoService.delete(req);
             res.json({ message: 'Endereço removido com sucesso', endereco });
         } catch (error) {
             console.error('🔥 ERRO DETALHADO:', error.message, error.stack);
