@@ -10,10 +10,10 @@ import Colaboradores from './pages/Colaboradores';
 import Terceirizadas from './pages/Terceirizadas';
 import Materiais from './pages/Materiais';
 import Bairros from './pages/Bairros';
-import Enderecos from './pages/Enderecos';
 import Pessoas from './pages/Pessoas';
 import RecebimentosMaterial from './pages/RecebimentosMaterial';
 import EnviosMaterial from './pages/EnviosMaterial';
+import Cargos from './pages/Cargos';
 import './App.css';
 
 function App() {
@@ -62,11 +62,11 @@ function App() {
             <Route path="/" element={<Dashboard />} />
             <Route path="/clientes" element={<Clientes />} />
             <Route path="/materiais" element={<Materiais />} />
+            <Route path="/cargos" element={<Cargos />} />
             <Route path="/pedidos-coleta" element={<PedidosColeta />} />
             <Route path="/colaboradores" element={<Colaboradores />} />
             <Route path="/terceirizadas" element={<Terceirizadas />} />
             <Route path="/bairros" element={<Bairros />} />
-            <Route path="/enderecos" element={<Enderecos />} />
             <Route path="/pessoas" element={<Pessoas />} />
             <Route path="/recebimentos-material" element={<RecebimentosMaterial />} />
             <Route path="/envios-material" element={<EnviosMaterial />} />

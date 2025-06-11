@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Table, Button, Modal, Form, Alert, Badge } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus, faEdit, faTrash } from '@fortawesome/free-solid-svg-icons';
@@ -12,12 +12,13 @@ function Colaboradores() {
   const [selectedColaborador, setSelectedColaborador] = useState(null);
   const [formData, setFormData] = useState({
     nome: '',
-    email: '',
+    cpf: '',
     telefone: '',
-    endereco: '',
-    cargo_id: '',
-    data_contratacao: '',
-    status: 'ativo'
+    email: '',
+    dataAdmissao: new Date().toISOString().split('T')[0],
+    sexo: '',
+    cargo: '',
+    nacionalidade: 'Brasileiro'
   });
   const [alert, setAlert] = useState({ show: false, message: '', variant: '' });
 
@@ -28,49 +29,182 @@ function Colaboradores() {
 
   const loadColaboradores = async () => {
     try {
+      console.log('Iniciando carregamento de colaboradores...');
       const response = await endpoints.colaboradores.list();
-      setColaboradores(response.data);
+      console.log('Resposta da API de colaboradores:', response);
+      
+      if (!response?.data) {
+        console.log('Nenhum dado recebido da API');
+        setColaboradores([]);
+        return;
+      }
+
+      const colaboradores = response.data;
+      console.log('Dados dos colaboradores recebidos:', colaboradores);
+
+      const colaboradoresFormatados = colaboradores.map(colaborador => {
+        if (!colaborador) return null;
+        
+        return {
+          id: colaborador.cpf || '',
+          nome: colaborador.pessoa?.nome || '',
+          cpf: colaborador.cpf || '',
+          telefone: colaborador.pessoa?.telefone || '',
+          email: colaborador.pessoa?.email || '',
+          dataAdmissao: colaborador.dataAdmissao ? new Date(colaborador.dataAdmissao).toLocaleDateString() : '',
+          sexo: colaborador.pessoa?.sexo || '',
+          cargo: colaborador.cargos?.nomeCargo || '',
+          idCargo: colaborador.idCargo || '',
+          status: colaborador.status || 'ATIVO'
+        };
+      }).filter(Boolean); // Remove possíveis nulls
+
+      console.log('Colaboradores formatados:', colaboradoresFormatados);
+      setColaboradores(colaboradoresFormatados);
     } catch (error) {
+      console.error('Erro ao carregar colaboradores:', error);
       showAlert('Erro ao carregar colaboradores', 'danger');
+      setColaboradores([]);
     }
   };
 
   const loadCargos = async () => {
     try {
+      console.log('Iniciando carregamento de cargos...');
       const response = await endpoints.cargos.list();
-      setCargos(response.data);
+      console.log('Resposta da API de cargos:', response);
+      
+      if (response?.data) {
+        console.log('Dados dos cargos recebidos:', response.data);
+        setCargos(response.data);
+      } else {
+        console.log('Nenhum cargo recebido da API');
+        setCargos([]);
+      }
     } catch (error) {
+      console.error('Erro ao carregar cargos:', error);
       showAlert('Erro ao carregar cargos', 'danger');
+      setCargos([]);
+    }
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    
+    if (name === 'cpf') {
+      // Remove caracteres não numéricos
+      const cpfNumerico = value.replace(/\D/g, '');
+      // Formata o CPF (XXX.XXX.XXX-XX)
+      let cpfFormatado = cpfNumerico;
+      if (cpfNumerico.length > 3) {
+        cpfFormatado = cpfNumerico.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+      }
+      setFormData(prev => ({
+        ...prev,
+        [name]: cpfFormatado
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: value
+      }));
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      if (selectedColaborador) {
-        await endpoints.colaboradores.update(selectedColaborador.id, formData);
-        showAlert('Colaborador atualizado com sucesso!', 'success');
-      } else {
-        await endpoints.colaboradores.create(formData);
-        showAlert('Colaborador cadastrado com sucesso!', 'success');
+      console.log('Iniciando operação com colaborador...');
+      console.log('Dados do formulário:', formData);
+      console.log('Colaborador selecionado:', selectedColaborador);
+
+      // Validação do CPF
+      const cpfNumerico = formData.cpf.replace(/\D/g, '');
+      if (!cpfNumerico || cpfNumerico.length !== 11) {
+        showAlert('CPF deve conter 11 dígitos', 'danger');
+        return;
       }
-      handleCloseModal();
-      loadColaboradores();
+
+      // Primeiro, criar/atualizar a pessoa
+      const pessoaData = {
+        cpf: cpfNumerico,
+        nome: formData.nome || '',
+        email: formData.email || '',
+        telefone: formData.telefone || '',
+        sexo: formData.sexo || ''
+      };
+
+      try {
+        if (selectedColaborador) {
+          // Se estiver editando, atualiza a pessoa
+          await endpoints.pessoas.update(cpfNumerico, pessoaData);
+        } else {
+          // Se for novo, cria a pessoa
+          await endpoints.pessoas.create(pessoaData);
+        }
+      } catch (pessoaError) {
+        console.error('Erro ao salvar pessoa:', pessoaError);
+        showAlert('Erro ao salvar dados da pessoa', 'danger');
+        return;
+      }
+
+      // Depois, criar/atualizar o colaborador
+      const colaboradorData = {
+        cpf: cpfNumerico,
+        dataAdmissao: formData.dataAdmissao || new Date().toISOString().split('T')[0],
+        carga_horaria: 36,
+        nacionalidade: formData.nacionalidade || 'Brasileiro',
+        id_cargo: parseInt(formData.cargo)
+      };
+
+      if (selectedColaborador) {
+        console.log('Atualizando colaborador existente...');
+        try {
+          await endpoints.colaboradores.update(selectedColaborador.id, colaboradorData);
+          console.log('Colaborador atualizado com sucesso');
+          showAlert('Colaborador atualizado com sucesso!', 'success');
+        } catch (updateError) {
+          console.warn('Aviso: Erro ao atualizar colaborador, mas continuando...', updateError);
+          showAlert('Colaborador pode ter sido atualizado, mas houve erro na resposta.', 'warning');
+        }
+      } else {
+        console.log('Criando novo colaborador...');
+        try {
+          await endpoints.colaboradores.create(colaboradorData);
+          console.log('Colaborador criado com sucesso');
+          showAlert('Colaborador cadastrado com sucesso!', 'success');
+        } catch (createError) {
+          console.warn('Aviso: Erro ao criar colaborador, mas continuando...', createError);
+          showAlert('Colaborador pode ter sido cadastrado, mas houve erro na resposta.', 'warning');
+        }
+      }
+
+      // Tenta recarregar os dados mesmo com erro
+      try {
+        await loadColaboradores();
+        handleCloseModal();
+      } catch (loadError) {
+        console.error('Erro ao recarregar colaboradores:', loadError);
+        handleCloseModal();
+      }
     } catch (error) {
-      showAlert('Erro ao salvar colaborador', 'danger');
+      console.error('Erro geral na operação:', error);
+      showAlert('Erro ao processar operação', 'danger');
     }
   };
 
   const handleEdit = (colaborador) => {
+    console.log('Editando colaborador:', colaborador);
     setSelectedColaborador(colaborador);
     setFormData({
-      nome: colaborador.nome,
-      email: colaborador.email,
-      telefone: colaborador.telefone,
-      endereco: colaborador.endereco,
-      cargo_id: colaborador.cargo_id,
-      data_contratacao: colaborador.data_contratacao,
-      status: colaborador.status
+      nome: colaborador.pessoa?.nome || '',
+      cpf: colaborador.pessoa?.cpf || '',
+      telefone: colaborador.pessoa?.telefone || '',
+      email: colaborador.pessoa?.email || '',
+      dataAdmissao: colaborador.dataAdmissao || new Date().toISOString().split('T')[0],
+      sexo: colaborador.pessoa?.sexo || '',
+      cargo: colaborador.idCargo || '',
+      nacionalidade: colaborador.nacionalidade || 'Brasileiro'
     });
     setShowModal(true);
   };
@@ -92,12 +226,13 @@ function Colaboradores() {
     setSelectedColaborador(null);
     setFormData({
       nome: '',
-      email: '',
+      cpf: '',
       telefone: '',
-      endereco: '',
-      cargo_id: '',
-      data_contratacao: '',
-      status: 'ativo'
+      email: '',
+      dataAdmissao: new Date().toISOString().split('T')[0],
+      sexo: '',
+      cargo: '',
+      nacionalidade: 'Brasileiro'
     });
   };
 
@@ -108,42 +243,89 @@ function Colaboradores() {
 
   const getStatusBadge = (status) => {
     const variants = {
-      ativo: 'success',
-      inativo: 'danger',
-      ferias: 'warning',
-      afastado: 'info'
+      ATIVO: 'success',
+      INATIVO: 'danger',
+      FERIAS: 'warning',
+      AFASTADO: 'info'
     };
     return <Badge bg={variants[status] || 'secondary'}>{status}</Badge>;
   };
 
   const columns = [
-    { field: 'cpf', headerName: 'CPF', width: 180 },
-    { field: 'nome', headerName: 'Nome', width: 250 },
-    { field: 'email', headerName: 'Email', width: 250 },
-    { field: 'telefone', headerName: 'Telefone', width: 180 },
-    { field: 'sexo', headerName: 'Sexo', width: 150 },
-    {
-      field: 'dataAdmissao',
-      headerName: 'Data de Admissão',
-      width: 150,
-      valueGetter: (params) =>
-        params.row.dataAdmissao
-          ? new Date(params.row.dataAdmissao).toLocaleDateString()
-          : ''
+    { 
+      field: 'nome', 
+      headerName: 'Nome', 
+      flex: 1,
+      valueGetter: (params) => params.row?.nome || ''
     },
-    { field: 'carga_horaria', headerName: 'Carga Horária', width: 150 },
-    { field: 'nacionalidade', headerName: 'Nacionalidade', width: 200 },
+    { 
+      field: 'cpf', 
+      headerName: 'CPF', 
+      flex: 1,
+      valueGetter: (params) => params.row?.cpf || ''
+    },
+    { 
+      field: 'telefone', 
+      headerName: 'Telefone', 
+      flex: 1,
+      valueGetter: (params) => params.row?.telefone || ''
+    },
+    { 
+      field: 'email', 
+      headerName: 'Email', 
+      flex: 1,
+      valueGetter: (params) => params.row?.email || ''
+    },
+    { 
+      field: 'dataAdmissao', 
+      headerName: 'Data de Admissão', 
+      flex: 1,
+      valueGetter: (params) => params.row?.dataAdmissao || ''
+    },
+    { 
+      field: 'sexo', 
+      headerName: 'Sexo', 
+      flex: 1,
+      valueGetter: (params) => {
+        const sexo = params.row?.sexo || '';
+        return sexo === 'M' ? 'Masculino' : sexo === 'F' ? 'Feminino' : sexo;
+      }
+    },
+    { 
+      field: 'cargo', 
+      headerName: 'Cargo', 
+      flex: 1,
+      valueGetter: (params) => params.row?.cargo || ''
+    },
     {
-      field: 'cargo',
-      headerName: 'Cargo',
-      width: 180,
-      valueGetter: (params) =>
-        cargos.find(c => c.id === (params.row.id_cargo || params.row.cargo_id))?.nome || ''
+      field: 'acoes',
+      headerName: 'Ações',
+      flex: 1,
+      sortable: false,
+      renderCell: (params) => (
+        <div>
+          <Button
+            variant="outline-primary"
+            size="sm"
+            className="me-2"
+            onClick={() => handleEdit(params.row)}
+          >
+            Editar
+          </Button>
+          <Button
+            variant="outline-danger"
+            size="sm"
+            onClick={() => handleDelete(params.row)}
+          >
+            Excluir
+          </Button>
+        </div>
+      )
     }
   ];
 
   return (
-    <div>
+    <div className="container mt-4">
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h2>Colaboradores</h2>
         <Button variant="primary" onClick={() => setShowModal(true)}>
@@ -158,18 +340,23 @@ function Colaboradores() {
         </Alert>
       )}
 
-      <div style={{ height: 500, width: '100%', marginBottom: 24 }}>
-        <DataGrid
-          rows={colaboradores}
-          columns={columns}
-          getRowId={row => row.id}
-          pageSize={10}
-          rowsPerPageOptions={[10, 20, 50]}
-          disableSelectionOnClick
-          filterMode="client"
-          autoHeight={false}
-        />
-      </div>
+      {colaboradores.length === 0 ? (
+        <div className="text-center p-4">
+          <p>Nenhum colaborador cadastrado</p>
+        </div>
+      ) : (
+        <div style={{ height: 400, width: '100%' }}>
+          <DataGrid
+            rows={colaboradores}
+            columns={columns}
+            pageSize={5}
+            rowsPerPageOptions={[5]}
+            disableSelectionOnClick
+            getRowId={(row) => row.id || row.cpf}
+            loading={!colaboradores.length}
+          />
+        </div>
+      )}
 
       <Modal show={showModal} onHide={handleCloseModal} size="lg" centered>
         <Modal.Header closeButton>
@@ -179,129 +366,134 @@ function Colaboradores() {
         </Modal.Header>
         <Modal.Body>
           <Form onSubmit={handleSubmit}>
-            <h6 className="mb-3 text-success">Dados Pessoais</h6>
             <div className="row">
-              <div className="col-md-6">
-                <Form.Group className="mb-3" style={{ minWidth: 220 }}>
-                  <Form.Label>CPF</Form.Label>
-                  <Form.Control
-                    type="text"
-                    value={formData.cpf || ''}
-                    onChange={e => setFormData({ ...formData, cpf: e.target.value })}
-                    required
-                  />
-                </Form.Group>
-              </div>
-              <div className="col-md-6">
-                <Form.Group className="mb-3" style={{ minWidth: 220 }}>
+              <div className="col-md-12">
+                <Form.Group className="mb-3">
                   <Form.Label>Nome</Form.Label>
                   <Form.Control
                     type="text"
-                    value={formData.nome || ''}
-                    onChange={e => setFormData({ ...formData, nome: e.target.value })}
+                    name="nome"
+                    value={formData.nome}
+                    onChange={handleInputChange}
                     required
                   />
                 </Form.Group>
               </div>
             </div>
+
             <div className="row">
               <div className="col-md-6">
-                <Form.Group className="mb-3" style={{ minWidth: 220 }}>
+                <Form.Group className="mb-3">
+                  <Form.Label>CPF</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="cpf"
+                    value={formData.cpf}
+                    onChange={handleInputChange}
+                    placeholder="000.000.000-00"
+                    required
+                  />
+                </Form.Group>
+              </div>
+              <div className="col-md-6">
+                <Form.Group className="mb-3">
+                  <Form.Label>Telefone</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="telefone"
+                    value={formData.telefone}
+                    onChange={handleInputChange}
+                    required
+                  />
+                </Form.Group>
+              </div>
+            </div>
+
+            <div className="row">
+              <div className="col-md-12">
+                <Form.Group className="mb-3">
                   <Form.Label>Email</Form.Label>
                   <Form.Control
                     type="email"
-                    value={formData.email || ''}
-                    onChange={e => setFormData({ ...formData, email: e.target.value })}
-                    required
-                  />
-                </Form.Group>
-              </div>
-              <div className="col-md-6">
-                <Form.Group className="mb-3" style={{ minWidth: 220 }}>
-                  <Form.Label>Telefone</Form.Label>
-                  <Form.Control
-                    type="tel"
-                    value={formData.telefone || ''}
-                    onChange={e => setFormData({ ...formData, telefone: e.target.value })}
+                    name="email"
+                    value={formData.email}
+                    onChange={handleInputChange}
                     required
                   />
                 </Form.Group>
               </div>
             </div>
+
             <div className="row">
               <div className="col-md-6">
-                <Form.Group className="mb-3" style={{ minWidth: 220 }}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Data de Admissão</Form.Label>
+                  <Form.Control
+                    type="date"
+                    name="dataAdmissao"
+                    value={formData.dataAdmissao}
+                    onChange={handleInputChange}
+                    required
+                  />
+                </Form.Group>
+              </div>
+              <div className="col-md-6">
+                <Form.Group className="mb-3">
+                  <Form.Label>Nacionalidade</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="nacionalidade"
+                    value={formData.nacionalidade}
+                    onChange={handleInputChange}
+                    required
+                  />
+                </Form.Group>
+              </div>
+            </div>
+
+            <div className="row">
+              <div className="col-md-6">
+                <Form.Group className="mb-3">
                   <Form.Label>Sexo</Form.Label>
                   <Form.Select
-                    value={formData.sexo || ''}
-                    onChange={e => setFormData({ ...formData, sexo: e.target.value })}
+                    name="sexo"
+                    value={formData.sexo}
+                    onChange={handleInputChange}
                     required
                   >
-                    <option value="">Selecione o sexo</option>
-                    <option value="masculino">Masculino</option>
-                    <option value="feminino">Feminino</option>
+                    <option value="">Selecione...</option>
+                    <option value="M">Masculino</option>
+                    <option value="F">Feminino</option>
+                    <option value="O">Outro</option>
+                  </Form.Select>
+                </Form.Group>
+              </div>
+              <div className="col-md-6">
+                <Form.Group className="mb-3">
+                  <Form.Label>Cargo</Form.Label>
+                  <Form.Select
+                    name="cargo"
+                    value={formData.cargo}
+                    onChange={handleInputChange}
+                    required
+                  >
+                    <option value="">Selecione um cargo</option>
+                    {cargos && cargos.length > 0 ? (
+                      cargos.map(cargo => (
+                        <option key={cargo.idCargo} value={cargo.idCargo}>
+                          {cargo.nomeCargo}
+                        </option>
+                      ))
+                    ) : (
+                      <option value="" disabled>Nenhum cargo disponível</option>
+                    )}
                   </Form.Select>
                 </Form.Group>
               </div>
             </div>
 
-            <h6 className="mb-3 text-success">Dados do Colaborador</h6>
-            <div className="row">
-              <div className="col-md-4">
-                <Form.Group className="mb-3" style={{ minWidth: 180 }}>
-                  <Form.Label>Data de Admissão</Form.Label>
-                  <Form.Control
-                    type="date"
-                    value={formData.dataAdmissao || ''}
-                    onChange={e => setFormData({ ...formData, dataAdmissao: e.target.value })}
-                    required
-                  />
-                </Form.Group>
-              </div>
-              <div className="col-md-4">
-                <Form.Group className="mb-3" style={{ minWidth: 180 }}>
-                  <Form.Label>Carga Horária</Form.Label>
-                  <Form.Control
-                    type="number"
-                    value={formData.carga_horaria || ''}
-                    onChange={e => setFormData({ ...formData, carga_horaria: e.target.value })}
-                    required
-                  />
-                </Form.Group>
-              </div>
-              <div className="col-md-4">
-                <Form.Group className="mb-3" style={{ minWidth: 180 }}>
-                  <Form.Label>Nacionalidade</Form.Label>
-                  <Form.Control
-                    type="text"
-                    value={formData.nacionalidade || ''}
-                    onChange={e => setFormData({ ...formData, nacionalidade: e.target.value })}
-                    required
-                  />
-                </Form.Group>
-              </div>
-            </div>
-            <div className="row">
-              <div className="col-md-6">
-                <Form.Group className="mb-3" style={{ minWidth: 220 }}>
-                  <Form.Label>Cargo</Form.Label>
-                  <Form.Select
-                    value={formData.id_cargo || ''}
-                    onChange={e => setFormData({ ...formData, id_cargo: e.target.value })}
-                    required
-                  >
-                    <option value="">Selecione o cargo</option>
-                    {cargos.map((cargo) => (
-                      <option key={cargo.id} value={cargo.id}>
-                        {cargo.nome}
-                      </option>
-                    ))}
-                  </Form.Select>
-                </Form.Group>
-              </div>
-            </div>
-            <div className="d-flex justify-content-end gap-2">
-              <Button variant="secondary" onClick={handleCloseModal}>
+            <div className="d-flex justify-content-end">
+              <Button variant="secondary" onClick={handleCloseModal} className="me-2">
                 Cancelar
               </Button>
               <Button variant="primary" type="submit">

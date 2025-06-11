@@ -155,4 +155,6 @@ function Pessoas() {
     );
 }
 
+// Pessoas.jsx is likely not needed as a separate page anymore if Cliente and Colaborador extend Pessoa.
+// However, keeping it for now in case it's used elsewhere or for basic Pessoa management.
 export default Pessoas;

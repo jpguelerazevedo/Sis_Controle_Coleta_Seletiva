@@ -7,14 +7,14 @@ import { DataGrid } from '@mui/x-data-grid';
 
 function EnviosMaterial() {
     const [envios, setEnvios] = useState([]);
-    const [alert, setAlert] = useState({ show: false, message: '', variant: '' });
+    const [alert, setAlert] = useState({ show: false, message: '', variant: 'success' });
     const [showModal, setShowModal] = useState(false);
     const [materiais, setMateriais] = useState([]);
     const [terceirizadas, setTerceirizadas] = useState([]);
     const [formData, setFormData] = useState({
         idMaterial: '',
-        pesoEnviado: '',
-        cnpj: ''
+        cnpj: '',
+        pesoEnviado: ''
     });
 
     useEffect(() => {
@@ -50,128 +50,163 @@ function EnviosMaterial() {
         }
     };
 
+    const showAlert = (message, variant = 'success') => {
+        setAlert({ show: true, message, variant });
+    };
+
     const handleShowModal = () => setShowModal(true);
     const handleCloseModal = () => {
         setShowModal(false);
         setFormData({
             idMaterial: '',
-            pesoEnviado: '',
-            cnpj: ''
+            cnpj: '',
+            pesoEnviado: ''
         });
+    };
+
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setFormData({ ...formData, [name]: value });
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await endpoints.enviosMaterial.create(formData);
-            setAlert({ show: true, message: 'Envio cadastrado com sucesso!', variant: 'success' });
+            const envioData = {
+                idMaterial: parseInt(formData.idMaterial),
+                cnpj: formData.cnpj,
+                pesoEnviado: parseFloat(formData.pesoEnviado)
+            };
+
+            await endpoints.enviosMaterial.create(envioData);
+            showAlert('Envio registrado com sucesso!');
             handleCloseModal();
             loadEnvios();
         } catch (error) {
-            setAlert({ show: true, message: 'Erro ao cadastrar envio', variant: 'danger' });
+            console.error('Erro ao salvar envio:', error);
+            showAlert('Erro ao salvar envio: ' + error.message, 'danger');
         }
     };
 
-    const getMaterialNomeById = (id) => {
-        const material = materiais.find(m => (m.id_material || m.id) === id);
-        return material ? material.nome : id;
-    };
+   
 
     const columns = [
-        {
+        { field: 'idEnvio', headerName: 'ID', width: 70 },
+        { 
             field: 'idMaterial',
             headerName: 'Material',
-            width: 250,
-            valueGetter: (params) => getMaterialNomeById(params.row.idMaterial || params.row.id_material)
+            width: 200,
+            valueGetter: (params) => {
+                try {
+                    if (!params.row || !params.row.idMaterial) return '';
+                    const material = materiais.find(m => m.idMaterial === params.row.idMaterial);
+                    return material ? material.nome : '';
+                } catch (error) {
+                    console.error('Erro ao buscar material:', error);
+                    return '';
+                }
+            }
         },
-        { field: 'cnpj', headerName: 'CNPJ', width: 250 },
-        { field: 'pesoEnviado', headerName: 'Peso Enviado', width: 150, valueGetter: (params) => params.row.pesoEnviado || params.row.peso_enviado }
+        { field: 'cnpj', headerName: 'CNPJ', width: 150 },
+        { field: 'pesoEnviado', headerName: 'Peso (kg)', width: 130 },
+        
+        
     ];
 
-    const rows = envios.map(envio => ({
-        id: envio.idEnvio || envio.id_envio,
-        idMaterial: envio.idMaterial || envio.id_material,
-        cnpj: envio.cnpj,
-        pesoEnviado: envio.pesoEnviado || envio.peso_enviado
-    }));
-
     return (
-        <div>
+        <div className="container mt-4">
             <div className="d-flex justify-content-between align-items-center mb-4">
                 <h2>Envios de Material</h2>
                 <Button variant="primary" onClick={handleShowModal}>
-                    <FontAwesomeIcon icon={faPlus} className="me-2" />
+                    <i className="bi bi-plus-circle me-2"></i>
                     Novo Envio
                 </Button>
             </div>
+
             {alert.show && (
-                <Alert variant={alert.variant} onClose={() => setAlert({ show: false })} dismissible>
+                <Alert variant={alert.variant} onClose={() => setAlert({ ...alert, show: false })} dismissible>
                     {alert.message}
                 </Alert>
             )}
-            <div style={{ height: 500, width: '100%', marginBottom: 24 }}>
-                <DataGrid
-                    rows={rows}
-                    columns={columns}
-                    getRowId={row => row.id}
-                    pageSize={10}
-                    rowsPerPageOptions={[10, 20, 50]}
-                    disableSelectionOnClick
-                    filterMode="client"
-                    autoHeight={false}
-                />
-            </div>
+
+            {envios.length === 0 ? (
+                <div className="text-center">
+                    <p>Nenhum envio encontrado.</p>
+                </div>
+            ) : (
+                <div style={{ height: 400, width: '100%' }}>
+                    <DataGrid
+                        rows={envios}
+                        columns={columns}
+                        pageSize={5}
+                        rowsPerPageOptions={[5]}
+                        checkboxSelection
+                        disableSelectionOnClick
+                        getRowId={(row) => row.idEnvio || row.id_envio}
+                        sx={{
+                            height: 400,
+                            width: '100%',
+                            '& .MuiDataGrid-cell:focus': {
+                                outline: 'none'
+                            }
+                        }}
+                    />
+                </div>
+            )}
+
             <Modal show={showModal} onHide={handleCloseModal}>
                 <Modal.Header closeButton>
-                    <Modal.Title>Novo Envio</Modal.Title>
+                    <Modal.Title>Novo Envio de Material</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
                     <Form onSubmit={handleSubmit}>
                         <Form.Group className="mb-3">
                             <Form.Label>Material</Form.Label>
                             <Form.Select
+                                name="idMaterial"
                                 value={formData.idMaterial}
-                                onChange={e => setFormData({ ...formData, idMaterial: e.target.value })}
+                                onChange={handleInputChange}
                                 required
                             >
-                                <option value="">Selecione o material</option>
-                                {materiais.map((mat) => (
-                                    <option key={mat.id_material} value={mat.id_material}>
-                                        {mat.nome}
+                                <option value="">Selecione um material</option>
+                                {materiais.map((material) => (
+                                    <option key={material.idMaterial} value={material.idMaterial}>
+                                        {material.nome}
                                     </option>
                                 ))}
                             </Form.Select>
                         </Form.Group>
+
                         <Form.Group className="mb-3">
-                            <Form.Label>Peso Enviado</Form.Label>
+                            <Form.Label>CNPJ da Terceirizada</Form.Label>
                             <Form.Control
-                                type="number"
-                                value={formData.pesoEnviado}
-                                onChange={e => setFormData({ ...formData, pesoEnviado: e.target.value })}
+                                type="text"
+                                name="cnpj"
+                                value={formData.cnpj}
+                                onChange={handleInputChange}
                                 required
                             />
                         </Form.Group>
+
                         <Form.Group className="mb-3">
-                            <Form.Label>CNPJ Terceirizada</Form.Label>
-                            <Form.Select
-                                value={formData.cnpj}
-                                onChange={e => setFormData({ ...formData, cnpj: e.target.value })}
+                            <Form.Label>Peso Enviado (kg)</Form.Label>
+                            <Form.Control
+                                type="number"
+                                name="pesoEnviado"
+                                value={formData.pesoEnviado}
+                                onChange={handleInputChange}
                                 required
-                            >
-                                <option value="">Selecione a terceirizada</option>
-                                {terceirizadas.map((t) => (
-                                    <option key={t.cnpj} value={t.cnpj}>
-                                        {t.cnpj} - {t.nome}
-                                    </option>
-                                ))}
-                            </Form.Select>
+                                min="0"
+                                step="0.01"
+                            />
                         </Form.Group>
+
                         <div className="d-flex justify-content-end gap-2">
                             <Button variant="secondary" onClick={handleCloseModal}>
                                 Cancelar
                             </Button>
                             <Button variant="primary" type="submit">
-                                Cadastrar
+                                Salvar
                             </Button>
                         </div>
                     </Form>

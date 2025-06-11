@@ -16,7 +16,8 @@ function Terceirizadas() {
     telefone: '',
     endereco: '',
     tipo_servico: '',
-    status: 'ativo'
+    status: 'ativo',
+    horarioDeFuncionamento: 8 // Valor padrão em horas
   });
   const [alert, setAlert] = useState({ show: false, message: '', variant: '' });
 
@@ -26,26 +27,75 @@ function Terceirizadas() {
 
   const loadTerceirizadas = async () => {
     try {
+      console.log('Iniciando carregamento de terceirizadas...');
       const response = await endpoints.terceirizadas.list();
-      setTerceirizadas(response.data);
+      console.log('Resposta da API de terceirizadas:', response);
+      
+      if (!response?.data) {
+        console.log('Nenhum dado recebido da API');
+        setTerceirizadas([]);
+        return;
+      }
+
+      const terceirizadas = response.data;
+      console.log('Dados das terceirizadas recebidos:', terceirizadas);
+
+      const terceirizadasFormatadas = terceirizadas.map(terceirizada => {
+        if (!terceirizada) return null;
+        
+        return {
+          id: terceirizada.cnpj, // Usando o CNPJ como ID
+          cnpj: terceirizada.cnpj || '',
+          nome: terceirizada.nome || '',
+          telefone: terceirizada.telefone || '',
+          email: terceirizada.email || '',
+          horarioDeFuncionamento: terceirizada.horarioDeFuncionamento || '',
+          createdAt: terceirizada.createdAt || '',
+          updatedAt: terceirizada.updatedAt || ''
+        };
+      }).filter(Boolean); // Remove possíveis nulls
+
+      console.log('Terceirizadas formatadas:', terceirizadasFormatadas);
+      setTerceirizadas(terceirizadasFormatadas);
     } catch (error) {
+      console.error('Erro ao carregar terceirizadas:', error);
       showAlert('Erro ao carregar terceirizadas', 'danger');
+      setTerceirizadas([]);
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      const cnpjNumerico = formData.cnpj.replace(/\D/g, '');
+      if (!cnpjNumerico || cnpjNumerico.length !== 14) {
+        showAlert('CNPJ deve conter 14 dígitos', 'danger');
+        return;
+      }
+
+      // Converte o horário para número (ex: "08:00-18:00" -> 8)
+      const horarioNumerico = parseInt(formData.horarioDeFuncionamento.split('-')[0].split(':')[0]);
+
+      const terceirizadaData = {
+        nome: formData.nome,
+        cnpj: cnpjNumerico,
+        telefone: formData.telefone,
+        email: formData.email,
+        horarioDeFuncionamento: horarioNumerico
+      };
+
       if (selectedTerceirizada) {
-        await endpoints.terceirizadas.update(selectedTerceirizada.id, formData);
+        await endpoints.terceirizadas.update(selectedTerceirizada.cnpj, terceirizadaData);
         showAlert('Terceirizada atualizada com sucesso!', 'success');
       } else {
-        await endpoints.terceirizadas.create(formData);
+        await endpoints.terceirizadas.create(terceirizadaData);
         showAlert('Terceirizada cadastrada com sucesso!', 'success');
       }
+
+      await loadTerceirizadas();
       handleCloseModal();
-      loadTerceirizadas();
     } catch (error) {
+      console.error('Erro ao salvar terceirizada:', error);
       showAlert('Erro ao salvar terceirizada', 'danger');
     }
   };
@@ -53,24 +103,24 @@ function Terceirizadas() {
   const handleEdit = (terceirizada) => {
     setSelectedTerceirizada(terceirizada);
     setFormData({
-      nome: terceirizada.nome,
-      cnpj: terceirizada.cnpj,
-      email: terceirizada.email,
-      telefone: terceirizada.telefone,
-      endereco: terceirizada.endereco,
-      tipo_servico: terceirizada.tipo_servico,
-      status: terceirizada.status
+      nome: terceirizada.nome || '',
+      cnpj: terceirizada.cnpj || '',
+      telefone: terceirizada.telefone || '',
+      email: terceirizada.email || '',
+      horarioDeFuncionamento: terceirizada.horarioDeFuncionamento || 8
     });
     setShowModal(true);
   };
 
-  const handleDelete = async (id) => {
+  const handleDelete = async (terceirizada) => {
     if (window.confirm('Tem certeza que deseja excluir esta terceirizada?')) {
       try {
-        await endpoints.terceirizadas.delete(id);
+        console.log('Excluindo terceirizada:', terceirizada);
+        await endpoints.terceirizadas.delete(terceirizada.cnpj);
         showAlert('Terceirizada excluída com sucesso!', 'success');
-        loadTerceirizadas();
+        await loadTerceirizadas();
       } catch (error) {
+        console.error('Erro ao excluir terceirizada:', error);
         showAlert('Erro ao excluir terceirizada', 'danger');
       }
     }
@@ -86,7 +136,8 @@ function Terceirizadas() {
       telefone: '',
       endereco: '',
       tipo_servico: '',
-      status: 'ativo'
+      status: 'ativo',
+      horarioDeFuncionamento: 8
     });
   };
 
@@ -109,14 +160,68 @@ function Terceirizadas() {
   };
 
   const columns = [
-    { field: 'nome', headerName: 'Nome', width: 250 },
-    { field: 'cnpj', headerName: 'CNPJ', width: 250 },
-    { field: 'email', headerName: 'Email', width: 250 },
-    { field: 'telefone', headerName: 'Telefone', width: 180 },
+    { 
+      field: 'nome', 
+      headerName: 'Nome', 
+      flex: 1,
+      valueGetter: (params) => params.row?.nome || ''
+    },
+    { 
+      field: 'cnpj', 
+      headerName: 'CNPJ', 
+      flex: 1,
+      valueGetter: (params) => params.row?.cnpj || ''
+    },
+    { 
+      field: 'telefone', 
+      headerName: 'Telefone', 
+      flex: 1,
+      valueGetter: (params) => params.row?.telefone || ''
+    },
+    { 
+      field: 'email', 
+      headerName: 'Email', 
+      flex: 1,
+      valueGetter: (params) => params.row?.email || ''
+    },
+    { 
+      field: 'horarioDeFuncionamento', 
+      headerName: 'Horário de Funcionamento', 
+      flex: 1,
+      valueGetter: (params) => {
+        const horario = params.row?.horarioDeFuncionamento || '';
+        return horario ? `${horario}h` : '';
+      }
+    },
+    {
+      field: 'acoes',
+      headerName: 'Ações',
+      flex: 1,
+      sortable: false,
+      renderCell: (params) => (
+        <div>
+          <Button
+            variant="outline-primary"
+            size="sm"
+            className="me-2"
+            onClick={() => handleEdit(params.row)}
+          >
+            Editar
+          </Button>
+          <Button
+            variant="outline-danger"
+            size="sm"
+            onClick={() => handleDelete(params.row)}
+          >
+            Excluir
+          </Button>
+        </div>
+      )
+    }
   ];
 
   return (
-    <div>
+    <div className="container mt-4">
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h2>Terceirizadas</h2>
         <Button variant="primary" onClick={() => setShowModal(true)}>
@@ -131,18 +236,23 @@ function Terceirizadas() {
         </Alert>
       )}
 
-      <div style={{ height: 500, width: '100%', marginBottom: 24 }}>
-        <DataGrid
-          rows={terceirizadas}
-          columns={columns}
-          getRowId={row => row.id}
-          pageSize={10}
-          rowsPerPageOptions={[10, 20, 50]}
-          disableSelectionOnClick
-          filterMode="client"
-          autoHeight={false}
-        />
-      </div>
+      {terceirizadas.length === 0 ? (
+        <div className="text-center p-4">
+          <p>Nenhuma terceirizada cadastrada</p>
+        </div>
+      ) : (
+        <div style={{ height: 400, width: '100%' }}>
+          <DataGrid
+            rows={terceirizadas}
+            columns={columns}
+            pageSize={5}
+            rowsPerPageOptions={[5]}
+            disableSelectionOnClick
+            getRowId={(row) => row.id || row.cnpj}
+            loading={!terceirizadas.length}
+          />
+        </div>
+      )}
 
       <Modal show={showModal} onHide={handleCloseModal} size="lg" centered>
         <Modal.Header closeButton>
@@ -158,6 +268,7 @@ function Terceirizadas() {
                   <Form.Label>Nome</Form.Label>
                   <Form.Control
                     type="text"
+                    name="nome"
                     value={formData.nome}
                     onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
                     required
@@ -169,6 +280,7 @@ function Terceirizadas() {
                   <Form.Label>CNPJ</Form.Label>
                   <Form.Control
                     type="text"
+                    name="cnpj"
                     value={formData.cnpj}
                     onChange={(e) => setFormData({ ...formData, cnpj: e.target.value })}
                     placeholder="00000000000000"
@@ -184,6 +296,7 @@ function Terceirizadas() {
                   <Form.Label>Email</Form.Label>
                   <Form.Control
                     type="email"
+                    name="email"
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     required
@@ -195,10 +308,29 @@ function Terceirizadas() {
                   <Form.Label>Telefone</Form.Label>
                   <Form.Control
                     type="tel"
+                    name="telefone"
                     value={formData.telefone}
                     onChange={(e) => setFormData({ ...formData, telefone: e.target.value })}
                     required
                   />
+                </Form.Group>
+              </div>
+            </div>
+            <div className="row">
+              <div className="col-md-6">
+                <Form.Group className="mb-3">
+                  <Form.Label>Horário de Funcionamento</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="horarioDeFuncionamento"
+                    value={formData.horarioDeFuncionamento}
+                    onChange={(e) => setFormData({ ...formData, horarioDeFuncionamento: e.target.value })}
+                    placeholder="Ex: 08:00-18:00"
+                    required
+                  />
+                  <Form.Text className="text-muted">
+                    Formato: HH:MM-HH:MM (ex: 08:00-18:00) - Apenas a hora inicial será salva
+                  </Form.Text>
                 </Form.Group>
               </div>
             </div>

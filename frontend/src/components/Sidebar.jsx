@@ -31,10 +31,10 @@ function Sidebar({ isCollapsed }) {
     { path: '/', icon: faHome, label: 'DASHBOARD' },
     { path: '/clientes', icon: faUsers, label: 'CLIENTES' },
     { path: '/materiais', icon: faRecycle, label: 'MATERIAIS' },
-    { path: '/colaboradores', icon: faIdCard, label: 'COLABORADORES' }, // alterado para faIdCard
+    { path: '/colaboradores', icon: faIdCard, label: 'COLABORADORES' },
+    { path: '/cargos', icon: faIdCard, label: 'CARGOS' },
     { path: '/terceirizadas', icon: faBuilding, label: 'TERCEIRIZADAS' },
     { path: '/bairros', icon: faMapMarkedAlt, label: 'BAIRROS' },
-    { path: '/enderecos', icon: faMapPin, label: 'ENDEREÇOS' },
     //{ path: '/pessoas', icon: faIdCard, label: 'PESSOAS' },
     // Separador visual antes das próximas opções
     { separator: true },

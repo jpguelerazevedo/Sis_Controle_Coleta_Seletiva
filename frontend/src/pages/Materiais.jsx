@@ -23,37 +23,91 @@ function Materiais() {
 
   const loadMateriais = async () => {
     try {
+      console.log('Iniciando carregamento de materiais...');
       const response = await endpoints.materiais.list();
-      setMateriais(response.data);
+      console.log('Resposta da API de materiais:', response);
+      
+      if (response?.data) {
+        console.log('Dados dos materiais recebidos:', response.data);
+        const materiaisFormatados = response.data.map(material => ({
+          id: material.idMaterial,
+          nome: material.nome,
+          peso: material.peso,
+          volume: material.volume,
+          nivelDeRisco: material.nivelDeRisco
+        }));
+        console.log('Materiais formatados:', materiaisFormatados);
+        setMateriais(materiaisFormatados);
+      } else {
+        console.log('Nenhum material recebido da API');
+        setMateriais([]);
+      }
     } catch (error) {
+      console.error('Erro ao carregar materiais:', error);
       showAlert('Erro ao carregar materiais', 'danger');
+      setMateriais([]);
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      console.log('Iniciando operação com material...');
+      console.log('Dados do formulário:', formData);
+      console.log('Material selecionado:', selectedMaterial);
+
+      const materialData = {
+        nome: formData.nome || '',
+        peso: formData.peso || 0,
+        volume: formData.volume || 0,
+        nivelDeRisco: formData.nivelDeRisco || 'baixo'
+      };
+      console.log('Dados do material para operação:', materialData);
+
       if (selectedMaterial) {
-        await endpoints.materiais.update(selectedMaterial.idMaterial, formData);
-        showAlert('Material atualizado com sucesso!', 'success');
+        console.log('Atualizando material existente...');
+        try {
+          await endpoints.materiais.update(selectedMaterial.idMaterial, materialData);
+          console.log('Material atualizado com sucesso');
+          showAlert('Material atualizado com sucesso!', 'success');
+        } catch (updateError) {
+          console.warn('Aviso: Erro ao atualizar material, mas continuando...', updateError);
+          showAlert('Material pode ter sido atualizado, mas houve erro na resposta.', 'warning');
+        }
       } else {
-        await endpoints.materiais.create(formData);
-        showAlert('Material cadastrado com sucesso!', 'success');
+        console.log('Criando novo material...');
+        try {
+          await endpoints.materiais.create(materialData);
+          console.log('Material criado com sucesso');
+          showAlert('Material cadastrado com sucesso!', 'success');
+        } catch (createError) {
+          console.warn('Aviso: Erro ao criar material, mas continuando...', createError);
+          showAlert('Material pode ter sido cadastrado, mas houve erro na resposta.', 'warning');
+        }
       }
-      handleCloseModal();
-      loadMateriais();
+
+      // Tenta recarregar os dados mesmo com erro
+      try {
+        await loadMateriais();
+        handleCloseModal();
+      } catch (loadError) {
+        console.error('Erro ao recarregar materiais:', loadError);
+        handleCloseModal();
+      }
     } catch (error) {
-      showAlert('Erro ao salvar material', 'danger');
+      console.error('Erro geral na operação:', error);
+      showAlert('Erro ao processar operação', 'danger');
     }
   };
 
   const handleEdit = (material) => {
+    console.log('Editando material:', material);
     setSelectedMaterial(material);
     setFormData({
-      nome: material.nome,
-      peso: material.peso,
-      volume: material.volume,
-      nivelDeRisco: material.nivelDeRisco
+      nome: material.nome || '',
+      peso: material.peso || 0,
+      volume: material.volume || 0,
+      nivelDeRisco: material.nivelDeRisco || 'baixo'
     });
     setShowModal(true);
   };
@@ -87,27 +141,76 @@ function Materiais() {
   };
 
   const columns = [
-    { field: 'nome', headerName: 'Nome', width: 250 },
-    { field: 'peso', headerName: 'Peso', width: 150 },
-    { field: 'volume', headerName: 'Volume', width: 150 },
-    {
-      field: 'nivelDeRisco',
-      headerName: 'Nível de Risco',
+    { 
+      field: 'nome', 
+      headerName: 'Nome', 
       width: 200,
-      valueGetter: (params) => params.row.nivelDeRisco || params.row.nivel_de_risco
-    }
+      valueGetter: (params) => params.value || ''
+    },
+    { 
+      field: 'peso', 
+      headerName: 'Peso (kg)', 
+      width: 150,
+      valueGetter: (params) => params.value || 0,
+      valueFormatter: (params) => {
+        const valor = params.value || 0;
+        return `${valor} kg`;
+      }
+    },
+    { 
+      field: 'volume', 
+      headerName: 'Volume (m³)', 
+      width: 150,
+      valueGetter: (params) => params.value || 0,
+      valueFormatter: (params) => {
+        const valor = params.value || 0;
+        return `${valor} m³`;
+      }
+    },
+    { 
+      field: 'nivelDeRisco', 
+      headerName: 'Nível de Risco', 
+      width: 150,
+      valueGetter: (params) => params.value || 'baixo',
+      valueFormatter: (params) => {
+        const nivel = params.value || 'baixo';
+        return nivel.charAt(0).toUpperCase() + nivel.slice(1).toLowerCase();
+      }
+    },
+    {
+      field: 'acoes',
+      headerName: 'Ações',
+      width: 100,
+      renderCell: (params) => (
+        <Button
+          variant="outline-primary"
+          size="sm"
+          onClick={() => handleEdit(params.row)}
+        >
+          Editar
+        </Button>
+      ),
+    },
   ];
 
-  const rows = materiais.map(m => ({
-    ...m,
-    nivelDeRisco: m.nivelDeRisco || m.nivel_de_risco
-  }));
-
   return (
-    <div>
+    <div className="container mt-4">
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h2>Materiais</h2>
-        <Button variant="primary" onClick={() => setShowModal(true)}>
+        <Button 
+          variant="primary" 
+          className="mb-3"
+          onClick={() => {
+            setSelectedMaterial(null);
+            setFormData({
+              nome: '',
+              peso: 0,
+              volume: 0,
+              nivelDeRisco: 'baixo'
+            });
+            setShowModal(true);
+          }}
+        >
           <FontAwesomeIcon icon={faPlus} className="me-2" />
           Novo Material
         </Button>
@@ -119,16 +222,15 @@ function Materiais() {
         </Alert>
       )}
 
-      <div style={{ height: 500, width: '100%', marginBottom: 24 }}>
+      <div style={{ height: 400, width: '100%' }}>
         <DataGrid
-          rows={rows}
+          rows={materiais}
           columns={columns}
-          getRowId={row => row.idMaterial || row.id_material}
-          pageSize={10}
-          rowsPerPageOptions={[10, 20, 50]}
+          getRowId={(row) => row.id}
+          pageSize={5}
+          rowsPerPageOptions={[5]}
           disableSelectionOnClick
-          filterMode="client"
-          autoHeight={false}
+          autoHeight
         />
       </div>
 
@@ -146,6 +248,7 @@ function Materiais() {
                   <Form.Label>Nome</Form.Label>
                   <Form.Control
                     type="text"
+                    name="nome"
                     value={formData.nome}
                     onChange={e => setFormData({ ...formData, nome: e.target.value })}
                     required
@@ -156,6 +259,7 @@ function Materiais() {
                 <Form.Group className="mb-3" style={{ minWidth: 180 }}>
                   <Form.Label>Nível de Risco</Form.Label>
                   <Form.Select
+                    name="nivelDeRisco"
                     value={formData.nivelDeRisco}
                     onChange={e => setFormData({ ...formData, nivelDeRisco: e.target.value })}
                     required
@@ -174,6 +278,7 @@ function Materiais() {
                   <Form.Label>Peso</Form.Label>
                   <Form.Control
                     type="number"
+                    name="peso"
                     value={formData.peso}
                     onChange={e => setFormData({ ...formData, peso: e.target.value })}
                     required
@@ -185,6 +290,7 @@ function Materiais() {
                   <Form.Label>Volume</Form.Label>
                   <Form.Control
                     type="number"
+                    name="volume"
                     value={formData.volume}
                     onChange={e => setFormData({ ...formData, volume: e.target.value })}
                     required
