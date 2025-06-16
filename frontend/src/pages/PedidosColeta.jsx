@@ -42,7 +42,8 @@ function PedidosColeta() {
           cpfCliente: pedido.cpf_cliente,
           cpfColaborador: pedido.cpf_colaborador,
           data: pedido.data,
-          status: pedido.status
+          status: pedido.status,
+          tipo: pedido.tipo,// Garante que tipo seja sempre uma string
         }));
         setPedidos(pedidosFormatados);
       } else {
@@ -104,7 +105,7 @@ function PedidosColeta() {
         idMaterial: parseInt(formData.idMaterial),
         cpfCliente: String(formData.cpfCliente),
         cpfColaborador: String(formData.cpfColaborador),
-        tipo: formData.tipo,
+        tipo: String(formData.tipo),
         data: formData.data ? new Date(formData.data) : new Date()
       };
       if (selectedPedido) {
