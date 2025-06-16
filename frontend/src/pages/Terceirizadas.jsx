@@ -324,21 +324,6 @@ function Terceirizadas() {
                   </Form.Text>
                 </Form.Group>
               </div>
-              <div className="col-md-6">
-                <Form.Group className="mb-3">
-                  <Form.Label>Hierarquia</Form.Label>
-                  <Form.Select
-                    value={formData.hierarquia}
-                    onChange={e => setFormData({ ...formData, hierarquia: e.target.value })}
-                    required
-                  >
-                    <option value="">Selecione a hierarquia</option>
-                    <option value="Junior">Junior</option>
-                    <option value="Pleno">Pleno</option>
-                    <option value="Senior">Senior</option>
-                  </Form.Select>
-                </Form.Group>
-              </div>
             </div>
             <div className="d-flex justify-content-end gap-2">
               <Button variant="secondary" onClick={handleCloseModal}>

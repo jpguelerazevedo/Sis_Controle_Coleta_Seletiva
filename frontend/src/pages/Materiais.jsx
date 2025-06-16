@@ -198,13 +198,12 @@ function Materiais() {
           <FontAwesomeIcon icon={faPlus} className="me-2" />
           Novo Material
         </Button>
-
-        {alert.show && (
-          <Alert variant={alert.variant} onClose={() => setAlert({ show: false })} dismissible>
-            {alert.message}
-          </Alert>
-        )}
       </div>
+      {alert.show && (
+        <Alert variant={alert.variant} onClose={() => setAlert({ show: false })} dismissible>
+          {alert.message}
+        </Alert>
+      )}
 
 
 

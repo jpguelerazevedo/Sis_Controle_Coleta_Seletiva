@@ -239,9 +239,9 @@ function Clientes() {
       const clienteData = {
         cpf: cpfFormatado,
         id_endereco: enderecoResponse.data.id_endereco,
-        turno_preferido_de_coleta: formData.turno_preferido_de_coleta || 'MANHÃ',
-        status_cliente: formData.status_cliente || 'ATIVO',
-        frequencia_de_pedidos: formData.frequencia_de_pedidos || 'SEMANAL'
+        turno_preferido_de_coleta: formData.turno_preferido_de_coleta || 'Manhã',
+        status_cliente: formData.status_cliente || 'Ativo',
+        frequencia_de_pedidos: formData.frequencia_de_pedidos || 'Semanal'
       };
       console.log('Dados do cliente para cadastro:', clienteData);
       const clienteResponse = await endpoints.clientes.create(clienteData);
@@ -414,8 +414,8 @@ function Clientes() {
       telefone: '',
       sexo: '',
       turno_preferido_de_coleta: '',
-      status_cliente: 'ATIVO',
-      frequencia_de_pedidos: 'SEMANAL',
+      status_cliente  : 'Ativo',
+      frequencia_de_pedidos: 'Semanal',
       bairro_id: '',
       rua: '',
       numero: '',
@@ -591,7 +591,7 @@ function Clientes() {
                     required
                   >
                     <option value="">Selecione...</option>
-                    <option value="Manhâ">Manhã</option>
+                    <option value="Manhã">Manhã</option>
                     <option value="Tarde">Tarde</option>
                     <option value="Noite">Noite</option>
                   </Form.Select>
