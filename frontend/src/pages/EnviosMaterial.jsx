@@ -1,21 +1,22 @@
-import { useEffect, useState } from 'react';
-import { Table, Alert, Button, Modal, Form } from 'react-bootstrap';
-import { endpoints } from '../services/api';
+import React, { useEffect, useState } from 'react';
+import { Container, Button, Form, Modal, Alert } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
+import { endpoints } from '../services/api';
 import { DataGrid } from '@mui/x-data-grid';
 
 function EnviosMaterial() {
     const [envios, setEnvios] = useState([]);
-    const [alert, setAlert] = useState({ show: false, message: '', variant: 'success' });
-    const [showModal, setShowModal] = useState(false);
     const [materiais, setMateriais] = useState([]);
     const [terceirizadas, setTerceirizadas] = useState([]);
+    const [showModal, setShowModal] = useState(false);
+    const [selectedEnvio, setSelectedEnvio] = useState(null);
     const [formData, setFormData] = useState({
         idMaterial: '',
         cnpj: '',
         pesoEnviado: ''
     });
+    const [alert, setAlert] = useState({ show: false, message: '', variant: '' });
 
     useEffect(() => {
         loadEnvios();
@@ -26,47 +27,50 @@ function EnviosMaterial() {
     const loadEnvios = async () => {
         try {
             const response = await endpoints.enviosMaterial.list();
-            setEnvios(response.data);
+            if (response && response.data) {
+                const enviosFormatados = response.data.map(e => ({
+                    id: e.idEnvio || e.id_envio,
+                    idEnvio: e.idEnvio || e.id_envio,
+                    idMaterial: e.idMaterial,
+                    cnpj: e.cnpj,
+                    pesoEnviado: e.pesoEnviado || e.peso_enviado
+                }));
+                setEnvios(enviosFormatados);
+            } else {
+                setEnvios([]);
+            }
         } catch (error) {
-            setAlert({ show: true, message: 'Erro ao carregar envios', variant: 'danger' });
+            showAlert('Erro ao carregar envios: ' + error.message, 'danger');
+            setEnvios([]);
         }
     };
 
     const loadMateriais = async () => {
         try {
             const response = await endpoints.materiais.list();
-            setMateriais(response.data);
+            setMateriais(response.data || []);
         } catch (error) {
-            setAlert({ show: true, message: 'Erro ao carregar materiais', variant: 'danger' });
+            showAlert('Erro ao carregar materiais', 'danger');
         }
     };
 
     const loadTerceirizadas = async () => {
         try {
             const response = await endpoints.terceirizadas.list();
-            setTerceirizadas(response.data);
+            setTerceirizadas(response.data || []);
         } catch (error) {
-            setAlert({ show: true, message: 'Erro ao carregar terceirizadas', variant: 'danger' });
+            showAlert('Erro ao carregar terceirizadas', 'danger');
         }
     };
 
-    const showAlert = (message, variant = 'success') => {
-        setAlert({ show: true, message, variant });
-    };
-
-    const handleShowModal = () => setShowModal(true);
-    const handleCloseModal = () => {
-        setShowModal(false);
-        setFormData({
-            idMaterial: '',
-            cnpj: '',
-            pesoEnviado: ''
-        });
-    };
+    const safeValue = (val) => (val !== undefined && val !== null ? val : '');
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
-        setFormData({ ...formData, [name]: value });
+        setFormData({
+            ...formData,
+            [name]: value
+        });
     };
 
     const handleSubmit = async (e) => {
@@ -74,145 +78,188 @@ function EnviosMaterial() {
         try {
             const envioData = {
                 idMaterial: parseInt(formData.idMaterial),
-                cnpj: formData.cnpj,
+                cnpj: String(formData.cnpj),
                 pesoEnviado: parseFloat(formData.pesoEnviado)
             };
-
-            await endpoints.enviosMaterial.create(envioData);
-            showAlert('Envio registrado com sucesso!');
+            if (selectedEnvio) {
+                await endpoints.enviosMaterial.update(selectedEnvio.idEnvio, envioData);
+                showAlert('Envio atualizado com sucesso!', 'success');
+            } else {
+                await endpoints.enviosMaterial.create(envioData);
+                showAlert('Envio registrado com sucesso!', 'success');
+            }
             handleCloseModal();
             loadEnvios();
         } catch (error) {
-            console.error('Erro ao salvar envio:', error);
             showAlert('Erro ao salvar envio: ' + error.message, 'danger');
         }
     };
 
-   
+    const handleEdit = (envio) => {
+        setSelectedEnvio(envio);
+        setFormData({
+            idMaterial: safeValue(envio.idMaterial),
+            cnpj: safeValue(envio.cnpj),
+            pesoEnviado: safeValue(envio.pesoEnviado)
+        });
+        setShowModal(true);
+    };
+
+    const handleCloseModal = () => {
+        setShowModal(false);
+        setSelectedEnvio(null);
+        setFormData({
+            idMaterial: '',
+            cnpj: '',
+            pesoEnviado: ''
+        });
+    };
+
+    const showAlert = (message, variant) => {
+        setAlert({ show: true, message, variant });
+        setTimeout(() => setAlert({ show: false, message: '', variant: '' }), 3000);
+    };
 
     const columns = [
-        { field: 'idEnvio', headerName: 'ID', width: 70 },
-        { 
+        {
             field: 'idMaterial',
             headerName: 'Material',
             width: 200,
-            valueGetter: (params) => {
-                try {
-                    if (!params.row || !params.row.idMaterial) return '';
-                    const material = materiais.find(m => m.idMaterial === params.row.idMaterial);
-                    return material ? material.nome : '';
-                } catch (error) {
-                    console.error('Erro ao buscar material:', error);
-                    return '';
-                }
+            renderCell: (params) => {
+                const idMaterial = params.row.idMaterial;
+                const material = materiais.find(m => String(m.idMaterial) === String(idMaterial));
+                return material ? material.nome : '';
             }
         },
-        { field: 'cnpj', headerName: 'CNPJ', width: 150 },
-        { field: 'pesoEnviado', headerName: 'Peso (kg)', width: 130 },
-        
-        
+        {
+            field: 'cnpj',
+            headerName: 'Terceirizada',
+            width: 200,
+            renderCell: (params) => {
+                const terceirizada = terceirizadas.find(t => String(t.cnpj) === String(params.row.cnpj));
+                return terceirizada ? `${terceirizada.nome} - ${terceirizada.cnpj}` : params.row.cnpj;
+            }
+        },
+        { field: 'pesoEnviado', headerName: 'Peso Enviado (kg)', width: 150 }
+        // Removido o campo 'acoes'
     ];
 
     return (
-        <div className="container mt-4">
+        <Container className="mt-4">
             <div className="d-flex justify-content-between align-items-center mb-4">
                 <h2>Envios de Material</h2>
-                <Button variant="primary" onClick={handleShowModal}>
-                    <i className="bi bi-plus-circle me-2"></i>
+                <Button
+                    variant="primary"
+                    onClick={() => {
+                        setSelectedEnvio(null);
+                        setFormData({
+                            idMaterial: '',
+                            cnpj: '',
+                            pesoEnviado: ''
+                        });
+                        setShowModal(true);
+                    }}
+                    className="mb-3"
+                >
+                    <FontAwesomeIcon icon={faPlus} className="me-2" />
                     Novo Envio
                 </Button>
             </div>
-
             {alert.show && (
                 <Alert variant={alert.variant} onClose={() => setAlert({ ...alert, show: false })} dismissible>
                     {alert.message}
                 </Alert>
             )}
-
-            {envios.length === 0 ? (
-                <div className="text-center">
-                    <p>Nenhum envio encontrado.</p>
-                </div>
-            ) : (
-                <div style={{ height: 400, width: '100%' }}>
-                    <DataGrid
-                        rows={envios}
-                        columns={columns}
-                        pageSize={5}
-                        rowsPerPageOptions={[5]}
-                        checkboxSelection
-                        disableSelectionOnClick
-                        getRowId={(row) => row.idEnvio || row.id_envio}
-                        sx={{
-                            height: 400,
-                            width: '100%',
-                            '& .MuiDataGrid-cell:focus': {
-                                outline: 'none'
-                            }
-                        }}
-                    />
-                </div>
-            )}
-
-            <Modal show={showModal} onHide={handleCloseModal}>
+            <div style={{ height: 400, width: '100%' }}>
+                <DataGrid
+                    rows={envios}
+                    columns={columns}
+                    pageSize={5}
+                    rowsPerPageOptions={[5]}
+                    disableSelectionOnClick
+                    autoHeight
+                    getRowId={row => row.idEnvio || row.id_envio || row.id}
+                    isRowSelectable={() => false}
+                    disableVirtualization
+                />
+            </div>
+            <Modal show={showModal} onHide={handleCloseModal} size="lg" centered>
                 <Modal.Header closeButton>
-                    <Modal.Title>Novo Envio de Material</Modal.Title>
+                    <Modal.Title>
+                        {selectedEnvio ? 'Editar Envio' : 'Novo Envio de Material'}
+                    </Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
                     <Form onSubmit={handleSubmit}>
-                        <Form.Group className="mb-3">
-                            <Form.Label>Material</Form.Label>
-                            <Form.Select
-                                name="idMaterial"
-                                value={formData.idMaterial}
-                                onChange={handleInputChange}
-                                required
-                            >
-                                <option value="">Selecione um material</option>
-                                {materiais.map((material) => (
-                                    <option key={material.idMaterial} value={material.idMaterial}>
-                                        {material.nome}
-                                    </option>
-                                ))}
-                            </Form.Select>
-                        </Form.Group>
-
-                        <Form.Group className="mb-3">
-                            <Form.Label>CNPJ da Terceirizada</Form.Label>
-                            <Form.Control
-                                type="text"
-                                name="cnpj"
-                                value={formData.cnpj}
-                                onChange={handleInputChange}
-                                required
-                            />
-                        </Form.Group>
-
-                        <Form.Group className="mb-3">
-                            <Form.Label>Peso Enviado (kg)</Form.Label>
-                            <Form.Control
-                                type="number"
-                                name="pesoEnviado"
-                                value={formData.pesoEnviado}
-                                onChange={handleInputChange}
-                                required
-                                min="0"
-                                step="0.01"
-                            />
-                        </Form.Group>
-
+                        {/* Linha 1: Material e Terceirizada */}
+                        <div className="row">
+                            <div className="col-md-7">
+                                <Form.Group className="mb-3">
+                                    <Form.Label>Material</Form.Label>
+                                    <Form.Select
+                                        name="idMaterial"
+                                        value={safeValue(formData.idMaterial)}
+                                        onChange={handleInputChange}
+                                        required
+                                    >
+                                        <option value="">Selecione um material</option>
+                                        {materiais.map((material) => (
+                                            <option key={material.idMaterial} value={material.idMaterial}>
+                                                {material.nome}
+                                            </option>
+                                        ))}
+                                    </Form.Select>
+                                </Form.Group>
+                            </div>
+                            <div className="col-md-5">
+                                <Form.Group className="mb-3">
+                                    <Form.Label>Terceirizada</Form.Label>
+                                    <Form.Select
+                                        name="cnpj"
+                                        value={safeValue(formData.cnpj)}
+                                        onChange={handleInputChange}
+                                        required
+                                    >
+                                        <option value="">Selecione a terceirizada</option>
+                                        {terceirizadas.map((t) => (
+                                            <option key={t.cnpj} value={t.cnpj}>
+                                                {t.nome} - {t.cnpj}
+                                            </option>
+                                        ))}
+                                    </Form.Select>
+                                </Form.Group>
+                            </div>
+                        </div>
+                        {/* Linha 2: Peso Enviado */}
+                        <div className="row">
+                            <div className="col-md-6">
+                                <Form.Group className="mb-3">
+                                    <Form.Label>Peso Enviado (kg)</Form.Label>
+                                    <Form.Control
+                                        type="number"
+                                        name="pesoEnviado"
+                                        value={safeValue(formData.pesoEnviado)}
+                                        onChange={handleInputChange}
+                                        required
+                                        min="0"
+                                        step="0.01"
+                                    />
+                                </Form.Group>
+                            </div>
+                        </div>
+                        {/* Botões */}
                         <div className="d-flex justify-content-end gap-2">
                             <Button variant="secondary" onClick={handleCloseModal}>
                                 Cancelar
                             </Button>
                             <Button variant="primary" type="submit">
-                                Salvar
+                                {selectedEnvio ? 'Atualizar' : 'Cadastrar'}
                             </Button>
                         </div>
                     </Form>
                 </Modal.Body>
             </Modal>
-        </div>
+        </Container>
     );
 }
 

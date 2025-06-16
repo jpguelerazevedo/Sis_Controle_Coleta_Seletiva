@@ -80,13 +80,6 @@ function Clientes() {
           >
             Editar
           </Button>
-          <Button
-            variant="outline-danger"
-            size="sm"
-            onClick={() => handleDelete(params.row.cpf)}
-          >
-            Excluir
-          </Button>
         </div>
       ),
     },
@@ -414,7 +407,7 @@ function Clientes() {
       telefone: '',
       sexo: '',
       turno_preferido_de_coleta: '',
-      status_cliente  : 'Ativo',
+      status_cliente: 'Ativo',
       frequencia_de_pedidos: 'Semanal',
       bairro_id: '',
       rua: '',
@@ -467,14 +460,14 @@ function Clientes() {
           <FontAwesomeIcon icon={faPlus} className="me-2" />
           Novo Cliente
         </Button>
-        {alert.show && (
-          <Alert variant={alert.variant} onClose={() => setAlert({ show: false })} dismissible>
-            {alert.message}
-          </Alert>
-        )}
+
 
       </div>
-
+      {alert.show && (
+        <Alert variant={alert.variant} onClose={() => setAlert({ show: false })} dismissible>
+          {alert.message}
+        </Alert>
+      )}
 
 
 
@@ -486,6 +479,7 @@ function Clientes() {
           rowsPerPageOptions={[5]}
           disableSelectionOnClick
           autoHeight
+          isRowSelectable={() => false}
         />
       </div>
 
@@ -515,6 +509,7 @@ function Clientes() {
                     placeholder="000.000.000-00"
                     required
                     maxLength={14}
+                    disabled={!!selectedCliente}
                   />
                 </Form.Group>
               </div>

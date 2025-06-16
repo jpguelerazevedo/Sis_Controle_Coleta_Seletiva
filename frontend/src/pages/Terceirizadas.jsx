@@ -17,7 +17,7 @@ function Terceirizadas() {
     endereco: '',
     tipo_servico: '',
     status: 'ativo',
-    horarioDeFuncionamento: 8, // Valor padrão em horas
+    horarioDeFuncionamento: '', // Valor padrão em horas
     hierarquia: '' // Novo campo hierarquia
   });
   const [alert, setAlert] = useState({ show: false, message: '', variant: '' });
@@ -109,7 +109,7 @@ function Terceirizadas() {
       cnpj: terceirizada.cnpj || '',
       telefone: terceirizada.telefone || '',
       email: terceirizada.email || '',
-      horarioDeFuncionamento: terceirizada.horarioDeFuncionamento || 8,
+      horarioDeFuncionamento: terceirizada.horarioDeFuncionamento || '',
       hierarquia: terceirizada.hierarquia || '' // Adicionando hierarquia ao editar
     });
     setShowModal(true);
@@ -140,7 +140,7 @@ function Terceirizadas() {
       endereco: '',
       tipo_servico: '',
       status: 'ativo',
-      horarioDeFuncionamento: 8,
+      horarioDeFuncionamento: '08:00-18:00',
       hierarquia: '' // Resetando hierarquia ao fechar o modal
     });
   };
@@ -188,8 +188,6 @@ function Terceirizadas() {
       field: 'horarioDeFuncionamento',
       headerName: 'Horário de Funcionamento',
       width: 200,
-
-
     },
     {
       field: 'acoes',
@@ -205,13 +203,6 @@ function Terceirizadas() {
             onClick={() => handleEdit(params.row)}
           >
             Editar
-          </Button>
-          <Button
-            variant="outline-danger"
-            size="sm"
-            onClick={() => handleDelete(params.row)}
-          >
-            Excluir
           </Button>
         </div>
       )
@@ -277,6 +268,7 @@ function Terceirizadas() {
                     placeholder="00000000000000"
                     maxLength={14}
                     required
+                    disabled={!!selectedTerceirizada}
                   />
                 </Form.Group>
               </div>

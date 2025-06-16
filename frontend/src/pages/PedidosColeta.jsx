@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
-import { Table, Button, Modal, Form, Alert, Badge } from 'react-bootstrap';
+import React, { useState, useEffect } from 'react';
+import { Container, Button, Form, Modal, Alert } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlus, faEdit, faTrash, faCheck, faTimes } from '@fortawesome/free-solid-svg-icons';
+import { faPlus } from '@fortawesome/free-solid-svg-icons';
 import { endpoints } from '../services/api';
 import { DataGrid } from '@mui/x-data-grid';
 
@@ -9,16 +9,16 @@ function PedidosColeta() {
   const [pedidos, setPedidos] = useState([]);
   const [clientes, setClientes] = useState([]);
   const [materiais, setMateriais] = useState([]);
+  const [colaboradores, setColaboradores] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [selectedPedido, setSelectedPedido] = useState(null);
-  const [showConfirmModal, setShowConfirmModal] = useState(false);
-  const [actionType, setActionType] = useState(''); // 'cancel' ou 'edit'
   const [formData, setFormData] = useState({
-    cpfCliente: '',
-    cpfColaborador: '',
     peso: '',
     volume: '',
-    idMaterial: ''
+    idMaterial: '',
+    cpfCliente: '',
+    cpfColaborador: '',
+    tipo: ''
   });
   const [alert, setAlert] = useState({ show: false, message: '', variant: '' });
 
@@ -26,34 +26,29 @@ function PedidosColeta() {
     loadPedidos();
     loadClientes();
     loadMateriais();
+    loadColaboradores();
   }, []);
 
   const loadPedidos = async () => {
     try {
-      console.log('Carregando pedidos...');
       const response = await endpoints.pedidosColeta.list();
-      console.log('Resposta da API:', response);
-      
       if (response && response.data) {
         const pedidosFormatados = response.data.map(pedido => ({
-          idPedido: pedido.idPedido,
-          idMaterial: pedido.idMaterial,
-          tipo: pedido.tipo,
+          id: pedido.idPedido || pedido.id_pedido,
+          idPedido: pedido.idPedido || pedido.id_pedido,
           peso: pedido.peso,
           volume: pedido.volume,
+          idMaterial: pedido.idMaterial,
           cpfCliente: pedido.cpf_cliente,
           cpfColaborador: pedido.cpf_colaborador,
-          data_pedido: pedido.data_pedido,
+          data: pedido.data,
           status: pedido.status
         }));
-        console.log('Pedidos formatados:', pedidosFormatados);
         setPedidos(pedidosFormatados);
       } else {
-        console.error('Resposta da API inválida:', response);
         setPedidos([]);
       }
     } catch (error) {
-      console.error('Erro ao carregar pedidos:', error);
       showAlert('Erro ao carregar pedidos: ' + error.message, 'danger');
       setPedidos([]);
     }
@@ -62,7 +57,7 @@ function PedidosColeta() {
   const loadClientes = async () => {
     try {
       const response = await endpoints.clientes.list();
-      setClientes(response.data);
+      setClientes(response.data || []);
     } catch (error) {
       showAlert('Erro ao carregar clientes', 'danger');
     }
@@ -71,93 +66,87 @@ function PedidosColeta() {
   const loadMateriais = async () => {
     try {
       const response = await endpoints.materiais.list();
-      setMateriais(response.data);
+      setMateriais(response.data || []);
     } catch (error) {
       showAlert('Erro ao carregar materiais', 'danger');
     }
   };
 
+  const loadColaboradores = async () => {
+    try {
+      const response = await endpoints.colaboradores.list();
+      setColaboradores(response.data || []);
+    } catch (error) {
+      showAlert('Erro ao carregar colaboradores', 'danger');
+    }
+  };
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    
-    if (name === 'cpfCliente' || name === 'cpfColaborador') {
-      const cpfNumerico = value.replace(/\D/g, '').slice(0, 11);
-      setFormData({
-        ...formData,
-        [name]: cpfNumerico
-      });
-    } else {
-      setFormData({
-        ...formData,
-        [name]: value
-      });
-    }
+    setFormData({
+      ...formData,
+      [name]: value
+    });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      // Encontra o material selecionado
       const materialSelecionado = materiais.find(m => m.idMaterial === parseInt(formData.idMaterial));
       if (!materialSelecionado) {
         showAlert('Material não encontrado', 'danger');
         return;
       }
-
+      // Inclui o campo data ao salvar
       const pedidoData = {
-        cpfCliente: formData.cpfCliente,
-        cpfColaborador: formData.cpfColaborador,
         peso: parseFloat(formData.peso),
         volume: parseFloat(formData.volume),
         idMaterial: parseInt(formData.idMaterial),
-        tipo: materialSelecionado.nome
+        cpfCliente: String(formData.cpfCliente),
+        cpfColaborador: String(formData.cpfColaborador),
+        tipo: formData.tipo,
+        data: formData.data ? new Date(formData.data) : new Date()
       };
-
-      await endpoints.pedidosColeta.create(pedidoData);
-      showAlert('Pedido registrado com sucesso!', 'success');
+      if (selectedPedido) {
+        await endpoints.pedidosColeta.update(selectedPedido.idPedido, pedidoData);
+        showAlert('Pedido atualizado com sucesso!', 'success');
+      } else {
+        await endpoints.pedidosColeta.create(pedidoData);
+        showAlert('Pedido registrado com sucesso!', 'success');
+      }
       handleCloseModal();
       loadPedidos();
     } catch (error) {
-      console.error('Erro ao salvar pedido:', error);
       showAlert('Erro ao salvar pedido: ' + error.message, 'danger');
     }
   };
 
+  // Ensure all form fields are always defined (never undefined)
+  const safeValue = (val) => (val !== undefined && val !== null ? val : '');
+
   const handleEdit = (pedido) => {
     setSelectedPedido(pedido);
     setFormData({
-      data_pedido: pedido.data_pedido,
-      status: pedido.status,
-      observacoes: pedido.observacoes || '',
-      cpfCliente: pedido.cpf_cliente,
-      cpfColaborador: pedido.cpf_colaborador,
-      peso: pedido.peso,
-      volume: pedido.volume,
-      idMaterial: pedido.idMaterial
+      peso: safeValue(pedido.peso),
+      volume: safeValue(pedido.volume),
+      idMaterial: safeValue(pedido.idMaterial),
+      cpfCliente: safeValue(pedido.cpfCliente),
+      cpfColaborador: safeValue(pedido.cpfColaborador),
+      tipo: safeValue(pedido.tipo)
     });
     setShowModal(true);
   };
 
-
-  const handleStatusChange = async (id, novoStatus) => {
-    try {
-      const pedido = pedidos.find(p => p.id === id);
-      await endpoints.pedidosColeta.update(id, { ...pedido, status: novoStatus });
-      showAlert('Status atualizado com sucesso!', 'success');
-      loadPedidos();
-    } catch (error) {
-      showAlert('Erro ao atualizar status', 'danger');
-    }
-  };
-
   const handleCloseModal = () => {
     setShowModal(false);
+    setSelectedPedido(null);
     setFormData({
-      cpfCliente: '',
-      cpfColaborador: '',
       peso: '',
       volume: '',
-      idMaterial: ''
+      idMaterial: '',
+      cpfCliente: '',
+      cpfColaborador: '',
+      tipo: ''
     });
   };
 
@@ -166,151 +155,76 @@ function PedidosColeta() {
     setTimeout(() => setAlert({ show: false, message: '', variant: '' }), 3000);
   };
 
-  const getStatusBadge = (status) => {
-    const variants = {
-      pendente: 'warning',
-      em_andamento: 'info',
-      concluido: 'success',
-      cancelado: 'danger'
-    };
-    return <Badge bg={variants[status] || 'secondary'}>{status}</Badge>;
-  };
-
-  const getClienteNome = (id) => {
-    const cliente = clientes.find(c => c.id === id);
-    return cliente ? cliente.nome : 'Cliente não encontrado';
-  };
-
-  const getMaterialNome = (id) => {
-    const material = materiais.find(m => m.id === id);
-    return material ? material.nome : 'Material não encontrado';
-  };
-
-  const handleCancelPedido = async (pedido) => {
-    try {
-      await endpoints.pedidosColeta.update(pedido.idPedido, {
-        ...pedido,
-        status: 'cancelado'
-      });
-      showAlert('Pedido cancelado com sucesso!', 'success');
-      loadPedidos();
-    } catch (error) {
-      console.error('Erro ao cancelar pedido:', error);
-      showAlert('Erro ao cancelar pedido: ' + error.message, 'danger');
-    }
-  };
-
-  const handleEditPedido = (pedido) => {
-    setSelectedPedido(pedido);
-    setFormData({
-      data_pedido: pedido.data_pedido,
-      status: pedido.status,
-      observacoes: pedido.observacoes || '',
-      cpfCliente: pedido.cpf_cliente,
-      cpfColaborador: pedido.cpf_colaborador,
-      peso: pedido.peso,
-      volume: pedido.volume,
-      idMaterial: pedido.idMaterial
-    });
-    setShowModal(true);
-  };
-
-  const handleConfirmAction = async () => {
-    try {
-      if (actionType === 'cancel') {
-        await endpoints.pedidosColeta.update(selectedPedido.idPedido, {
-          ...selectedPedido,
-          status: 'cancelado'
-        });
-        showAlert('Pedido cancelado com sucesso!', 'success');
-      }
-      setShowConfirmModal(false);
-      loadPedidos();
-    } catch (error) {
-      console.error('Erro ao executar ação:', error);
-      showAlert('Erro ao executar ação: ' + error.message, 'danger');
-    }
-  };
-
-  const handleDelete = async (pedido) => {
-    try {
-      console.log('Excluindo pedido:', pedido.idPedido);
-      await endpoints.pedidosColeta.delete(pedido.idPedido);
-      showAlert('Pedido excluído com sucesso!', 'success');
-      loadPedidos();
-    } catch (error) {
-      console.error('Erro ao excluir pedido:', error);
-      showAlert('Erro ao excluir pedido: ' + error.message, 'danger');
-    }
-  };
-
-  // Defina as colunas para o DataGrid
   const columns = [
-    { field: 'idPedido', headerName: 'ID', width: 70 },
-    { 
+    {
       field: 'idMaterial',
       headerName: 'Material',
       width: 200,
-      valueGetter: (params) => {
-        try {
-          if (!params || !params.row || !params.row.idMaterial) return '';
-          const material = materiais.find(m => m.idMaterial === params.row.idMaterial);
-          return material ? material.nome : params.row.tipo || '';
-        } catch (error) {
-          console.error('Erro ao buscar material:', error);
-          return params.row.tipo || '';
-        }
+      renderCell: (params) => {
+        const idMaterial = params.row.idMaterial;
+        const material = materiais.find(m => String(m.idMaterial) === String(idMaterial));
+        return material ? material.nome : '';
       }
     },
-    { field: 'peso', headerName: 'Peso (kg)', width: 130 },
-    { field: 'volume', headerName: 'Volume (m³)', width: 130 },
-    { field: 'cpfCliente', headerName: 'Cliente', width: 130 },
-    { field: 'cpfColaborador', headerName: 'Colaborador', width: 130 },
-  
+    {
+      field: 'tipo',
+      headerName: 'Estado do Material',
+      width: 150,
+      renderCell: (params) => {
+        // Garante que o valor seja string e visível
+        return params.row.tipo !== undefined && params.row.tipo !== null
+          ? String(params.row.tipo)
+          : '';
+      }
+    },
+    { field: 'peso', headerName: 'Peso (kg)', width: 120 },
+    { field: 'volume', headerName: 'Volume (m³)', width: 120 },
+    { field: 'cpfCliente', headerName: 'Cliente', width: 150 },
+    { field: 'cpfColaborador', headerName: 'Colaborador', width: 150 },
   ];
 
   return (
-    <div className="container mt-4">
+    <Container className="mt-4">
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h2>Pedidos de Coleta</h2>
-        <Button variant="primary" onClick={() => setShowModal(true)}>
-          <i className="bi bi-plus-circle me-2"></i>
+        <Button
+          variant="primary"
+          onClick={() => {
+            setSelectedPedido(null);
+            setFormData({
+              peso: '',
+              volume: '',
+              idMaterial: '',
+              cpfCliente: '',
+              cpfColaborador: ''
+            });
+            setShowModal(true);
+          }}
+          className="mb-3"
+        >
+          <FontAwesomeIcon icon={faPlus} className="me-2" />
           Novo Pedido
         </Button>
       </div>
-
       {alert.show && (
         <Alert variant={alert.variant} onClose={() => setAlert({ ...alert, show: false })} dismissible>
           {alert.message}
         </Alert>
       )}
-
-      {pedidos.length === 0 ? (
-        <div className="text-center">
-          <p>Nenhum pedido encontrado.</p>
-        </div>
-      ) : (
-        <div style={{ height: 400, width: '100%' }}>
-          <DataGrid
-            rows={pedidos}
-            columns={columns}
-            pageSize={5}
-            rowsPerPageOptions={[5]}
-            checkboxSelection
-            disableSelectionOnClick
-            getRowId={(row) => row.idPedido || row.id_pedido}
-            sx={{
-              height: 400,
-              width: '100%',
-              '& .MuiDataGrid-cell:focus': {
-                outline: 'none'
-              }
-            }}
-          />
-        </div>
-      )}
-
-      <Modal show={showModal} onHide={handleCloseModal} size="lg">
+      <div style={{ height: 400, width: '100%' }}>
+        <DataGrid
+          rows={pedidos}
+          columns={columns}
+          pageSize={5}
+          rowsPerPageOptions={[5]}
+          disableSelectionOnClick
+          autoHeight
+          getRowId={row => row.idPedido || row.id_pedido || row.id}
+          isRowSelectable={() => false}
+          disableVirtualization // <- Adicione esta linha para evitar warning do ref no React 19+
+        />
+      </div>
+      <Modal show={showModal} onHide={handleCloseModal} size="lg" centered>
         <Modal.Header closeButton>
           <Modal.Title>
             {selectedPedido ? 'Editar Pedido' : 'Novo Pedido de Coleta'}
@@ -318,75 +232,110 @@ function PedidosColeta() {
         </Modal.Header>
         <Modal.Body>
           <Form onSubmit={handleSubmit}>
-            <Form.Group className="mb-3">
-              <Form.Label>Material</Form.Label>
-              <Form.Select
-                name="idMaterial"
-                value={formData.idMaterial}
-                onChange={handleInputChange}
-                required
-              >
-                <option value="">Selecione um material</option>
-                {materiais.map((material) => (
-                  <option key={material.idMaterial} value={material.idMaterial}>
-                    {material.nome}
-                  </option>
-                ))}
-              </Form.Select>
-            </Form.Group>
-
-            <Form.Group className="mb-3">
-              <Form.Label>CPF do Cliente</Form.Label>
-              <Form.Control
-                type="text"
-                name="cpfCliente"
-                value={formData.cpfCliente}
-                onChange={handleInputChange}
-                required
-                pattern="\d{11}"
-                title="Digite um CPF válido (11 dígitos)"
-              />
-            </Form.Group>
-
-            <Form.Group className="mb-3">
-              <Form.Label>CPF do Colaborador</Form.Label>
-              <Form.Control
-                type="text"
-                name="cpfColaborador"
-                value={formData.cpfColaborador}
-                onChange={handleInputChange}
-                required
-                pattern="\d{11}"
-                title="Digite um CPF válido (11 dígitos)"
-              />
-            </Form.Group>
-
-            <Form.Group className="mb-3">
-              <Form.Label>Peso (kg)</Form.Label>
-              <Form.Control
-                type="number"
-                name="peso"
-                value={formData.peso}
-                onChange={handleInputChange}
-                required
-                min="0"
-                step="0.01"
-              />
-            </Form.Group>
-
-            <Form.Group className="mb-3">
-              <Form.Label>Volume (m³)</Form.Label>
-              <Form.Control
-                type="number"
-                name="volume"
-                value={formData.volume}
-                onChange={handleInputChange}
-                required
-                min="0"
-                step="0.01"
-              />
-            </Form.Group>
-
+            {/* Linha 1: Material e Estado do Material */}
+            <div className="row">
+              <div className="col-md-7">
+                <Form.Group className="mb-3">
+                  <Form.Label>Material</Form.Label>
+                  <Form.Select
+                    name="idMaterial"
+                    value={safeValue(formData.idMaterial)}
+                    onChange={handleInputChange}
+                    required
+                  >
+                    <option value="">Selecione um material</option>
+                    {materiais.map((material) => (
+                      <option key={material.idMaterial} value={material.idMaterial}>
+                        {material.nome}
+                      </option>
+                    ))}
+                  </Form.Select>
+                </Form.Group>
+              </div>
+              <div className="col-md-5">
+                <Form.Group className="mb-3">
+                  <Form.Label>Estado do Material</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="tipo"
+                    value={safeValue(formData.tipo)}
+                    onChange={handleInputChange}
+                    placeholder="Ex: Novo, Usado, Danificado"
+                  />
+                </Form.Group>
+              </div>
+            </div>
+            {/* Linha 2: Peso e Volume */}
+            <div className="row">
+              <div className="col-md-6">
+                <Form.Group className="mb-3">
+                  <Form.Label>Peso (kg)</Form.Label>
+                  <Form.Control
+                    type="number"
+                    name="peso"
+                    value={safeValue(formData.peso)}
+                    onChange={handleInputChange}
+                    required
+                    min="0"
+                    step="0.01"
+                  />
+                </Form.Group>
+              </div>
+              <div className="col-md-6">
+                <Form.Group className="mb-3">
+                  <Form.Label>Volume (m³)</Form.Label>
+                  <Form.Control
+                    type="number"
+                    name="volume"
+                    value={safeValue(formData.volume)}
+                    onChange={handleInputChange}
+                    required
+                    min="0"
+                    step="0.01"
+                  />
+                </Form.Group>
+              </div>
+            </div>
+            {/* Linha 3: Cliente e Colaborador */}
+            <div className="row">
+              <div className="col-md-6">
+                <Form.Group className="mb-3">
+                  <Form.Label>CPF do Cliente</Form.Label>
+                  <Form.Select
+                    name="cpfCliente"
+                    value={safeValue(formData.cpfCliente)}
+                    onChange={handleInputChange}
+                    required
+                  >
+                    <option value="">Selecione o cliente</option>
+                    {clientes.map((cliente) => (
+                      <option key={cliente.cpf} value={cliente.cpf}>
+                        {cliente.nome} - {cliente.cpf}
+                      </option>
+                    ))}
+                  </Form.Select>
+                </Form.Group>
+              </div>
+              <div className="col-md-6">
+                <Form.Group className="mb-3">
+                  <Form.Label>CPF do Colaborador</Form.Label>
+                  <Form.Select
+                    name="cpfColaborador"
+                    value={safeValue(formData.cpfColaborador)}
+                    onChange={handleInputChange}
+                    required
+                  >
+                    <option value="">Selecione o colaborador</option>
+                    {colaboradores.map((colab) => (
+                      <option key={colab.cpf} value={colab.cpf}>
+                        {colab.nome} - {colab.cpf}
+                      </option>
+                    ))}
+                  </Form.Select>
+                </Form.Group>
+              </div>
+            </div>
+            {/* Botões */}
             <div className="d-flex justify-content-end gap-2">
               <Button variant="secondary" onClick={handleCloseModal}>
                 Cancelar
@@ -398,29 +347,7 @@ function PedidosColeta() {
           </Form>
         </Modal.Body>
       </Modal>
-
-      {/* Modal de Confirmação */}
-      <Modal show={showConfirmModal} onHide={() => setShowConfirmModal(false)}>
-        <Modal.Header closeButton>
-          <Modal.Title>Confirmar Ação</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          {actionType === 'cancel' ? (
-            <p>Tem certeza que deseja cancelar este pedido?</p>
-          ) : (
-            <p>Tem certeza que deseja editar este pedido?</p>
-          )}
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowConfirmModal(false)}>
-            Não
-          </Button>
-          <Button variant="primary" onClick={handleConfirmAction}>
-            Sim
-          </Button>
-        </Modal.Footer>
-      </Modal>
-    </div>
+    </Container>
   );
 }
 

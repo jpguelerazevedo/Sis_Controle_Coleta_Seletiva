@@ -55,7 +55,7 @@ function Colaboradores() {
           sexo: colaborador.pessoa?.sexo || '',
           cargo: colaborador.cargos?.nomeCargo || '',
           idCargo: colaborador.idCargo || '',
-          status: colaborador.status || 'ATIVO'
+          status: colaborador.status || 'Ativo'
         };
       }).filter(Boolean); // Remove possíveis nulls
 
@@ -160,7 +160,7 @@ function Colaboradores() {
       if (selectedColaborador) {
         console.log('Atualizando colaborador existente...');
         try {
-          await endpoints.colaboradores.update(selectedColaborador.id, colaboradorData);
+          await endpoints.colaboradores.update(cpfNumerico, colaboradorData);
           console.log('Colaborador atualizado com sucesso');
           showAlert('Colaborador atualizado com sucesso!', 'success');
         } catch (updateError) {
@@ -194,17 +194,23 @@ function Colaboradores() {
   };
 
   const handleEdit = (colaborador) => {
-    console.log('Editando colaborador:', colaborador);
-    setSelectedColaborador(colaborador);
+    // Busca o colaborador pelo CPF/id na lista original para garantir dados completos
+    const colaboradorCompleto = colaboradores.find(c => c.cpf === colaborador.cpf || c.id === colaborador.id) || colaborador;
+
+    setSelectedColaborador(colaboradorCompleto);
     setFormData({
-      nome: colaborador.pessoa?.nome || '',
-      cpf: colaborador.pessoa?.cpf || '',
-      telefone: colaborador.pessoa?.telefone || '',
-      email: colaborador.pessoa?.email || '',
-      dataAdmissao: colaborador.dataAdmissao || new Date().toISOString().split('T')[0],
-      sexo: colaborador.pessoa?.sexo || '',
-      cargo: colaborador.idCargo || '',
-      nacionalidade: colaborador.nacionalidade || 'Brasileiro'
+      nome: colaboradorCompleto.nome || colaboradorCompleto.pessoa?.nome || '',
+      cpf: colaboradorCompleto.cpf || colaboradorCompleto.pessoa?.cpf || '',
+      telefone: colaboradorCompleto.telefone || colaboradorCompleto.pessoa?.telefone || '',
+      email: colaboradorCompleto.email || colaboradorCompleto.pessoa?.email || '',
+      dataAdmissao: colaboradorCompleto.dataAdmissao
+        ? (colaboradorCompleto.dataAdmissao.length === 10
+          ? colaboradorCompleto.dataAdmissao.split('/').reverse().join('-')
+          : colaboradorCompleto.dataAdmissao)
+        : new Date().toISOString().split('T')[0],
+      sexo: colaboradorCompleto.sexo || colaboradorCompleto.pessoa?.sexo || '',
+      cargo: colaboradorCompleto.idCargo || colaboradorCompleto.cargo || '',
+      nacionalidade: colaboradorCompleto.nacionalidade || 'Brasileiro'
     });
     setShowModal(true);
   };
@@ -212,7 +218,8 @@ function Colaboradores() {
   const handleDelete = async (id) => {
     if (window.confirm('Tem certeza que deseja excluir este colaborador?')) {
       try {
-        await endpoints.colaboradores.delete(id);
+        const cpfNumerico = id.replace(/\D/g, '');
+        await endpoints.colaboradores.delete(cpfNumerico);
         showAlert('Colaborador excluído com sucesso!', 'success');
         loadColaboradores();
       } catch (error) {
@@ -303,13 +310,6 @@ function Colaboradores() {
           >
             Editar
           </Button>
-          <Button
-            variant="outline-danger"
-            size="sm"
-            onClick={() => handleDelete(params.row)}
-          >
-            Excluir
-          </Button>
         </div>
       )
     }
@@ -340,6 +340,7 @@ function Colaboradores() {
           disableSelectionOnClick
           autoHeight
           getRowId={(row) => row.id || row.cpf}
+          isRowSelectable={() => false}
         />
       </div>
 
@@ -377,6 +378,7 @@ function Colaboradores() {
                     onChange={handleInputChange}
                     placeholder="000.000.000-00"
                     required
+                    disabled={!!selectedColaborador}
                   />
                 </Form.Group>
               </div>

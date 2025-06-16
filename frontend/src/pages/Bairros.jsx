@@ -12,9 +12,9 @@ function Bairros() {
     const [formData, setFormData] = useState({
         nome: '',
         distancia_sede: '',
-        qnt_pessoas_cadastradas: '',
         estado_de_acesso: ''
     });
+    const [selectedBairro, setSelectedBairro] = useState(null);
 
     useEffect(() => {
         loadBairros();
@@ -30,12 +30,13 @@ function Bairros() {
     };
 
     const handleShowModal = () => setShowModal(true);
+
     const handleCloseModal = () => {
         setShowModal(false);
+        setSelectedBairro(null);
         setFormData({
             nome: '',
             distancia_sede: '',
-            qnt_pessoas_cadastradas: '',
             estado_de_acesso: ''
         });
     };
@@ -43,12 +44,39 @@ function Bairros() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await endpoints.bairros.create(formData);
-            setAlert({ show: true, message: 'Bairro cadastrado com sucesso!', variant: 'success' });
+            if (selectedBairro) {
+                await endpoints.bairros.update(selectedBairro.id_bairro, formData);
+                setAlert({ show: true, message: 'Bairro atualizado com sucesso!', variant: 'success' });
+            } else {
+                await endpoints.bairros.create(formData);
+                setAlert({ show: true, message: 'Bairro cadastrado com sucesso!', variant: 'success' });
+            }
             handleCloseModal();
             loadBairros();
         } catch (error) {
-            setAlert({ show: true, message: 'Erro ao cadastrar bairro', variant: 'danger' });
+            setAlert({ show: true, message: 'Erro ao salvar bairro', variant: 'danger' });
+        }
+    };
+
+    const handleEdit = (bairro) => {
+        setSelectedBairro(bairro);
+        setFormData({
+            nome: bairro.nome || '',
+            distancia_sede: bairro.distancia_sede || '',
+            estado_de_acesso: bairro.estado_de_acesso || ''
+        });
+        setShowModal(true);
+    };
+
+    const handleDelete = async (id_bairro) => {
+        if (window.confirm('Tem certeza que deseja excluir este bairro?')) {
+            try {
+                await endpoints.bairros.delete(id_bairro);
+                setAlert({ show: true, message: 'Bairro excluído com sucesso!', variant: 'success' });
+                loadBairros();
+            } catch (error) {
+                setAlert({ show: true, message: 'Erro ao excluir bairro', variant: 'danger' });
+            }
         }
     };
 
@@ -56,6 +84,24 @@ function Bairros() {
         { field: 'nome', headerName: 'Nome', width: 250 },
         { field: 'distancia_sede', headerName: 'Distância Sede', width: 120 },
         { field: 'estado_de_acesso', headerName: 'Estado de Acesso', width: 140 },
+        {
+            field: 'acoes',
+            headerName: 'Ações',
+            width: 120,
+            sortable: false,
+            renderCell: (params) => (
+                <div>
+                    <Button
+                        variant="outline-primary"
+                        size="sm"
+                        className="me-2"
+                        onClick={() => handleEdit(params.row)}
+                    >
+                        Editar
+                    </Button>
+                </div>
+            )
+        }
     ];
 
     return (
@@ -81,13 +127,14 @@ function Bairros() {
                     rowsPerPageOptions={[10, 20, 50]}
                     disableSelectionOnClick
                     filterMode="client"
+                    isRowSelectable={() => false}
                     autoHeight
                 />
             </div>
 
             <Modal show={showModal} onHide={handleCloseModal}>
                 <Modal.Header closeButton>
-                    <Modal.Title>Novo Bairro</Modal.Title>
+                    <Modal.Title>{selectedBairro ? 'Editar Bairro' : 'Novo Bairro'}</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
                     <Form onSubmit={handleSubmit}>
@@ -110,15 +157,6 @@ function Bairros() {
                             />
                         </Form.Group>
                         <Form.Group className="mb-3">
-                            <Form.Label>Qtd. Pessoas Cadastradas</Form.Label>
-                            <Form.Control
-                                type="number"
-                                value={formData.qnt_pessoas_cadastradas}
-                                onChange={e => setFormData({ ...formData, qnt_pessoas_cadastradas: e.target.value })}
-                                required
-                            />
-                        </Form.Group>
-                        <Form.Group className="mb-3">
                             <Form.Label>Estado de Acesso</Form.Label>
                             <Form.Select
                                 value={formData.estado_de_acesso}
@@ -136,7 +174,7 @@ function Bairros() {
                                 Cancelar
                             </Button>
                             <Button variant="primary" type="submit">
-                                Cadastrar
+                                {selectedBairro ? 'Atualizar' : 'Cadastrar'}
                             </Button>
                         </div>
                     </Form>

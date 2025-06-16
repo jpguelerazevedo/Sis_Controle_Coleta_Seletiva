@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Table, Button, Modal, Form, Alert } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlus, faEdit, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { faPlus } from '@fortawesome/free-solid-svg-icons';
 import { endpoints } from '../services/api';
 import { DataGrid } from '@mui/x-data-grid';
 
@@ -52,56 +52,38 @@ function Materiais() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      console.log('Iniciando operação com material...');
-      console.log('Dados do formulário:', formData);
-      console.log('Material selecionado:', selectedMaterial);
-
-      const materialData = {
-        nome: formData.nome || '',
-        peso: formData.peso || 0,
-        volume: formData.volume || 0,
-        nivelDeRisco: formData.nivelDeRisco || 'baixo'
-      };
-      console.log('Dados do material para operação:', materialData);
+      let materialData;
+      if (selectedMaterial) {
+        // Atualizar apenas nome e nivelDeRisco
+        materialData = {
+          nome: formData.nome || '',
+          nivelDeRisco: formData.nivelDeRisco || 'baixo'
+        };
+      } else {
+        materialData = {
+          nome: formData.nome || '',
+          peso: formData.peso || 0,
+          volume: formData.volume || 0,
+          nivelDeRisco: formData.nivelDeRisco || 'baixo'
+        };
+      }
 
       if (selectedMaterial) {
-        console.log('Atualizando material existente...');
-        try {
-          await endpoints.materiais.update(selectedMaterial.idMaterial, materialData);
-          console.log('Material atualizado com sucesso');
-          showAlert('Material atualizado com sucesso!', 'success');
-        } catch (updateError) {
-          console.warn('Aviso: Erro ao atualizar material, mas continuando...', updateError);
-          showAlert('Material pode ter sido atualizado, mas houve erro na resposta.', 'warning');
-        }
+        await endpoints.materiais.update(selectedMaterial.id || selectedMaterial.idMaterial, materialData);
+        showAlert('Material atualizado com sucesso!', 'success');
       } else {
-        console.log('Criando novo material...');
-        try {
-          await endpoints.materiais.create(materialData);
-          console.log('Material criado com sucesso');
-          showAlert('Material cadastrado com sucesso!', 'success');
-        } catch (createError) {
-          console.warn('Aviso: Erro ao criar material, mas continuando...', createError);
-          showAlert('Material pode ter sido cadastrado, mas houve erro na resposta.', 'warning');
-        }
+        await endpoints.materiais.create(materialData);
+        showAlert('Material cadastrado com sucesso!', 'success');
       }
 
-      // Tenta recarregar os dados mesmo com erro
-      try {
-        await loadMateriais();
-        handleCloseModal();
-      } catch (loadError) {
-        console.error('Erro ao recarregar materiais:', loadError);
-        handleCloseModal();
-      }
+      await loadMateriais();
+      handleCloseModal();
     } catch (error) {
-      console.error('Erro geral na operação:', error);
-      showAlert('Erro ao processar operação', 'danger');
+      showAlert('Erro ao processar material', 'danger');
     }
   };
 
   const handleEdit = (material) => {
-    console.log('Editando material:', material);
     setSelectedMaterial(material);
     setFormData({
       nome: material.nome || '',
@@ -160,21 +142,8 @@ function Materiais() {
       field: 'nivelDeRisco',
       headerName: 'Nível de Risco',
       width: 150,
-    },
-    {
-      field: 'acoes',
-      headerName: 'Ações',
-      width: 150,
-      renderCell: (params) => (
-        <Button
-          variant="outline-primary"
-          size="sm"
-          onClick={() => handleEdit(params.row)}
-        >
-          Editar
-        </Button>
-      ),
-    },
+    }
+    // Removido o campo 'acoes'
   ];
 
   return (
@@ -216,9 +185,11 @@ function Materiais() {
           rowsPerPageOptions={[5]}
           disableSelectionOnClick
           autoHeight
+          isRowSelectable={() => false}
         />
       </div>
 
+      {/* Removido o botão de editar do modal e da tabela */}
       <Modal show={showModal} onHide={handleCloseModal} centered size="lg">
         <Modal.Header closeButton>
           <Modal.Title>
@@ -267,6 +238,7 @@ function Materiais() {
                     value={formData.peso}
                     onChange={e => setFormData({ ...formData, peso: e.target.value })}
                     required
+                    disabled={!!selectedMaterial}
                   />
                 </Form.Group>
               </div>
@@ -279,6 +251,7 @@ function Materiais() {
                     value={formData.volume}
                     onChange={e => setFormData({ ...formData, volume: e.target.value })}
                     required
+                    disabled={!!selectedMaterial}
                   />
                 </Form.Group>
               </div>

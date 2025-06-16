@@ -1,4 +1,4 @@
-import { Nav } from 'react-bootstrap';
+import { Nav, Dropdown } from 'react-bootstrap';
 import { Link, useLocation } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -11,7 +11,8 @@ import {
   faIdCard,
   faArrowDown,
   faArrowUp,
-  faMedal
+  faMedal,
+  faTools // Novo ícone para serviços
 } from '@fortawesome/free-solid-svg-icons';
 import logo from '../assets/logo.png';
 import '../App.css';
@@ -35,12 +36,14 @@ function Sidebar({ isCollapsed }) {
     { path: '/cargos', icon: faMedal, label: 'CARGOS' },
     { path: '/terceirizadas', icon: faBuilding, label: 'TERCEIRIZADAS' },
     { path: '/bairros', icon: faMapMarkedAlt, label: 'BAIRROS' },
-    //{ path: '/pessoas', icon: faIdCard, label: 'PESSOAS' },
-    // Separador visual antes das próximas opções
-    { separator: true },
-    { path: '/pedidos-coleta', icon: faTruck, label: 'PEDIDOS DE COLETA' },
-    { path: '/recebimentos-material', icon: faArrowDown, label: 'RECEBIMENTOS MATERIAL' },
-    { path: '/envios-material', icon: faArrowUp, label: 'ENVIOS MATERIAL' },
+    // Serviços será um dropdown com ícone melhor
+    {
+      dropdown: true, label: 'SERVIÇOS', icon: faTools, items: [
+        { path: '/pedidos-coleta', icon: faTruck, label: 'Pedidos de Coleta' },
+        { path: '/recebimentos-material', icon: faArrowDown, label: 'Recebimentos Material' },
+        { path: '/envios-material', icon: faArrowUp, label: 'Envios Material' },
+      ]
+    }
   ];
 
   return (
@@ -56,6 +59,7 @@ function Sidebar({ isCollapsed }) {
             height: '100vh',
             background: 'rgba(0,0,0,0.4)',
             zIndex: 1039, // abaixo da sidebar (1040)
+
           }}
         />
       )}
@@ -92,8 +96,36 @@ function Sidebar({ isCollapsed }) {
             }}
           >
             {menuItems.map((item, idx) =>
-              item.separator ? (
-                <div key={`sep-${idx}`} style={{ paddingTop: '3rem' }} />
+              item.dropdown ? (
+                <Dropdown
+                  key={`dropdown-${idx}`}
+                  className="w-100 mb-2"
+                  style={{ marginTop: '2rem' }} // Espaçamento extra no topo do dropdown
+                >
+                  <Dropdown.Toggle
+                    variant="success"
+                    className="w-100 text-start"
+                    style={{ background: 'transparent', border: 'none', color: 'white', fontWeight: 500 }}
+                  >
+                    <FontAwesomeIcon icon={item.icon} className="me-2" />
+                    {item.label}
+                  </Dropdown.Toggle>
+                  <Dropdown.Menu className="w-100">
+                    {item.items.map((sub, subIdx) => (
+                      <Dropdown.Item
+                        as={Link}
+                        to={sub.path}
+                        key={sub.path}
+                        active={location.pathname === sub.path}
+                        className="d-flex align-items-center"
+                        style={{ fontWeight: 500 }}
+                      >
+                        <FontAwesomeIcon icon={sub.icon} className="me-2" />
+                        {sub.label}
+                      </Dropdown.Item>
+                    ))}
+                  </Dropdown.Menu>
+                </Dropdown>
               ) : (
                 <Nav.Item key={item.path} className="w-100">
                   <Nav.Link

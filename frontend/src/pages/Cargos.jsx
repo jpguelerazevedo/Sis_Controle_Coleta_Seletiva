@@ -208,6 +208,7 @@ const Cargos = () => {
           rowsPerPageOptions={[5]}
           disableSelectionOnClick
           autoHeight
+          isRowSelectable={() => false}
         />
       </div>
 

@@ -11,7 +11,7 @@ class PedidoColeta extends Model {
             },
             tipo: {
                 type: DataTypes.STRING,
-                allowNull: false
+                allowNull: true // Permite null para evitar erro se não enviado
             },
             peso: {
                 type: DataTypes.FLOAT,
@@ -48,6 +48,7 @@ class PedidoColeta extends Model {
                     key: 'cpf'
                 }
             }
+            // Removido o campo 'data'
         }, {
             sequelize,
             modelName: 'pedidoColeta',
