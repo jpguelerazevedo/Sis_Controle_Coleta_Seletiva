@@ -32,7 +32,7 @@ function Colaboradores() {
       console.log('Iniciando carregamento de colaboradores...');
       const response = await endpoints.colaboradores.list();
       console.log('Resposta da API de colaboradores:', response);
-      
+
       if (!response?.data) {
         console.log('Nenhum dado recebido da API');
         setColaboradores([]);
@@ -44,7 +44,7 @@ function Colaboradores() {
 
       const colaboradoresFormatados = colaboradores.map(colaborador => {
         if (!colaborador) return null;
-        
+
         return {
           id: colaborador.cpf || '',
           nome: colaborador.pessoa?.nome || '',
@@ -73,7 +73,7 @@ function Colaboradores() {
       console.log('Iniciando carregamento de cargos...');
       const response = await endpoints.cargos.list();
       console.log('Resposta da API de cargos:', response);
-      
+
       if (response?.data) {
         console.log('Dados dos cargos recebidos:', response.data);
         setCargos(response.data);
@@ -90,7 +90,7 @@ function Colaboradores() {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    
+
     if (name === 'cpf') {
       // Remove caracteres não numéricos
       const cpfNumerico = value.replace(/\D/g, '');
@@ -252,55 +252,46 @@ function Colaboradores() {
   };
 
   const columns = [
-    { 
-      field: 'nome', 
-      headerName: 'Nome', 
-      flex: 1,
-      valueGetter: (params) => params.row?.nome || ''
+    {
+      field: 'nome',
+      headerName: 'Nome',
+      width: 200,
     },
-    { 
-      field: 'cpf', 
-      headerName: 'CPF', 
-      flex: 1,
-      valueGetter: (params) => params.row?.cpf || ''
+    {
+      field: 'cpf',
+      headerName: 'CPF',
+      width: 130,
     },
-    { 
-      field: 'telefone', 
-      headerName: 'Telefone', 
-      flex: 1,
-      valueGetter: (params) => params.row?.telefone || ''
+    {
+      field: 'telefone',
+      headerName: 'Telefone',
+      width: 150
     },
-    { 
-      field: 'email', 
-      headerName: 'Email', 
-      flex: 1,
-      valueGetter: (params) => params.row?.email || ''
+    {
+      field: 'email',
+      headerName: 'Email',
+      width: 200,
     },
-    { 
-      field: 'dataAdmissao', 
-      headerName: 'Data de Admissão', 
-      flex: 1,
-      valueGetter: (params) => params.row?.dataAdmissao || ''
+    {
+      field: 'dataAdmissao',
+      headerName: 'Data de Admissão',
+      width: 150,
+
     },
-    { 
-      field: 'sexo', 
-      headerName: 'Sexo', 
-      flex: 1,
-      valueGetter: (params) => {
-        const sexo = params.row?.sexo || '';
-        return sexo === 'M' ? 'Masculino' : sexo === 'F' ? 'Feminino' : sexo;
-      }
+    {
+      field: 'sexo',
+      headerName: 'Sexo',
+      width: 60,
     },
-    { 
-      field: 'cargo', 
-      headerName: 'Cargo', 
-      flex: 1,
-      valueGetter: (params) => params.row?.cargo || ''
+    {
+      field: 'cargo',
+      headerName: 'Cargo',
+      width: 180
     },
     {
       field: 'acoes',
       headerName: 'Ações',
-      flex: 1,
+      width: 150,
       sortable: false,
       renderCell: (params) => (
         <div>
@@ -340,23 +331,17 @@ function Colaboradores() {
         </Alert>
       )}
 
-      {colaboradores.length === 0 ? (
-        <div className="text-center p-4">
-          <p>Nenhum colaborador cadastrado</p>
-        </div>
-      ) : (
-        <div style={{ height: 400, width: '100%' }}>
-          <DataGrid
-            rows={colaboradores}
-            columns={columns}
-            pageSize={5}
-            rowsPerPageOptions={[5]}
-            disableSelectionOnClick
-            getRowId={(row) => row.id || row.cpf}
-            loading={!colaboradores.length}
-          />
-        </div>
-      )}
+      <div style={{ height: 400, width: '100%' }}>
+        <DataGrid
+          rows={colaboradores}
+          columns={columns}
+          pageSize={5}
+          rowsPerPageOptions={[5]}
+          disableSelectionOnClick
+          autoHeight
+          getRowId={(row) => row.id || row.cpf}
+        />
+      </div>
 
       <Modal show={showModal} onHide={handleCloseModal} size="lg" centered>
         <Modal.Header closeButton>

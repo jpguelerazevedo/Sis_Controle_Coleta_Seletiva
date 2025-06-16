@@ -54,13 +54,12 @@ function Bairros() {
 
     const columns = [
         { field: 'nome', headerName: 'Nome', width: 250 },
-        { field: 'distancia_sede', headerName: 'Distância Sede', width: 200 },
-        { field: 'qnt_pessoas_cadastradas', headerName: 'Qtd. Pessoas Cadastradas', width: 200 },
-        { field: 'estado_de_acesso', headerName: 'Estado de Acesso', width: 200 },
+        { field: 'distancia_sede', headerName: 'Distância Sede', width: 120 },
+        { field: 'estado_de_acesso', headerName: 'Estado de Acesso', width: 140 },
     ];
 
     return (
-        <div>
+        <div className='container mt-4'>
             <div className="d-flex justify-content-between align-items-center mb-4">
                 <h2>Bairros</h2>
                 <Button variant="primary" onClick={handleShowModal}>
@@ -82,7 +81,7 @@ function Bairros() {
                     rowsPerPageOptions={[10, 20, 50]}
                     disableSelectionOnClick
                     filterMode="client"
-                    autoHeight={false}
+                    autoHeight
                 />
             </div>
 
@@ -127,9 +126,9 @@ function Bairros() {
                                 required
                             >
                                 <option value="">Selecione o estado de acesso</option>
-                                <option value="normal">Normal</option>
-                                <option value="obstruido">Obstruído</option>
-                                <option value="dificil acesso">Difícil acesso</option>
+                                <option value="Facil">Facil</option>
+                                <option value="Mediano">Mediano</option>
+                                <option value="Difícil">Difícil</option>
                             </Form.Select>
                         </Form.Group>
                         <div className="d-flex justify-content-end gap-2">

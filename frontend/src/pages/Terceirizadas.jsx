@@ -17,7 +17,8 @@ function Terceirizadas() {
     endereco: '',
     tipo_servico: '',
     status: 'ativo',
-    horarioDeFuncionamento: 8 // Valor padrão em horas
+    horarioDeFuncionamento: 8, // Valor padrão em horas
+    hierarquia: '' // Novo campo hierarquia
   });
   const [alert, setAlert] = useState({ show: false, message: '', variant: '' });
 
@@ -30,7 +31,7 @@ function Terceirizadas() {
       console.log('Iniciando carregamento de terceirizadas...');
       const response = await endpoints.terceirizadas.list();
       console.log('Resposta da API de terceirizadas:', response);
-      
+
       if (!response?.data) {
         console.log('Nenhum dado recebido da API');
         setTerceirizadas([]);
@@ -42,7 +43,7 @@ function Terceirizadas() {
 
       const terceirizadasFormatadas = terceirizadas.map(terceirizada => {
         if (!terceirizada) return null;
-        
+
         return {
           id: terceirizada.cnpj, // Usando o CNPJ como ID
           cnpj: terceirizada.cnpj || '',
@@ -81,7 +82,8 @@ function Terceirizadas() {
         cnpj: cnpjNumerico,
         telefone: formData.telefone,
         email: formData.email,
-        horarioDeFuncionamento: horarioNumerico
+        horarioDeFuncionamento: horarioNumerico,
+        hierarquia: formData.hierarquia // Incluindo hierarquia nos dados da terceirizada
       };
 
       if (selectedTerceirizada) {
@@ -107,7 +109,8 @@ function Terceirizadas() {
       cnpj: terceirizada.cnpj || '',
       telefone: terceirizada.telefone || '',
       email: terceirizada.email || '',
-      horarioDeFuncionamento: terceirizada.horarioDeFuncionamento || 8
+      horarioDeFuncionamento: terceirizada.horarioDeFuncionamento || 8,
+      hierarquia: terceirizada.hierarquia || '' // Adicionando hierarquia ao editar
     });
     setShowModal(true);
   };
@@ -137,7 +140,8 @@ function Terceirizadas() {
       endereco: '',
       tipo_servico: '',
       status: 'ativo',
-      horarioDeFuncionamento: 8
+      horarioDeFuncionamento: 8,
+      hierarquia: '' // Resetando hierarquia ao fechar o modal
     });
   };
 
@@ -160,43 +164,37 @@ function Terceirizadas() {
   };
 
   const columns = [
-    { 
-      field: 'nome', 
-      headerName: 'Nome', 
-      flex: 1,
-      valueGetter: (params) => params.row?.nome || ''
+    {
+      field: 'nome',
+      headerName: 'Nome',
+      width: 200,
     },
-    { 
-      field: 'cnpj', 
-      headerName: 'CNPJ', 
-      flex: 1,
-      valueGetter: (params) => params.row?.cnpj || ''
+    {
+      field: 'cnpj',
+      headerName: 'CNPJ',
+      width: 130,
     },
-    { 
-      field: 'telefone', 
-      headerName: 'Telefone', 
-      flex: 1,
-      valueGetter: (params) => params.row?.telefone || ''
+    {
+      field: 'telefone',
+      headerName: 'Telefone',
+      width: 150
     },
-    { 
-      field: 'email', 
-      headerName: 'Email', 
-      flex: 1,
-      valueGetter: (params) => params.row?.email || ''
+    {
+      field: 'email',
+      headerName: 'Email',
+      width: 200,
     },
-    { 
-      field: 'horarioDeFuncionamento', 
-      headerName: 'Horário de Funcionamento', 
-      flex: 1,
-      valueGetter: (params) => {
-        const horario = params.row?.horarioDeFuncionamento || '';
-        return horario ? `${horario}h` : '';
-      }
+    {
+      field: 'horarioDeFuncionamento',
+      headerName: 'Horário de Funcionamento',
+      width: 200,
+
+
     },
     {
       field: 'acoes',
       headerName: 'Ações',
-      flex: 1,
+      width: 150,
       sortable: false,
       renderCell: (params) => (
         <div>
@@ -223,37 +221,30 @@ function Terceirizadas() {
   return (
     <div className="container mt-4">
       <div className="d-flex justify-content-between align-items-center mb-4">
-        <h2>Terceirizadas</h2>
+        <h2 className="mb-0">Terceirizadas</h2>
         <Button variant="primary" onClick={() => setShowModal(true)}>
           <FontAwesomeIcon icon={faPlus} className="me-2" />
           Nova Terceirizada
         </Button>
       </div>
-
       {alert.show && (
         <Alert variant={alert.variant} onClose={() => setAlert({ show: false })} dismissible>
           {alert.message}
         </Alert>
       )}
-
-      {terceirizadas.length === 0 ? (
-        <div className="text-center p-4">
-          <p>Nenhuma terceirizada cadastrada</p>
-        </div>
-      ) : (
-        <div style={{ height: 400, width: '100%' }}>
-          <DataGrid
-            rows={terceirizadas}
-            columns={columns}
-            pageSize={5}
-            rowsPerPageOptions={[5]}
-            disableSelectionOnClick
-            getRowId={(row) => row.id || row.cnpj}
-            loading={!terceirizadas.length}
-          />
-        </div>
-      )}
-
+      <div style={{ height: 400, width: '100%' }}>
+        <DataGrid
+          rows={terceirizadas}
+          columns={columns}
+          pageSize={5}
+          rowsPerPageOptions={[5]}
+          disableSelectionOnClick
+          getRowId={(row) => row.id || row.cnpj}
+          checkboxSelection={false}
+          isRowSelectable={() => false}
+          autoHeight
+        />
+      </div>
       <Modal show={showModal} onHide={handleCloseModal} size="lg" centered>
         <Modal.Header closeButton>
           <Modal.Title>
@@ -331,6 +322,21 @@ function Terceirizadas() {
                   <Form.Text className="text-muted">
                     Formato: HH:MM-HH:MM (ex: 08:00-18:00) - Apenas a hora inicial será salva
                   </Form.Text>
+                </Form.Group>
+              </div>
+              <div className="col-md-6">
+                <Form.Group className="mb-3">
+                  <Form.Label>Hierarquia</Form.Label>
+                  <Form.Select
+                    value={formData.hierarquia}
+                    onChange={e => setFormData({ ...formData, hierarquia: e.target.value })}
+                    required
+                  >
+                    <option value="">Selecione a hierarquia</option>
+                    <option value="Junior">Junior</option>
+                    <option value="Pleno">Pleno</option>
+                    <option value="Senior">Senior</option>
+                  </Form.Select>
                 </Form.Group>
               </div>
             </div>

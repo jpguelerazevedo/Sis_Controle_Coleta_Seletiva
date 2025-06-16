@@ -16,8 +16,8 @@ function Clientes() {
     telefone: '',
     sexo: '',
     turno_preferido_de_coleta: '',
-    status_cliente: 'ATIVO',
-    frequencia_de_pedidos: 'SEMANAL',
+    status_cliente: 'Ativo',
+    frequencia_de_pedidos: '',
     bairro_id: '',
     rua: '',
     numero: '',
@@ -31,37 +31,37 @@ function Clientes() {
   const [selectionModel, setSelectionModel] = useState([]);
 
   const columns = [
-    { 
+    {
       field: 'cpf',
       headerName: 'CPF',
       width: 130
     },
-    { 
+    {
       field: 'nome',
       headerName: 'Nome',
       width: 200
     },
-    { 
+    {
       field: 'email',
       headerName: 'Email',
       width: 200
     },
-    { 
+    {
       field: 'telefone',
       headerName: 'Telefone',
       width: 150
     },
-    { 
+    {
       field: 'status_cliente',
       headerName: 'Status',
       width: 150
     },
-    { 
+    {
       field: 'turno_preferido_de_coleta',
       headerName: 'Turno de Coleta',
       width: 150
     },
-    { 
+    {
       field: 'frequencia_de_pedidos',
       headerName: 'Frequência',
       width: 150
@@ -69,7 +69,7 @@ function Clientes() {
     {
       field: 'acoes',
       headerName: 'Ações',
-      width: 130,
+      width: 150,
       renderCell: (params) => (
         <div>
           <Button
@@ -103,7 +103,7 @@ function Clientes() {
       console.log('Iniciando carregamento de clientes...');
       const response = await endpoints.clientes.list();
       console.log('Resposta da API de clientes:', response);
-      
+
       if (response?.data) {
         console.log('Dados dos clientes recebidos:', response.data);
         // Simplifica a estrutura dos dados
@@ -152,7 +152,7 @@ function Clientes() {
       console.log('Carregando bairros...');
       const response = await endpoints.bairros.list();
       console.log('Resposta da API de bairros:', response);
-      
+
       if (response?.data) {
         console.log('Bairros carregados:', response.data);
         setBairros(response.data);
@@ -170,12 +170,12 @@ function Clientes() {
   const formatCPF = (cpf) => {
     // Remove todos os caracteres não numéricos
     const cpfNumerico = cpf.replace(/\D/g, '');
-    
+
     // Verifica se tem 11 dígitos
     if (cpfNumerico.length !== 11) {
       throw new Error('CPF deve conter 11 dígitos numéricos.');
     }
-    
+
     return cpfNumerico;
   };
 
@@ -278,7 +278,7 @@ function Clientes() {
         sexo: formData.sexo || 'Não informado'
       };
       console.log('Dados da pessoa para atualização:', pessoaData);
-      
+
       try {
         await endpoints.pessoas.update(cpfFormatado, pessoaData);
         console.log('Pessoa atualizada com sucesso');
@@ -293,7 +293,7 @@ function Clientes() {
       const idEndereco = parseInt(selectedCliente.id_endereco);
       console.log('ID do bairro convertido:', idBairro);
       console.log('ID do endereço convertido:', idEndereco);
-      
+
       const enderecoData = {
         rua: formData.rua,
         numero: parseInt(formData.numero),
@@ -303,7 +303,7 @@ function Clientes() {
       };
       console.log('Dados do endereço para atualização:', enderecoData);
       console.log('ID do endereço para atualização:', idEndereco);
-      
+
       try {
         await endpoints.enderecos.update(idEndereco, enderecoData);
         console.log('Endereço atualizado com sucesso');
@@ -322,7 +322,7 @@ function Clientes() {
         frequencia_de_pedidos: formData.frequencia_de_pedidos || 'Semanal'
       };
       console.log('Dados do cliente para atualização:', clienteData);
-      
+
       try {
         await endpoints.clientes.update(cpfFormatado, clienteData);
         console.log('Cliente atualizado com sucesso');
@@ -349,7 +349,7 @@ function Clientes() {
         status: error.response?.status,
         data: error.response?.data
       });
-      
+
       let errorMessage = 'Erro ao atualizar cliente: ';
       if (error.response?.data?.error) {
         errorMessage += error.response.data.error;
@@ -358,7 +358,7 @@ function Clientes() {
       } else {
         errorMessage += error.message;
       }
-      
+
       showAlert(errorMessage, 'danger');
     }
   };
@@ -387,15 +387,15 @@ function Clientes() {
   const handleDelete = async (cpf) => {
     try {
       console.log('Iniciando deleção do cliente com CPF:', cpf);
-      
+
       // Primeiro deleta o cliente
       await endpoints.clientes.delete(cpf);
       console.log('Cliente deletado com sucesso');
-      
+
       // Depois deleta a pessoa
       await endpoints.pessoas.delete(cpf);
       console.log('Pessoa deletada com sucesso');
-      
+
       showAlert('Cliente excluído com sucesso!', 'success');
       loadClientes(); // Recarrega a lista
     } catch (error) {
@@ -438,39 +438,45 @@ function Clientes() {
   };
 
   return (
-    <Container fluid>
-      <h2>Gerenciamento de Clientes</h2>
-      <Button 
-        variant="primary" 
-        onClick={() => {
-          setSelectedCliente(null);
-          setFormData({
-            cpf: '',
-            nome: '',
-            email: '',
-            telefone: '',
-            sexo: '',
-            rua: '',
-            numero: '',
-            cep: '',
-            referencia: '',
-            id_bairro: '',
-            turno_preferido_de_coleta: '',
-            status_cliente: '',
-            frequencia_de_pedidos: ''
-          });
-          setShowModal(true);
-        }}
-        className="mb-3"
-      >
-        Novo Cliente
-      </Button>
+    <Container className='mt-4'>
+      <div className='d-flex justify-content-between align-items-center mb-4'>
+        <h2>Clientes</h2>
+        <Button
+          variant="primary"
+          onClick={() => {
+            setSelectedCliente(null);
+            setFormData({
+              cpf: '',
+              nome: '',
+              email: '',
+              telefone: '',
+              sexo: '',
+              rua: '',
+              numero: '',
+              cep: '',
+              referencia: '',
+              id_bairro: '',
+              turno_preferido_de_coleta: '',
+              status_cliente: '',
+              frequencia_de_pedidos: ''
+            });
+            setShowModal(true);
+          }}
+          className="mb-3"
+        >
+          <FontAwesomeIcon icon={faPlus} className="me-2" />
+          Novo Cliente
+        </Button>
+        {alert.show && (
+          <Alert variant={alert.variant} onClose={() => setAlert({ show: false })} dismissible>
+            {alert.message}
+          </Alert>
+        )}
 
-      {alert.show && (
-        <Alert variant={alert.variant} onClose={() => setAlert({ show: false })} dismissible>
-          {alert.message}
-        </Alert>
-      )}
+      </div>
+
+
+
 
       <div style={{ height: 400, width: '100%' }}>
         <DataGrid
@@ -478,20 +484,8 @@ function Clientes() {
           columns={columns}
           pageSize={5}
           rowsPerPageOptions={[5]}
-          checkboxSelection
           disableSelectionOnClick
-          onSelectionModelChange={(newSelectionModel) => {
-            setSelectionModel(newSelectionModel);
-          }}
-          selectionModel={selectionModel}
           autoHeight
-          components={{
-            NoRowsOverlay: () => (
-              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
-                Nenhum cliente cadastrado
-              </div>
-            ),
-          }}
         />
       </div>
 
@@ -597,9 +591,9 @@ function Clientes() {
                     required
                   >
                     <option value="">Selecione...</option>
-                    <option value="MANHA">Manhã</option>
-                    <option value="TARDE">Tarde</option>
-                    <option value="NOITE">Noite</option>
+                    <option value="Manhâ">Manhã</option>
+                    <option value="Tarde">Tarde</option>
+                    <option value="Noite">Noite</option>
                   </Form.Select>
                 </Form.Group>
               </div>
@@ -611,10 +605,10 @@ function Clientes() {
                     onChange={e => setFormData({ ...formData, frequencia_de_pedidos: e.target.value })}
                     required
                   >
-                    <option value="DIARIA">Diária</option>
-                    <option value="SEMANAL">Semanal</option>
-                    <option value="QUINZENAL">Quinzenal</option>
-                    <option value="MENSAL">Mensal</option>
+                    <option value="Diária">Diária</option>
+                    <option value="Semanal">Semanal</option>
+                    <option value="Quinzenal">Quinzenal</option>
+                    <option value="Mensal">Mensal</option>
                   </Form.Select>
                 </Form.Group>
               </div>

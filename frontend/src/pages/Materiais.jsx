@@ -26,7 +26,7 @@ function Materiais() {
       console.log('Iniciando carregamento de materiais...');
       const response = await endpoints.materiais.list();
       console.log('Resposta da API de materiais:', response);
-      
+
       if (response?.data) {
         console.log('Dados dos materiais recebidos:', response.data);
         const materiaisFormatados = response.data.map(material => ({
@@ -141,46 +141,30 @@ function Materiais() {
   };
 
   const columns = [
-    { 
-      field: 'nome', 
-      headerName: 'Nome', 
+    {
+      field: 'nome',
+      headerName: 'Nome',
       width: 200,
-      valueGetter: (params) => params.value || ''
     },
-    { 
-      field: 'peso', 
-      headerName: 'Peso (kg)', 
+    {
+      field: 'peso',
+      headerName: 'Peso (kg)',
       width: 150,
-      valueGetter: (params) => params.value || 0,
-      valueFormatter: (params) => {
-        const valor = params.value || 0;
-        return `${valor} kg`;
-      }
     },
-    { 
-      field: 'volume', 
-      headerName: 'Volume (m³)', 
+    {
+      field: 'volume',
+      headerName: 'Volume (m³)',
       width: 150,
-      valueGetter: (params) => params.value || 0,
-      valueFormatter: (params) => {
-        const valor = params.value || 0;
-        return `${valor} m³`;
-      }
     },
-    { 
-      field: 'nivelDeRisco', 
-      headerName: 'Nível de Risco', 
+    {
+      field: 'nivelDeRisco',
+      headerName: 'Nível de Risco',
       width: 150,
-      valueGetter: (params) => params.value || 'baixo',
-      valueFormatter: (params) => {
-        const nivel = params.value || 'baixo';
-        return nivel.charAt(0).toUpperCase() + nivel.slice(1).toLowerCase();
-      }
     },
     {
       field: 'acoes',
       headerName: 'Ações',
-      width: 100,
+      width: 150,
       renderCell: (params) => (
         <Button
           variant="outline-primary"
@@ -197,8 +181,8 @@ function Materiais() {
     <div className="container mt-4">
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h2>Materiais</h2>
-        <Button 
-          variant="primary" 
+        <Button
+          variant="primary"
           className="mb-3"
           onClick={() => {
             setSelectedMaterial(null);
@@ -214,13 +198,15 @@ function Materiais() {
           <FontAwesomeIcon icon={faPlus} className="me-2" />
           Novo Material
         </Button>
+
+        {alert.show && (
+          <Alert variant={alert.variant} onClose={() => setAlert({ show: false })} dismissible>
+            {alert.message}
+          </Alert>
+        )}
       </div>
 
-      {alert.show && (
-        <Alert variant={alert.variant} onClose={() => setAlert({ show: false })} dismissible>
-          {alert.message}
-        </Alert>
-      )}
+
 
       <div style={{ height: 400, width: '100%' }}>
         <DataGrid
@@ -265,9 +251,9 @@ function Materiais() {
                     required
                   >
                     <option value="">Selecione o nível de risco</option>
-                    <option value="baixo">Baixo</option>
-                    <option value="medio">Médio</option>
-                    <option value="alto">Alto</option>
+                    <option value="Baixo">Baixo</option>
+                    <option value="Medio">Médio</option>
+                    <option value="Alto">Alto</option>
                   </Form.Select>
                 </Form.Group>
               </div>

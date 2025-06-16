@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { DataGrid } from '@mui/x-data-grid';
 import { Button, Modal, Form, Alert } from 'react-bootstrap';
 import endpoints from '../services/endpoints';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faPlus } from '@fortawesome/free-solid-svg-icons';
 
 const Cargos = () => {
   const [cargos, setCargos] = useState([]);
@@ -44,7 +46,7 @@ const Cargos = () => {
       console.log('Iniciando carregamento de cargos...');
       const response = await endpoints.cargos.list();
       console.log('Resposta da API de cargos:', response);
-      
+
       if (response?.data) {
         console.log('Dados dos cargos recebidos:', response.data);
         const cargosFormatados = response.data.map(cargo => ({
@@ -72,47 +74,31 @@ const Cargos = () => {
   }, []);
 
   const columns = [
-    { 
-      field: 'nome', 
-      headerName: 'Nome', 
+    {
+      field: 'nome',
+      headerName: 'Nome',
       width: 200,
-      valueGetter: (params) => params.value || ''
     },
-    { 
-      field: 'descricao', 
-      headerName: 'Descrição', 
+    {
+      field: 'descricao',
+      headerName: 'Descrição',
       width: 300,
-      valueGetter: (params) => params.value || ''
     },
-    { 
-      field: 'hierarquia', 
-      headerName: 'Hierarquia', 
-      width: 150,
-      valueGetter: (params) => params.value || 1,
-      valueFormatter: (params) => {
-        const nivel = params.value || 1;
-        switch(nivel) {
-          case 1: return 'Alto';
-          case 2: return 'Médio';
-          case 3: return 'Baixo';
-          default: return 'Não definido';
-        }
-      }
+    {
+      field: 'hierarquia',
+      headerName: 'Hierarquia',
+      width: 100,
+
     },
-    { 
-      field: 'salario', 
-      headerName: 'Salário (R$)', 
+    {
+      field: 'salario',
+      headerName: 'Salário (R$)',
       width: 150,
-      valueGetter: (params) => params.value || 0,
-      valueFormatter: (params) => {
-        const valor = params.value || 0;
-        return `R$ ${valor.toFixed(2)}`;
-      }
     },
     {
       field: 'acoes',
       headerName: 'Ações',
-      width: 100,
+      width: 150,
       renderCell: (params) => (
         <Button
           variant="outline-primary"
@@ -190,23 +176,28 @@ const Cargos = () => {
 
   return (
     <div className="container mt-4">
-      <h2>Cargos</h2>
-      <Button 
-        variant="primary" 
-        className="mb-3"
-        onClick={() => {
-          setSelectedCargo(null);
-          setFormData({
-            nome: '',
-            descricao: '',
-            salario: 0,
-            hierarquia: 1
-          });
-          setShowModal(true);
-        }}
-      >
-        Novo Cargo
-      </Button>
+      <div className='d-flex justify-content-between align-items-center mb-4'>
+        <h2 className='mb-0'>Cargos</h2>
+        <Button
+          variant="primary"
+          className="mb-3"
+          onClick={() => {
+            setSelectedCargo(null);
+            setFormData({
+              nome: '',
+              descricao: '',
+              salario: 0,
+              hierarquia: 1
+            });
+            setShowModal(true);
+          }}
+        >
+          <FontAwesomeIcon icon={faPlus} className="me-2" />
+          Novo Cargo
+        </Button>
+
+      </div>
+
 
       <div style={{ height: 400, width: '100%' }}>
         <DataGrid
@@ -303,8 +294,8 @@ const Cargos = () => {
       </Modal>
 
       {alert.show && (
-        <Alert 
-          variant={alert.variant} 
+        <Alert
+          variant={alert.variant}
           onClose={() => setAlert({ show: false, message: '', variant: '' })}
           dismissible
           className="position-fixed top-0 end-0 m-3"

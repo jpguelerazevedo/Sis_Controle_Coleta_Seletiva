@@ -8,10 +8,10 @@ import {
   faTruck,
   faBuilding,
   faMapMarkedAlt,
-  faMapPin,
   faIdCard,
   faArrowDown,
-  faArrowUp
+  faArrowUp,
+  faMedal
 } from '@fortawesome/free-solid-svg-icons';
 import logo from '../assets/logo.png';
 import '../App.css';
@@ -32,7 +32,7 @@ function Sidebar({ isCollapsed }) {
     { path: '/clientes', icon: faUsers, label: 'CLIENTES' },
     { path: '/materiais', icon: faRecycle, label: 'MATERIAIS' },
     { path: '/colaboradores', icon: faIdCard, label: 'COLABORADORES' },
-    { path: '/cargos', icon: faIdCard, label: 'CARGOS' },
+    { path: '/cargos', icon: faMedal, label: 'CARGOS' },
     { path: '/terceirizadas', icon: faBuilding, label: 'TERCEIRIZADAS' },
     { path: '/bairros', icon: faMapMarkedAlt, label: 'BAIRROS' },
     //{ path: '/pessoas', icon: faIdCard, label: 'PESSOAS' },
