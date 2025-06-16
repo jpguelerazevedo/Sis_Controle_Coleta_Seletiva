@@ -140,7 +140,7 @@ function Terceirizadas() {
       endereco: '',
       tipo_servico: '',
       status: 'ativo',
-      horarioDeFuncionamento: '08:00-18:00',
+      horarioDeFuncionamento: '',
       hierarquia: '' // Resetando hierarquia ao fechar o modal
     });
   };
@@ -264,9 +264,22 @@ function Terceirizadas() {
                     type="text"
                     name="cnpj"
                     value={formData.cnpj}
-                    onChange={(e) => setFormData({ ...formData, cnpj: e.target.value })}
-                    placeholder="00000000000000"
-                    maxLength={14}
+                    onChange={e => {
+                      const cnpj = e.target.value.replace(/\D/g, '');
+                      let cnpjFormatado = cnpj;
+                      if (cnpj.length > 14) return;
+                      if (cnpj.length > 12)
+                        cnpjFormatado = cnpj.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5');
+                      else if (cnpj.length > 8)
+                        cnpjFormatado = cnpj.replace(/^(\d{2})(\d{3})(\d{3})(\d{0,4})/, '$1.$2.$3/$4');
+                      else if (cnpj.length > 5)
+                        cnpjFormatado = cnpj.replace(/^(\d{2})(\d{3})(\d{0,3})/, '$1.$2.$3');
+                      else if (cnpj.length > 2)
+                        cnpjFormatado = cnpj.replace(/^(\d{2})(\d{0,3})/, '$1.$2');
+                      setFormData({ ...formData, cnpj: cnpjFormatado });
+                    }}
+                    placeholder="00.000.000/0000-00"
+                    maxLength={18}
                     required
                     disabled={!!selectedTerceirizada}
                   />
@@ -283,6 +296,7 @@ function Terceirizadas() {
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     required
+                    placeholder='email@exemplo.com'
                   />
                 </Form.Group>
               </div>
@@ -293,8 +307,24 @@ function Terceirizadas() {
                     type="tel"
                     name="telefone"
                     value={formData.telefone}
-                    onChange={(e) => setFormData({ ...formData, telefone: e.target.value })}
+                    onChange={e => {
+                      const telefone = e.target.value.replace(/\D/g, '');
+                      let telefoneFormatado = telefone;
+                      if (telefone.length > 10) {
+                        telefoneFormatado = telefone.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
+                      } else if (telefone.length > 2) {
+                        telefoneFormatado = telefone.replace(/(\d{2})(\d{4,5})?(\d{0,4})?/, (m, d1, d2, d3) => {
+                          let out = `(${d1}`;
+                          if (d2) out += `) ${d2}`;
+                          if (d3) out += `-${d3}`;
+                          return out;
+                        });
+                      }
+                      setFormData({ ...formData, telefone: telefoneFormatado });
+                    }}
                     required
+                    placeholder='(00) 00000-0000'
+                    maxLength={15}
                   />
                 </Form.Group>
               </div>

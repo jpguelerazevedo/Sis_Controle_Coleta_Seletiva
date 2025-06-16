@@ -536,6 +536,7 @@ function Clientes() {
                     onChange={e => setFormData({ ...formData, email: e.target.value })}
                     required
                     maxLength={100}
+                    placeholder="email@exemplo.com"
                   />
                 </Form.Group>
               </div>
@@ -639,7 +640,7 @@ function Clientes() {
                     type="text"
                     value={formData.rua || ''}
                     onChange={e => setFormData({ ...formData, rua: e.target.value })}
-                    placeholder="Nome da rua"
+                    placeholder="Ex: Rua das ..."
                   />
                 </Form.Group>
               </div>
@@ -650,7 +651,7 @@ function Clientes() {
                     type="text"
                     value={formData.numero || ''}
                     onChange={e => setFormData({ ...formData, numero: e.target.value })}
-                    placeholder="Número"
+                    placeholder="Ex: 123"
                   />
                 </Form.Group>
               </div>
@@ -680,7 +681,7 @@ function Clientes() {
                     type="text"
                     value={formData.referencia || ''}
                     onChange={e => setFormData({ ...formData, referencia: e.target.value })}
-                    placeholder="Ponto de referência"
+                    placeholder="Ex: Próximo ao mercado"
                   />
                 </Form.Group>
               </div>

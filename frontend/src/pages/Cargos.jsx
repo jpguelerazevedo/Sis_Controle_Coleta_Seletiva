@@ -187,7 +187,7 @@ const Cargos = () => {
               nome: '',
               descricao: '',
               salario: 0,
-              hierarquia: 1
+              hierarquia: ''
             });
             setShowModal(true);
           }}
@@ -246,27 +246,13 @@ const Cargos = () => {
                     value={formData.descricao}
                     onChange={handleInputChange}
                     required
+                    placeholder='Descreva as responsabilidades e requisitos do cargo'
                   />
                 </Form.Group>
               </div>
             </div>
 
             <div className="row">
-              <div className="col-md-6">
-                <Form.Group className="mb-3">
-                  <Form.Label>Hierarquia</Form.Label>
-                  <Form.Select
-                    name="hierarquia"
-                    value={formData.hierarquia}
-                    onChange={handleInputChange}
-                    required
-                  >
-                    <option value="1">Alto</option>
-                    <option value="2">Médio</option>
-                    <option value="3">Baixo</option>
-                  </Form.Select>
-                </Form.Group>
-              </div>
               <div className="col-md-6">
                 <Form.Group className="mb-3">
                   <Form.Label>Salário (R$)</Form.Label>
@@ -278,6 +264,22 @@ const Cargos = () => {
                     onChange={handleInputChange}
                     required
                   />
+                </Form.Group>
+              </div>
+              <div className="col-md-6">
+                <Form.Group className="mb-3">
+                  <Form.Label>Nível de Hierarquia</Form.Label>
+                  <Form.Select
+                    name="hierarquia"
+                    value={formData.hierarquia}
+                    onChange={handleInputChange}
+                    required
+                  >
+                    <option value="">Selecione a hierarquia</option>
+                    <option value="1">Alto</option>
+                    <option value="2">Médio</option>
+                    <option value="3">Baixo</option>
+                  </Form.Select>
                 </Form.Group>
               </div>
             </div>
@@ -309,4 +311,4 @@ const Cargos = () => {
   );
 };
 
-export default Cargos; 
+export default Cargos;

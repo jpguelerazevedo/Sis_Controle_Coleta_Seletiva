@@ -373,11 +373,17 @@ function Colaboradores() {
                   <Form.Label>CPF</Form.Label>
                   <Form.Control
                     type="text"
-                    name="cpf"
                     value={formData.cpf}
-                    onChange={handleInputChange}
+                    onChange={e => {
+                      const cpf = e.target.value.replace(/\D/g, '');
+                      if (cpf.length <= 11) {
+                        const cpfFormatado = cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+                        setFormData({ ...formData, cpf: cpfFormatado });
+                      }
+                    }}
                     placeholder="000.000.000-00"
                     required
+                    maxLength={14}
                     disabled={!!selectedColaborador}
                   />
                 </Form.Group>
@@ -389,8 +395,24 @@ function Colaboradores() {
                     type="text"
                     name="telefone"
                     value={formData.telefone}
-                    onChange={handleInputChange}
+                    onChange={e => {
+                      const telefone = e.target.value.replace(/\D/g, '');
+                      let telefoneFormatado = telefone;
+                      if (telefone.length > 10) {
+                        telefoneFormatado = telefone.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
+                      } else if (telefone.length > 2) {
+                        telefoneFormatado = telefone.replace(/(\d{2})(\d{4,5})?(\d{0,4})?/, (m, d1, d2, d3) => {
+                          let out = `(${d1}`;
+                          if (d2) out += `) ${d2}`;
+                          if (d3) out += `-${d3}`;
+                          return out;
+                        });
+                      }
+                      setFormData({ ...formData, telefone: telefoneFormatado });
+                    }}
+                    placeholder="(00) 00000-0000"
                     required
+                    maxLength={15}
                   />
                 </Form.Group>
               </div>
@@ -403,6 +425,7 @@ function Colaboradores() {
                   <Form.Control
                     type="email"
                     name="email"
+                    placeholder='email@exemplo.com'
                     value={formData.email}
                     onChange={handleInputChange}
                     required

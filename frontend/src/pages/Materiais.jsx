@@ -157,8 +157,8 @@ function Materiais() {
             setSelectedMaterial(null);
             setFormData({
               nome: '',
-              peso: 0,
-              volume: 0,
+              peso: '',
+              volume: '',
               nivelDeRisco: 'baixo'
             });
             setShowModal(true);
@@ -239,6 +239,7 @@ function Materiais() {
                     onChange={e => setFormData({ ...formData, peso: e.target.value })}
                     required
                     disabled={!!selectedMaterial}
+                    placeholder='Peso (kg)'
                   />
                 </Form.Group>
               </div>
@@ -252,6 +253,7 @@ function Materiais() {
                     onChange={e => setFormData({ ...formData, volume: e.target.value })}
                     required
                     disabled={!!selectedMaterial}
+                    placeholder='Volume (m³)'
                   />
                 </Form.Group>
               </div>

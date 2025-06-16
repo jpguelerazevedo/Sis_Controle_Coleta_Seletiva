@@ -223,7 +223,7 @@ function EnviosMaterial() {
                                         <option value="">Selecione a terceirizada</option>
                                         {terceirizadas.map((t) => (
                                             <option key={t.cnpj} value={t.cnpj}>
-                                                {t.nome} - {t.cnpj}
+                                                {t.cnpj}
                                             </option>
                                         ))}
                                     </Form.Select>
@@ -234,7 +234,7 @@ function EnviosMaterial() {
                         <div className="row">
                             <div className="col-md-6">
                                 <Form.Group className="mb-3">
-                                    <Form.Label>Peso Enviado (kg)</Form.Label>
+                                    <Form.Label>Peso Enviado</Form.Label>
                                     <Form.Control
                                         type="number"
                                         name="pesoEnviado"
@@ -243,6 +243,7 @@ function EnviosMaterial() {
                                         required
                                         min="0"
                                         step="0.01"
+                                        placeholder='Peso (kg)'
                                     />
                                 </Form.Group>
                             </div>

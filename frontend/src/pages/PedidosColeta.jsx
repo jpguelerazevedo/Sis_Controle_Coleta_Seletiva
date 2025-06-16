@@ -269,7 +269,7 @@ function PedidosColeta() {
             <div className="row">
               <div className="col-md-6">
                 <Form.Group className="mb-3">
-                  <Form.Label>Peso (kg)</Form.Label>
+                  <Form.Label>Peso</Form.Label>
                   <Form.Control
                     type="number"
                     name="peso"
@@ -278,12 +278,13 @@ function PedidosColeta() {
                     required
                     min="0"
                     step="0.01"
+                    placeholder='Peso (kg)'
                   />
                 </Form.Group>
               </div>
               <div className="col-md-6">
                 <Form.Group className="mb-3">
-                  <Form.Label>Volume (m³)</Form.Label>
+                  <Form.Label>Volume</Form.Label>
                   <Form.Control
                     type="number"
                     name="volume"
@@ -292,6 +293,7 @@ function PedidosColeta() {
                     required
                     min="0"
                     step="0.01"
+                    placeholder='Volume (m³)'
                   />
                 </Form.Group>
               </div>
@@ -310,7 +312,7 @@ function PedidosColeta() {
                     <option value="">Selecione o cliente</option>
                     {clientes.map((cliente) => (
                       <option key={cliente.cpf} value={cliente.cpf}>
-                        {cliente.nome} - {cliente.cpf}
+                        {(cliente.nome || (cliente.pessoa && cliente.pessoa.nome) || '') + ' - ' + cliente.cpf}
                       </option>
                     ))}
                   </Form.Select>
@@ -328,7 +330,7 @@ function PedidosColeta() {
                     <option value="">Selecione o colaborador</option>
                     {colaboradores.map((colab) => (
                       <option key={colab.cpf} value={colab.cpf}>
-                        {colab.nome} - {colab.cpf}
+                        {(colab.nome || (colab.pessoa && colab.pessoa.nome) || '') + ' - ' + colab.cpf}
                       </option>
                     ))}
                   </Form.Select>

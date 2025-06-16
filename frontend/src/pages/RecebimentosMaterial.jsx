@@ -210,7 +210,7 @@ function RecebimentosMaterial() {
                     <Form onSubmit={handleSubmit}>
                         {/* Linha 1: Material, Peso */}
                         <div className="row">
-                            <div className="col-md-7">
+                            <div className="col-md-6">
                                 <Form.Group className="mb-3">
                                     <Form.Label>Material</Form.Label>
                                     <Form.Select
@@ -228,30 +228,33 @@ function RecebimentosMaterial() {
                                     </Form.Select>
                                 </Form.Group>
                             </div>
-                            <div className="col-md-5">
-                                <Form.Group className="mb-3">
-                                    <Form.Label>Peso (kg)</Form.Label>
-                                    <Form.Control
-                                        type="number"
-                                        name="peso"
-                                        value={safeValue(formData.peso)}
-                                        onChange={handleInputChange}
-                                        required
-                                        min="0"
-                                        step="0.01"
-                                    />
-                                </Form.Group>
-                            </div>
+
                         </div>
                         {/* Linha 2: Volume */}
                         <div className="row">
                             <div className="col-md-6">
                                 <Form.Group className="mb-3">
-                                    <Form.Label>Volume (m³)</Form.Label>
+                                    <Form.Label>Volume</Form.Label>
                                     <Form.Control
                                         type="number"
                                         name="volume"
                                         value={safeValue(formData.volume)}
+                                        onChange={handleInputChange}
+                                        required
+                                        min="0"
+                                        step="0.01"
+                                        placeholder='Volume (m³)'
+                                    />
+                                </Form.Group>
+                            </div>
+                            <div className="col-md-6">
+                                <Form.Group className="mb-3">
+                                    <Form.Label>Peso</Form.Label>
+                                    <Form.Control
+                                        placeholder='Peso (kg)'
+                                        type="number"
+                                        name="peso"
+                                        value={safeValue(formData.peso)}
                                         onChange={handleInputChange}
                                         required
                                         min="0"
@@ -274,7 +277,7 @@ function RecebimentosMaterial() {
                                         <option value="">Selecione o cliente</option>
                                         {clientes.map((cliente) => (
                                             <option key={cliente.cpf} value={cliente.cpf}>
-                                                {cliente.nome} - {cliente.cpf}
+                                                {(cliente.nome || (cliente.pessoa && cliente.pessoa.nome) || '') + ' - ' + cliente.cpf}
                                             </option>
                                         ))}
                                     </Form.Select>
@@ -292,7 +295,7 @@ function RecebimentosMaterial() {
                                         <option value="">Selecione o colaborador</option>
                                         {colaboradores.map((colab) => (
                                             <option key={colab.cpf} value={colab.cpf}>
-                                                {colab.nome} - {colab.cpf}
+                                                {(colab.nome || (colab.pessoa && colab.pessoa.nome) || '') + ' - ' + colab.cpf}
                                             </option>
                                         ))}
                                     </Form.Select>
