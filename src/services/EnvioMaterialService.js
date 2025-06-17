@@ -5,7 +5,7 @@ import { Op } from 'sequelize';
 
 class EnvioMaterialService {
     async createEnvioMaterial(data) {
-        const { idMaterial, cnpj, pesoEnviado } = data;
+        const { idMaterial, cnpj, pesoEnviado, volumeEnviado } = data;
 
         // Validation 1: Check if material exists and has minimum stock
         const material = await Material.findByPk(idMaterial);
@@ -42,14 +42,20 @@ class EnvioMaterialService {
             throw new Error('Terceirizada já recebeu um envio de material hoje.');
         }
 
-        // Validation 4: Check if peso is valid
+        // Validation 4: Check if peso and volume are valid
         if (pesoEnviado <= 0) {
             throw new Error('Peso deve ser maior que zero.');
+        }
+        if (volumeEnviado <= 0) {
+            throw new Error('Volume deve ser maior que zero.');
         }
 
         // Validation 5: Check if there's enough stock
         if (pesoEnviado > material.peso) {
             throw new Error(`Estoque insuficiente. Estoque atual: ${material.peso} kg.`);
+        }
+        if (volumeEnviado > material.volume) {
+            throw new Error(`Volume insuficiente. Volume atual: ${material.volume} m³.`);
         }
 
         // Create envio and update material in a transaction
@@ -64,15 +70,18 @@ class EnvioMaterialService {
             const envioMaterial = await EnvioMaterial.create({
                 idMaterial,
                 cnpj,
-                pesoEnviado
+                pesoEnviado,
+                volumeEnviado
             }, { transaction: t });
 
-            // Calculate new weight
+            // Calculate new weight and volume
             const newPeso = materialLocked.peso - pesoEnviado;
+            const newVolume = materialLocked.volume - volumeEnviado;
 
-            // Update material's weight
+            // Update material's weight and volume
             await Material.update({
-                peso: newPeso
+                peso: newPeso,
+                volume: newVolume
             }, {
                 where: { idMaterial },
                 transaction: t
@@ -83,7 +92,10 @@ class EnvioMaterialService {
                 nome: materialLocked.nome,
                 pesoAntigo: materialLocked.peso,
                 pesoNovo: newPeso,
-                pesoEnviado: pesoEnviado
+                pesoEnviado: pesoEnviado,
+                volumeAntigo: materialLocked.volume,
+                volumeNovo: newVolume,
+                volumeEnviado: volumeEnviado
             });
 
             await t.commit();
@@ -135,12 +147,14 @@ class EnvioMaterialService {
                 transaction: t
             });
 
-            // Calculate new weight
+            // Calculate new weight and volume
             const newPeso = materialLocked.peso + envio.pesoEnviado;
+            const newVolume = materialLocked.volume + envio.volumeEnviado;
 
-            // Update material's weight
+            // Update material's weight and volume
             await Material.update({
-                peso: newPeso
+                peso: newPeso,
+                volume: newVolume
             }, {
                 where: { idMaterial: envio.idMaterial },
                 transaction: t
@@ -151,7 +165,10 @@ class EnvioMaterialService {
                 nome: materialLocked.nome,
                 pesoAntigo: materialLocked.peso,
                 pesoNovo: newPeso,
-                pesoDevolvido: envio.pesoEnviado
+                pesoDevolvido: envio.pesoEnviado,
+                volumeAntigo: materialLocked.volume,
+                volumeNovo: newVolume,
+                volumeDevolvido: envio.volumeEnviado
             });
 
             // Delete the envio
