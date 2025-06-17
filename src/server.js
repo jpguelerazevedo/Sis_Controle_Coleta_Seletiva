@@ -13,7 +13,7 @@ app.use(express.json());
 app.use(routes);
 
 sequelize.sync({ force:true, alter: true }).then(async() => {
-
+    await seedDatabase();
 }).catch((error) => {
     console.error('Erro ao sincronizar tabelas:', error);
 });
