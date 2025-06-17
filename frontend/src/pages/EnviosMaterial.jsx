@@ -14,7 +14,8 @@ function EnviosMaterial() {
     const [formData, setFormData] = useState({
         idMaterial: '',
         cnpj: '',
-        pesoEnviado: ''
+        pesoEnviado: '',
+        volumeEnviado: '' // Added volumeEnviado
     });
     const [alert, setAlert] = useState({ show: false, message: '', variant: '' });
 
@@ -33,7 +34,8 @@ function EnviosMaterial() {
                     idEnvio: e.idEnvio || e.id_envio,
                     idMaterial: e.idMaterial,
                     cnpj: e.cnpj,
-                    pesoEnviado: e.pesoEnviado || e.peso_enviado
+                    pesoEnviado: e.pesoEnviado || e.peso_enviado,
+                    volumeEnviado: e.volumeEnviado || e.volume_enviado // Added volumeEnviado
                 }));
                 setEnvios(enviosFormatados);
             } else {
@@ -79,7 +81,8 @@ function EnviosMaterial() {
             const envioData = {
                 idMaterial: parseInt(formData.idMaterial),
                 cnpj: String(formData.cnpj),
-                pesoEnviado: parseFloat(formData.pesoEnviado)
+                pesoEnviado: parseFloat(formData.pesoEnviado),
+                volumeEnviado: parseFloat(formData.volumeEnviado) // Added volumeEnviado
             };
             if (selectedEnvio) {
                 await endpoints.enviosMaterial.update(selectedEnvio.idEnvio, envioData);
@@ -100,7 +103,8 @@ function EnviosMaterial() {
         setFormData({
             idMaterial: safeValue(envio.idMaterial),
             cnpj: safeValue(envio.cnpj),
-            pesoEnviado: safeValue(envio.pesoEnviado)
+            pesoEnviado: safeValue(envio.pesoEnviado),
+            volumeEnviado: safeValue(envio.volumeEnviado) // Added volumeEnviado
         });
         setShowModal(true);
     };
@@ -111,7 +115,8 @@ function EnviosMaterial() {
         setFormData({
             idMaterial: '',
             cnpj: '',
-            pesoEnviado: ''
+            pesoEnviado: '',
+            volumeEnviado: '' // Added volumeEnviado
         });
     };
 
@@ -140,7 +145,8 @@ function EnviosMaterial() {
                 return terceirizada ? `${terceirizada.nome} - ${terceirizada.cnpj}` : params.row.cnpj;
             }
         },
-        { field: 'pesoEnviado', headerName: 'Peso Enviado (kg)', width: 150 }
+        { field: 'pesoEnviado', headerName: 'Peso Enviado (kg)', width: 150 },
+        { field: 'volumeEnviado', headerName: 'Volume Enviado (m³)', width: 150 } // Added volumeEnviado column
         // Removido o campo 'acoes'
     ];
 
@@ -155,7 +161,8 @@ function EnviosMaterial() {
                         setFormData({
                             idMaterial: '',
                             cnpj: '',
-                            pesoEnviado: ''
+                            pesoEnviado: '',
+                            volumeEnviado: '' // Added volumeEnviado
                         });
                         setShowModal(true);
                     }}
@@ -230,7 +237,7 @@ function EnviosMaterial() {
                                 </Form.Group>
                             </div>
                         </div>
-                        {/* Linha 2: Peso Enviado */}
+                        {/* Linha 2: Peso Enviado e Volume Enviado */}
                         <div className="row">
                             <div className="col-md-6">
                                 <Form.Group className="mb-3">
@@ -244,6 +251,21 @@ function EnviosMaterial() {
                                         min="0"
                                         step="0.01"
                                         placeholder='Peso (kg)'
+                                    />
+                                </Form.Group>
+                            </div>
+                            <div className="col-md-6">
+                                <Form.Group className="mb-3">
+                                    <Form.Label>Volume Enviado</Form.Label>
+                                    <Form.Control
+                                        type="number"
+                                        name="volumeEnviado"
+                                        value={safeValue(formData.volumeEnviado)}
+                                        onChange={handleInputChange}
+                                        required
+                                        min="0"
+                                        step="0.01"
+                                        placeholder='Volume (m³)'
                                     />
                                 </Form.Group>
                             </div>
