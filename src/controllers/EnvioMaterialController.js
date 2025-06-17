@@ -5,17 +5,19 @@ const envioMaterialService = new EnvioMaterialService();
 class EnvioMaterialController {
     async create(req, res) {
         try {
-            const envioMaterial = await envioMaterialService.createEnvioMaterial(req.body);
+            const { idMaterial, cnpj, pesoEnviado, volumeEnviado } = req.body;
+            const envioMaterial = await envioMaterialService.createEnvioMaterial({ idMaterial, cnpj, pesoEnviado, volumeEnviado });
             res.status(201).json(envioMaterial);
         } catch (error) {
             console.error('🔥 ERRO DETALHADO:', error.message, error.stack);
 
             if (
                 error.message.includes('Material não encontrado') ||
-                error.message.includes('Material com estoque insuficiente') ||
+                error.message.includes('Estoque insuficiente') || // Updated to catch both peso and volume insufficient stock
                 error.message.includes('Terceirizada não encontrada') ||
                 error.message.includes('Terceirizada já recebeu') ||
-                error.message.includes('Peso deve ser maior que zero')
+                error.message.includes('Peso deve ser maior que zero') ||
+                error.message.includes('Volume deve ser maior que zero') // Added volume validation error
             ) {
                 res.status(400).json({ error: error.message });
             } else {
