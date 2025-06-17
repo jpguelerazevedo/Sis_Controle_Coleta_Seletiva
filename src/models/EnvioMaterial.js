@@ -30,6 +30,11 @@ class EnvioMaterial extends Model {
                 type: DataTypes.FLOAT,
                 allowNull: false,
                 field: 'peso_enviado'
+            },
+            volumeEnviado: {
+                type: DataTypes.FLOAT,
+                allowNull: false,
+                field: 'volume_enviado'
             }
         }, {
             sequelize,

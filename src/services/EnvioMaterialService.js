@@ -50,12 +50,12 @@ class EnvioMaterialService {
             throw new Error('Volume deve ser maior que zero.');
         }
 
-        // Validation 5: Check if there's enough stock
+        // Validation 5: Check if there's enough stock (peso and volume)
         if (pesoEnviado > material.peso) {
-            throw new Error(`Estoque insuficiente. Estoque atual: ${material.peso} kg.`);
+            throw new Error(`Estoque insuficiente de peso. Estoque atual: ${material.peso} kg.`);
         }
         if (volumeEnviado > material.volume) {
-            throw new Error(`Volume insuficiente. Volume atual: ${material.volume} m³.`);
+            throw new Error(`Estoque insuficiente de volume. Estoque atual: ${material.volume} m³.`);
         }
 
         // Create envio and update material in a transaction
@@ -91,10 +91,7 @@ class EnvioMaterialService {
                 id: idMaterial,
                 nome: materialLocked.nome,
                 pesoAntigo: materialLocked.peso,
-                pesoNovo: newPeso,
                 pesoEnviado: pesoEnviado,
-                volumeAntigo: materialLocked.volume,
-                volumeNovo: newVolume,
                 volumeEnviado: volumeEnviado
             });
 
