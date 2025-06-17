@@ -6,6 +6,11 @@ class EnvioMaterialController {
     async create(req, res) {
         try {
             const { idMaterial, cnpj, pesoEnviado, volumeEnviado } = req.body;
+
+            if (volumeEnviado === undefined || volumeEnviado === null) {
+                return res.status(400).json({ error: 'O campo volumeEnviado é obrigatório.' });
+            }
+
             const envioMaterial = await envioMaterialService.createEnvioMaterial({ idMaterial, cnpj, pesoEnviado, volumeEnviado });
             res.status(201).json(envioMaterial);
         } catch (error) {
