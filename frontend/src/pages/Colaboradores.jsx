@@ -302,7 +302,6 @@ id_cargo: parseInt(formData.cargo),
       field: 'estado',
       headerName: 'Estado',
       width: 100,
-      renderCell: (params) => getStatusBadge(params.value) // Use the existing badge function
     },
     {
       field: 'acoes',

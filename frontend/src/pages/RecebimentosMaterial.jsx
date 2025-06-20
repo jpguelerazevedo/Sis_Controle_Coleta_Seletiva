@@ -30,7 +30,7 @@ function RecebimentosMaterial() {
 
     const loadRecebimentos = async () => {
         try {
-            const response = await endpoints.recebimentosMaterial.list();
+            const response = await endpoints.recebimentos.list();
             if (response && response.data) {
                 const recebimentosFormatados = response.data.map(r => ({
                     id: r.idRecebimento || r.id_recebimento,

@@ -31,7 +31,7 @@ function PedidosColeta() {
 
   const loadPedidos = async () => {
     try {
-      const response = await endpoints.pedidosColeta.list();
+      const response = await endpoints.pedidos.list();
       if (response && response.data) {
         const pedidosFormatados = response.data.map(pedido => ({
           id: pedido.idPedido || pedido.id_pedido,

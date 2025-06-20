@@ -196,7 +196,6 @@ function Terceirizadas() {
       field: 'estado',
       headerName: 'Estado',
       width: 100,
-      renderCell: (params) => getStatusBadge(params.value) // Use the badge function
     },
     {
       field: 'acoes',

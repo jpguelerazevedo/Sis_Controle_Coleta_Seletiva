@@ -27,7 +27,7 @@ function EnviosMaterial() {
 
     const loadEnvios = async () => {
         try {
-            const response = await endpoints.enviosMaterial.list();
+            const response = await endpoints.envios.list();
             if (response && response.data) {
                 const enviosFormatados = response.data.map(e => ({
                     id: e.idEnvio || e.id_envio,

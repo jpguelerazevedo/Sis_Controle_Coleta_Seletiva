@@ -32,6 +32,24 @@ const endpoints = {
     bairros: {
         list: () => axios.get('https://scv-w0i2.onrender.com/bairros')
     }
+,
+    colaboradores: {
+        list: () => axios.get('https://scv-w0i2.onrender.com/colaboradores')
+    },
+    terceirizadas: {
+        list: () => axios.get('https://scv-w0i2.onrender.com/terceirizadas')
+    }
+,
+    envios: {
+        list: () => axios.get('https://scv-w0i2.onrender.com/envios-material')
+    }
+,
+    pedidos: {
+        list: () => axios.get('https://scv-w0i2.onrender.com/pedidos-coleta')
+    },
+    recebimentos: {
+        list: () => axios.get('https://scv-w0i2.onrender.com/recebimentos-material')
+    }
 };
 
 export default endpoints;
