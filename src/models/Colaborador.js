@@ -30,6 +30,11 @@ class Colaborador extends Model {
           model: 'cargos',
           key: 'id_cargo'
         }
+      },
+      estado: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        defaultValue: 'ativo' // Assuming 'ativo' is the default state
       }
     }, {
       sequelize,

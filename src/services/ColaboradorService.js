@@ -71,7 +71,8 @@ class ColaboradorService {
                 dataAdmissao,
                 carga_horaria,
                 nacionalidade,
-                id_cargo
+                id_cargo,
+                estado: estado ? estado.toLowerCase() : obj.estado // Use provided state or keep current
             });
 
             await obj.save({ transaction: t });

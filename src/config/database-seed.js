@@ -108,7 +108,8 @@ const seedDatabase = async () => {
         id_cargo: cargos[0].idCargo,
         dataAdmissao: new Date(),
         carga_horaria: 36,
-        nacionalidade: 'Brasileiro'
+        nacionalidade: 'Brasileiro',
+        estado: 'ativo' // Add the new attribute with a default value
       })
     ]);
 
