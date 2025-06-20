@@ -12,15 +12,14 @@ app.use(cors());
 app.use(express.json());
 app.use(routes);
 
-sequelize.sync({ force:true, alter: true }).then(async() => {
-    await seedDatabase();
-}).catch((error) => {
+sequelize.sync({ force:true, alter: true }).catch((error) => {
     console.error('Erro ao sincronizar tabelas:', error);
 });
 
 app.use(errorHandler); // Manipulador de erro global (error handler)
-app.listen(port, () => {
+app.listen(port, async () => {
     console.log(`Servidor rodando na porta ${port}`);
+    await seedDatabase(); // Moved seedDatabase call here
 });
 
 // Ao iniciar o sistema, é necessário que pelo menos um endereço e um bairro estejam 
