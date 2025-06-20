@@ -55,7 +55,7 @@ function Colaboradores() {
           sexo: colaborador.pessoa?.sexo || '',
           cargo: colaborador.cargos?.nomeCargo || '',
           idCargo: colaborador.idCargo || '',
-          status: colaborador.status || 'Ativo'
+          estado: colaborador.estado || 'ativo' // Map the new attribute
         };
       }).filter(Boolean); // Remove possíveis nulls
 
@@ -239,7 +239,8 @@ function Colaboradores() {
       dataAdmissao: new Date().toISOString().split('T')[0],
       sexo: '',
       cargo: '',
-      nacionalidade: 'Brasileiro'
+      nacionalidade: 'Brasileiro',
+      estado: 'ativo' // Reset state when closing modal
     });
   };
 
@@ -294,6 +295,12 @@ function Colaboradores() {
       field: 'cargo',
       headerName: 'Cargo',
       width: 180
+    },
+    {
+      field: 'estado',
+      headerName: 'Estado',
+      width: 100,
+      renderCell: (params) => getStatusBadge(params.value) // Use the existing badge function
     },
     {
       field: 'acoes',
