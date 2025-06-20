@@ -52,7 +52,8 @@ function Terceirizadas() {
           email: terceirizada.email || '',
           horarioDeFuncionamento: terceirizada.horarioDeFuncionamento || '',
           createdAt: terceirizada.createdAt || '',
-          updatedAt: terceirizada.updatedAt || ''
+          updatedAt: terceirizada.updatedAt || '',
+          estado: terceirizada.estado || 'INATIVO' // Include estado attribute, default to INATIVO
         };
       }).filter(Boolean); // Remove possíveis nulls
 
@@ -74,20 +75,21 @@ function Terceirizadas() {
         return;
       }
 
-      // Converte o horário para número (ex: "08:00-18:00" -> 8)
-      const horarioNumerico = parseInt(formData.horarioDeFuncionamento.split('-')[0].split(':')[0]);
-
+      // Envia o horário de funcionamento como string completa (ex: "08:00-18:00")
       const terceirizadaData = {
         nome: formData.nome,
         cnpj: cnpjNumerico,
         telefone: formData.telefone,
         email: formData.email,
-        horarioDeFuncionamento: horarioNumerico,
-        hierarquia: formData.hierarquia // Incluindo hierarquia nos dados da terceirizada
+        horarioDeFuncionamento: formData.horarioDeFuncionamento,
+        hierarquia: formData.hierarquia, // Incluindo hierarquia nos dados da terceirizada
+        estado: formData.status // Enviando o estado para a API
       };
 
       if (selectedTerceirizada) {
-        await endpoints.terceirizadas.update(selectedTerceirizada.cnpj, terceirizadaData);
+        // Garante que o CNPJ enviado na URL está sem formatação
+        const cnpjNumericoEdit = (selectedTerceirizada.cnpj || '').replace(/\D/g, '');
+        await endpoints.terceirizadas.update(cnpjNumericoEdit, terceirizadaData);
         showAlert('Terceirizada atualizada com sucesso!', 'success');
       } else {
         await endpoints.terceirizadas.create(terceirizadaData);
@@ -110,7 +112,8 @@ function Terceirizadas() {
       telefone: terceirizada.telefone || '',
       email: terceirizada.email || '',
       horarioDeFuncionamento: terceirizada.horarioDeFuncionamento || '',
-      hierarquia: terceirizada.hierarquia || '' // Adicionando hierarquia ao editar
+      hierarquia: terceirizada.hierarquia || '', // Adicionando hierarquia ao editar
+      status: terceirizada.estado || 'INATIVO' // Adicionando estado ao editar
     });
     setShowModal(true);
   };
@@ -152,9 +155,9 @@ function Terceirizadas() {
 
   const getStatusBadge = (status) => {
     const variants = {
-      ativo: 'success',
-      inativo: 'danger',
-      pendente: 'warning'
+      ATIVO: 'primary',
+      INATIVO: 'danger',
+      PENDENTE: 'warning' // Keeping pendente as warning for now
     };
     return <Badge bg={variants[status] || 'secondary'}>{status}</Badge>;
   };
@@ -188,6 +191,12 @@ function Terceirizadas() {
       field: 'horarioDeFuncionamento',
       headerName: 'Horário de Funcionamento',
       width: 200,
+    },
+    {
+      field: 'estado',
+      headerName: 'Estado',
+      width: 100,
+      renderCell: (params) => getStatusBadge(params.value) // Use the badge function
     },
     {
       field: 'acoes',
@@ -346,6 +355,20 @@ function Terceirizadas() {
                   </Form.Text>
                 </Form.Group>
               </div>
+              <div className="col-md-6">
+                <Form.Group className="mb-3">
+                  <Form.Label>Estado</Form.Label>
+                  <Form.Select
+                    name="status"
+                    value={formData.status}
+                    onChange={e => setFormData({ ...formData, status: e.target.value })}
+                    required
+                  >
+                    <option value="ATIVO">Ativo</option>
+                    <option value="INATIVO">Inativo</option>
+                  </Form.Select>
+                </Form.Group>
+              </div>
             </div>
             <div className="d-flex justify-content-end gap-2">
               <Button variant="secondary" onClick={handleCloseModal}>
@@ -355,6 +378,7 @@ function Terceirizadas() {
                 {selectedTerceirizada ? 'Atualizar' : 'Cadastrar'}
               </Button>
             </div>
+                    
           </Form>
         </Modal.Body>
       </Modal>

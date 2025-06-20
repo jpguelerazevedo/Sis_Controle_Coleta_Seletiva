@@ -154,7 +154,8 @@ function Colaboradores() {
         dataAdmissao: formData.dataAdmissao || new Date().toISOString().split('T')[0],
         carga_horaria: 36,
         nacionalidade: formData.nacionalidade || 'Brasileiro',
-        id_cargo: parseInt(formData.cargo)
+id_cargo: parseInt(formData.cargo),
+        estado: formData.estado || 'ativo' // Include state in data
       };
 
       if (selectedColaborador) {
@@ -228,6 +229,7 @@ function Colaboradores() {
     }
   };
 
+
   const handleCloseModal = () => {
     setShowModal(false);
     setSelectedColaborador(null);
@@ -251,7 +253,7 @@ function Colaboradores() {
 
   const getStatusBadge = (status) => {
     const variants = {
-      ATIVO: 'success',
+      ATIVO: 'primary',
       INATIVO: 'danger',
       FERIAS: 'warning',
       AFASTADO: 'info'
@@ -485,6 +487,23 @@ function Colaboradores() {
                   </Form.Select>
                 </Form.Group>
               </div>
+              <div className="col-md-6">
+                <Form.Group className="mb-3">
+                  <Form.Label>Estado</Form.Label>
+                  <Form.Select
+                    name="estado"
+                    value={formData.estado}
+                    onChange={handleInputChange}
+                    required
+
+                  >
+                    <option value="ativo">Ativo</option>
+                    <option value="desativado">Desativado</option>
+                  </Form.Select>
+                </Form.Group>
+              </div>
+            </div>
+            <div className="row">
               <div className="col-md-6">
                 <Form.Group className="mb-3">
                   <Form.Label>Cargo</Form.Label>
