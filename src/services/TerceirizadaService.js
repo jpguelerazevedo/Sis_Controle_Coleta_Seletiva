@@ -52,7 +52,7 @@ class TerceirizadaService {
 
     async update(req) {
         const { cnpj } = req.params;
-        const { nome, telefone, email, horarioDeFuncionamento } = req.body;
+        const { nome, telefone, email, horarioDeFuncionamento, estado } = req.body;
 
         const obj = await Terceirizada.findByPk(cnpj, {
             include: [
@@ -68,7 +68,8 @@ class TerceirizadaService {
                 nome,
                 telefone,
                 email,
-                horarioDeFuncionamento
+                horarioDeFuncionamento,
+                estado: estado ? estado.toLowerCase() : obj.estado
             });
 
             await obj.save({ transaction: t });

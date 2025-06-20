@@ -32,6 +32,12 @@ class Terceirizada extends Model {
                 allowNull: false,
                 field: 'horario_de_funcionamento'
             }
+,
+            estado: {
+                type: DataTypes.STRING,
+                allowNull: false,
+                defaultValue: 'ativo'
+            }
         }, {
             sequelize,
             modelName: 'terceirizada',
