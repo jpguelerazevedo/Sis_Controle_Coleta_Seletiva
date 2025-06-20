@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Table, Alert, Button, Modal, Form } from 'react-bootstrap';
-import { endpoints } from '../services/api';
+import endpoints from '../services/endpoints';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
 

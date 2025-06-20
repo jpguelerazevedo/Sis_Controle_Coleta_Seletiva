@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Table, Button, Modal, Form, Alert, Badge } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus, faEdit, faTrash } from '@fortawesome/free-solid-svg-icons';
-import { endpoints } from '../services/api';
+import endpoints from '../services/endpoints';
 import { DataGrid } from '@mui/x-data-grid';
 
 function Terceirizadas() {

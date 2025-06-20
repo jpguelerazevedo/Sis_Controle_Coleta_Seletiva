@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Container, Button, Form, Modal, Alert } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
-import { endpoints } from '../services/api';
+import endpoints from '../services/endpoints';
 import { DataGrid } from '@mui/x-data-grid';
 
 function PedidosColeta() {
