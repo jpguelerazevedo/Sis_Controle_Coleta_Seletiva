@@ -28,11 +28,10 @@ class Terceirizada extends Model {
                 }
             },
             horarioDeFuncionamento: {
-                type: DataTypes.INTEGER,
+                type: DataTypes.STRING,
                 allowNull: false,
                 field: 'horario_de_funcionamento'
-            }
-,
+            },
             estado: {
                 type: DataTypes.STRING,
                 allowNull: false,

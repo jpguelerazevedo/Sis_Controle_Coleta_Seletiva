@@ -72,7 +72,7 @@ const seedDatabase = async () => {
         nome: 'Reciclagem Express',
         telefone: '(11) 11111-1111',
         email: 'contato@reciclagemexpress.com',
-        horarioDeFuncionamento: 8,
+        horarioDeFuncionamento: '8h-18h',
         estado: 'ativo'
       }),
       models.Terceirizada.create({
@@ -80,7 +80,7 @@ const seedDatabase = async () => {
         nome: 'Eco Processamento',
         telefone: '(22) 22222-2222',
         email: 'contato@ecoprocessamento.com',
-        horarioDeFuncionamento: 10,
+        horarioDeFuncionamento: '10h-20h',
         estado: 'ativo'
       }),
       models.Terceirizada.create({
@@ -88,7 +88,7 @@ const seedDatabase = async () => {
         nome: 'Recicla Brasil',
         telefone: '(33) 33333-3333',
         email: 'contato@reciclabrasil.com',
-        horarioDeFuncionamento: 12,
+        horarioDeFuncionamento: '12h-22h',
         estado: 'ativo'
       })
     ]);
