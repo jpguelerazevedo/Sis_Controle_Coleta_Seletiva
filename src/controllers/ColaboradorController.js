@@ -74,7 +74,7 @@ class ColaboradorController {
     async update(req, res) {
         try {
             // Validar campos vazios
-            const { dataAdmissao, carga_horaria, nacionalidade, id_cargo } = req.body;
+            const { dataAdmissao, carga_horaria, nacionalidade, id_cargo, estado } = req.body;
 
             if (dataAdmissao && dataAdmissao.trim() === "") {
                 return res.status(400).json({ error: 'Data de admissão não pode estar vazia' });
@@ -87,9 +87,6 @@ class ColaboradorController {
             }
             if (id_cargo !== undefined && id_cargo <= 0) {
                 return res.status(400).json({ error: 'ID do cargo não pode estar vazio' });
-            }
-            if (estado && !['ativo', 'desativado'].includes(estado.toLowerCase())) {
-                return res.status(400).json({ error: 'O estado do Colaborador deve ser "ativo" ou "desativado"!' });
             }
 
             const colaborador = await this.colaboradorService.update(req);
