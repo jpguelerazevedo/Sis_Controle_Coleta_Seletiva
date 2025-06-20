@@ -54,7 +54,7 @@ class ColaboradorService {
 
     async update(req) {
         const { cpf } = req.params;
-        const { dataAdmissao, carga_horaria, nacionalidade, id_cargo } = req.body;
+        const { dataAdmissao, carga_horaria, nacionalidade, id_cargo, estado } = req.body;
 
         const obj = await Colaborador.findByPk(cpf, {
             include: [
