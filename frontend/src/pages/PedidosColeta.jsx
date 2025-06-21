@@ -109,10 +109,10 @@ function PedidosColeta() {
         data: formData.data ? new Date(formData.data) : new Date()
       };
       if (selectedPedido) {
-        await endpoints.pedidosColeta.update(selectedPedido.idPedido, pedidoData);
+        await endpoints.pedidos.update(selectedPedido.idPedido, pedidoData);
         showAlert('Pedido atualizado com sucesso!', 'success');
       } else {
-        await endpoints.pedidosColeta.create(pedidoData);
+        await endpoints.pedidos.create(pedidoData);
         showAlert('Pedido registrado com sucesso!', 'success');
       }
       handleCloseModal();
@@ -165,17 +165,6 @@ function PedidosColeta() {
         const idMaterial = params.row.idMaterial;
         const material = materiais.find(m => String(m.idMaterial) === String(idMaterial));
         return material ? material.nome : '';
-      }
-    },
-    {
-      field: 'tipo',
-      headerName: 'Estado do Material',
-      width: 150,
-      renderCell: (params) => {
-        // Garante que o valor seja string e visível
-        return params.row.tipo !== undefined && params.row.tipo !== null
-          ? String(params.row.tipo)
-          : '';
       }
     },
     { field: 'peso', headerName: 'Peso (kg)', width: 120 },
@@ -251,18 +240,6 @@ function PedidosColeta() {
                       </option>
                     ))}
                   </Form.Select>
-                </Form.Group>
-              </div>
-              <div className="col-md-5">
-                <Form.Group className="mb-3">
-                  <Form.Label>Estado do Material</Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="tipo"
-                    value={safeValue(formData.tipo)}
-                    onChange={handleInputChange}
-                    placeholder="Ex: Novo, Usado, Danificado"
-                  />
                 </Form.Group>
               </div>
             </div>

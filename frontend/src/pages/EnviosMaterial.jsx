@@ -85,10 +85,10 @@ function EnviosMaterial() {
                 volumeEnviado: parseFloat(formData.volumeEnviado) // Added volumeEnviado
             };
             if (selectedEnvio) {
-                await endpoints.enviosMaterial.update(selectedEnvio.idEnvio, envioData);
+                await endpoints.envios.update(selectedEnvio.idEnvio, envioData);
                 showAlert('Envio atualizado com sucesso!', 'success');
             } else {
-                await endpoints.enviosMaterial.create(envioData);
+                await endpoints.envios.create(envioData);
                 showAlert('Envio registrado com sucesso!', 'success');
             }
             handleCloseModal();
@@ -230,7 +230,7 @@ function EnviosMaterial() {
                                         <option value="">Selecione a terceirizada</option>
                                         {terceirizadas.map((t) => (
                                             <option key={t.cnpj} value={t.cnpj}>
-                                                {t.cnpj}
+                                                {t.nome}
                                             </option>
                                         ))}
                                     </Form.Select>

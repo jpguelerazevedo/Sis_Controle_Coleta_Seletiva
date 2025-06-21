@@ -30,25 +30,40 @@ const endpoints = {
         delete: (id) => axios.delete(`https://scv-w0i2.onrender.com/enderecos/${id}`)
     },
     bairros: {
-        list: () => axios.get('https://scv-w0i2.onrender.com/bairros')
-    }
-,
+        list: () => axios.get('https://scv-w0i2.onrender.com/bairros'),
+        create: (data) => axios.post('https://scv-w0i2.onrender.com/bairros', data),
+        update: (id, data) => axios.put(`https://scv-w0i2.onrender.com/bairros/${id}`, data),
+        delete: (id) => axios.delete(`https://scv-w0i2.onrender.com/bairros/${id}`)
+    },
     colaboradores: {
-        list: () => axios.get('https://scv-w0i2.onrender.com/colaboradores')
+        list: () => axios.get('https://scv-w0i2.onrender.com/colaboradores'),
+        create: (data) => axios.post('https://scv-w0i2.onrender.com/colaboradores', data),
+        update: (cpf, data) => axios.put(`https://scv-w0i2.onrender.com/colaboradores/${cpf}`, data),
+        delete: (cpf) => axios.delete(`https://scv-w0i2.onrender.com/colaboradores/${cpf}`)
     },
     terceirizadas: {
-        list: () => axios.get('https://scv-w0i2.onrender.com/terceirizadas')
-    }
-,
+        list: () => axios.get('https://scv-w0i2.onrender.com/terceirizadas'),
+        create: (data) => axios.post('https://scv-w0i2.onrender.com/terceirizadas', data),
+        update: (cnpj, data) => axios.put(`https://scv-w0i2.onrender.com/terceirizadas/${cnpj}`, data),
+        delete: (cnpj) => axios.delete(`https://scv-w0i2.onrender.com/terceirizadas/${cnpj}`)
+    },
     envios: {
-        list: () => axios.get('https://scv-w0i2.onrender.com/envios-material')
-    }
-,
+        list: () => axios.get('https://scv-w0i2.onrender.com/envios-material'),
+        create: (data) => axios.post('https://scv-w0i2.onrender.com/envios-material', data),
+        update: (id, data) => axios.put(`https://scv-w0i2.onrender.com/envios-material/${id}`, data),
+        delete: (id) => axios.delete(`https://scv-w0i2.onrender.com/envios-material/${id}`)
+    },
     pedidos: {
-        list: () => axios.get('https://scv-w0i2.onrender.com/pedidos-coleta')
+        list: () => axios.get('https://scv-w0i2.onrender.com/pedidos-coleta'),
+        create: (data) => axios.post('https://scv-w0i2.onrender.com/pedidos-coleta', data),
+        update: (id, data) => axios.put(`https://scv-w0i2.onrender.com/pedidos-coleta/${id}`, data),
+        delete: (id) => axios.delete(`https://scv-w0i2.onrender.com/pedidos-coleta/${id}`)
     },
     recebimentos: {
-        list: () => axios.get('https://scv-w0i2.onrender.com/recebimentos-material')
+        list: () => axios.get('https://scv-w0i2.onrender.com/recebimentos-material'),
+        create: (data) => axios.post('https://scv-w0i2.onrender.com/recebimentos-material', data),
+        update: (id, data) => axios.put(`https://scv-w0i2.onrender.com/recebimentos-material/${id}`, data),
+        delete: (id) => axios.delete(`https://scv-w0i2.onrender.com/recebimentos-material/${id}`)
     }
 };
 

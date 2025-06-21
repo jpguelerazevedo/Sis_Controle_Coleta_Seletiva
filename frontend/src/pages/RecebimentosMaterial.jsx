@@ -99,10 +99,10 @@ function RecebimentosMaterial() {
                 cpfColaborador: String(formData.cpfColaborador)
             };
             if (selectedRecebimento) {
-                await endpoints.recebimentosMaterial.update(selectedRecebimento.idRecebimento, recebimentoData);
+                await endpoints.recebimentos.update(selectedRecebimento.idRecebimento, recebimentoData);
                 showAlert('Recebimento atualizado com sucesso!', 'success');
             } else {
-                await endpoints.recebimentosMaterial.create(recebimentoData);
+                await endpoints.recebimentos.create(recebimentoData);
                 showAlert('Recebimento registrado com sucesso!', 'success');
             }
             handleCloseModal();
