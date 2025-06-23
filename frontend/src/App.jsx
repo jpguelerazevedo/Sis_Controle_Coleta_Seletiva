@@ -14,6 +14,12 @@ import Pessoas from './pages/Pessoas';
 import RecebimentosMaterial from './pages/RecebimentosMaterial';
 import EnviosMaterial from './pages/EnviosMaterial';
 import Cargos from './pages/Cargos';
+import MateriaisColetados from './pages/MateriaisColetados';
+import PedidoColetaBairros from './pages/PedidoColetaBairros';
+import ListarPedidos from './pages/ListarPedidos';
+import ListarMateriais from './pages/ListarMateriais';
+import ListarMateriaisEnviados from './pages/ListarMateriaisEnviados';
+import ListarClientesNovos from './pages/ListarClientesNovos';
 import './App.css';
 
 function App() {
@@ -70,6 +76,12 @@ function App() {
             <Route path="/pessoas" element={<Pessoas />} />
             <Route path="/recebimentos-material" element={<RecebimentosMaterial />} />
             <Route path="/envios-material" element={<EnviosMaterial />} />
+            <Route path="/materiais-coletados" element={<MateriaisColetados />} />
+            <Route path="/pedido-coleta-bairros" element={<PedidoColetaBairros />} />
+            <Route path="/listar-pedidos" element={<ListarPedidos />} />
+            <Route path="/listar-materiais" element={<ListarMateriais />} />
+            <Route path="/listar-materiais-enviados" element={<ListarMateriaisEnviados />} />
+            <Route path="/listar-clientes-novos" element={<ListarClientesNovos />} />
           </Routes>
         </div>
       </div>

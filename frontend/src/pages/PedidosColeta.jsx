@@ -21,6 +21,7 @@ function PedidosColeta() {
     tipo: ''
   });
   const [alert, setAlert] = useState({ show: false, message: '', variant: '' });
+  const [loading, setLoading] = useState(true); // Adicionado estado loading
 
   useEffect(() => {
     loadPedidos();
@@ -30,6 +31,7 @@ function PedidosColeta() {
   }, []);
 
   const loadPedidos = async () => {
+    setLoading(true); // Inicia loading
     try {
       const response = await endpoints.pedidos.list();
       if (response && response.data) {
@@ -53,6 +55,7 @@ function PedidosColeta() {
       showAlert('Erro ao carregar pedidos: ' + error.message, 'danger');
       setPedidos([]);
     }
+    setLoading(false); // Finaliza loading
   };
 
   const loadClientes = async () => {
@@ -211,7 +214,8 @@ function PedidosColeta() {
           autoHeight
           getRowId={row => row.idPedido || row.id_pedido || row.id}
           isRowSelectable={() => false}
-          disableVirtualization // <- Adicione esta linha para evitar warning do ref no React 19+
+          disableVirtualization
+          loading={loading}
         />
       </div>
       <Modal show={showModal} onHide={handleCloseModal} size="lg" centered>

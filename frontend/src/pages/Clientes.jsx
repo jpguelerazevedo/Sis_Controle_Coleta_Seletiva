@@ -29,6 +29,7 @@ function Clientes() {
   const [selectedBairro, setSelectedBairro] = useState(null);
   const [editingId, setEditingId] = useState(null);
   const [selectionModel, setSelectionModel] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const columns = [
     {
@@ -92,6 +93,7 @@ function Clientes() {
   }, []);
 
   const loadClientes = async () => {
+    setLoading(true);
     try {
       console.log('Iniciando carregamento de clientes...');
       const response = await endpoints.clientes.list();
@@ -138,6 +140,7 @@ function Clientes() {
       showAlert('Erro ao carregar clientes: ' + (error.response?.data?.error || error.message), 'danger');
       setClientes([]);
     }
+    setLoading(false);
   };
 
   const loadBairros = async () => {
@@ -480,6 +483,7 @@ function Clientes() {
           disableSelectionOnClick
           autoHeight
           isRowSelectable={() => false}
+          loading={loading}
         />
       </div>
 

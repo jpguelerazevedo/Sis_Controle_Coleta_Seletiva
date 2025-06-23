@@ -20,6 +20,7 @@ function RecebimentosMaterial() {
         cpfColaborador: ''
     });
     const [alert, setAlert] = useState({ show: false, message: '', variant: '' });
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         loadRecebimentos();
@@ -29,6 +30,7 @@ function RecebimentosMaterial() {
     }, []);
 
     const loadRecebimentos = async () => {
+        setLoading(true);
         try {
             const response = await endpoints.recebimentos.list();
             if (response && response.data) {
@@ -49,6 +51,7 @@ function RecebimentosMaterial() {
             showAlert('Erro ao carregar recebimentos: ' + error.message, 'danger');
             setRecebimentos([]);
         }
+        setLoading(false);
     };
 
     const loadMateriais = async () => {
@@ -198,6 +201,7 @@ function RecebimentosMaterial() {
                     getRowId={row => row.idRecebimento || row.id_recebimento || row.id}
                     isRowSelectable={() => false}
                     disableVirtualization
+                    loading={loading}
                 />
             </div>
             <Modal show={showModal} onHide={handleCloseModal} size="lg" centered>

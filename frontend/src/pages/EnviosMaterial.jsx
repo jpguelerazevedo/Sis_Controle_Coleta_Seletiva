@@ -18,6 +18,7 @@ function EnviosMaterial() {
         volumeEnviado: '' // Added volumeEnviado
     });
     const [alert, setAlert] = useState({ show: false, message: '', variant: '' });
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         loadEnvios();
@@ -26,6 +27,7 @@ function EnviosMaterial() {
     }, []);
 
     const loadEnvios = async () => {
+        setLoading(true);
         try {
             const response = await endpoints.envios.list();
             if (response && response.data) {
@@ -45,6 +47,7 @@ function EnviosMaterial() {
             showAlert('Erro ao carregar envios: ' + error.message, 'danger');
             setEnvios([]);
         }
+        setLoading(false);
     };
 
     const loadMateriais = async () => {
@@ -188,6 +191,7 @@ function EnviosMaterial() {
                     getRowId={row => row.idEnvio || row.id_envio || row.id}
                     isRowSelectable={() => false}
                     disableVirtualization
+                    loading={loading}
                 />
             </div>
             <Modal show={showModal} onHide={handleCloseModal} size="lg" centered>

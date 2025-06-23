@@ -16,12 +16,14 @@ function Materiais() {
     nivelDeRisco: ''
   });
   const [alert, setAlert] = useState({ show: false, message: '', variant: '' });
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     loadMateriais();
   }, []);
 
   const loadMateriais = async () => {
+    setLoading(true);
     try {
       console.log('Iniciando carregamento de materiais...');
       const response = await endpoints.materiais.list();
@@ -47,6 +49,7 @@ function Materiais() {
       showAlert('Erro ao carregar materiais', 'danger');
       setMateriais([]);
     }
+    setLoading(false);
   };
 
   const handleSubmit = async (e) => {
@@ -186,6 +189,7 @@ function Materiais() {
           disableSelectionOnClick
           autoHeight
           isRowSelectable={() => false}
+          loading={loading}
         />
       </div>
 

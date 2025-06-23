@@ -12,7 +12,8 @@ import {
   faArrowDown,
   faArrowUp,
   faMedal,
-  faTools // Novo ícone para serviços
+  faTools,
+  faList // Novo ícone para serviços
 } from '@fortawesome/free-solid-svg-icons';
 import logo from '../assets/logo.png';
 import '../App.css';
@@ -43,7 +44,19 @@ function Sidebar({ isCollapsed }) {
         { path: '/recebimentos-material', icon: faArrowDown, label: 'Recebimentos Material' },
         { path: '/envios-material', icon: faArrowUp, label: 'Envios Material' },
       ]
+    },
+    {
+      dropdown: true, label: 'LISTAGENS', icon: faList, items: [
+        { path: '/materiais-coletados', icon: faRecycle, label: 'Materiais Coletados' },
+        { path: '/pedido-coleta-bairros', icon: faMapMarkedAlt, label: 'Utilização de Bairros' },
+        { path: '/listar-pedidos', icon: faList, label: 'Pedidos' },
+        { path: '/listar-materiais', icon: faRecycle, label: 'Materiais' },
+        { path: '/listar-materiais-enviados', icon: faArrowUp, label: 'Materiais Enviados' },
+        { path: '/listar-clientes-novos', icon: faUsers, label: 'Clientes Novos' },
+      ]
     }
+
+    
   ];
 
   return (
@@ -99,8 +112,7 @@ function Sidebar({ isCollapsed }) {
               item.dropdown ? (
                 <Dropdown
                   key={`dropdown-${idx}`}
-                  className="w-100 mb-2"
-                  style={{ marginTop: '2rem' }} // Espaçamento extra no topo do dropdown
+                  className="w-100" // Espaçamento extra no topo do dropdown
                 >
                   <Dropdown.Toggle
                     variant="success"

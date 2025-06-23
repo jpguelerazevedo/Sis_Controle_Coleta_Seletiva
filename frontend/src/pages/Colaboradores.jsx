@@ -21,6 +21,7 @@ function Colaboradores() {
     nacionalidade: 'Brasileiro'
   });
   const [alert, setAlert] = useState({ show: false, message: '', variant: '' });
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     loadColaboradores();
@@ -28,6 +29,7 @@ function Colaboradores() {
   }, []);
 
   const loadColaboradores = async () => {
+    setLoading(true);
     try {
       console.log('Iniciando carregamento de colaboradores...');
       const response = await endpoints.colaboradores.list();
@@ -66,6 +68,7 @@ function Colaboradores() {
       showAlert('Erro ao carregar colaboradores', 'danger');
       setColaboradores([]);
     }
+    setLoading(false);
   };
 
   const loadCargos = async () => {
@@ -349,6 +352,7 @@ id_cargo: parseInt(formData.cargo),
           autoHeight
           getRowId={(row) => row.id || row.cpf}
           isRowSelectable={() => false}
+          loading={loading}
         />
       </div>
 

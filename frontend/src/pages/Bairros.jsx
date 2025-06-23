@@ -15,18 +15,21 @@ function Bairros() {
         estado_de_acesso: ''
     });
     const [selectedBairro, setSelectedBairro] = useState(null);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         loadBairros();
     }, []);
 
     const loadBairros = async () => {
+        setLoading(true);
         try {
             const response = await endpoints.bairros.list();
             setBairros(response.data);
         } catch (error) {
             setAlert({ show: true, message: 'Erro ao carregar bairros', variant: 'danger' });
         }
+        setLoading(false);
     };
 
     const handleShowModal = () => setShowModal(true);
@@ -129,6 +132,7 @@ function Bairros() {
                     filterMode="client"
                     isRowSelectable={() => false}
                     autoHeight
+                    loading={loading}
                 />
             </div>
 

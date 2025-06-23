@@ -16,6 +16,7 @@ const Cargos = () => {
     hierarquia: 1
   });
   const [alert, setAlert] = useState({ show: false, message: '', variant: '' });
+  const [loading, setLoading] = useState(true); // Adicionado estado loading
 
   const showAlert = (message, variant) => {
     setAlert({ show: true, message, variant });
@@ -42,6 +43,7 @@ const Cargos = () => {
   };
 
   const loadCargos = async () => {
+    setLoading(true); // Inicia loading
     try {
       console.log('Iniciando carregamento de cargos...');
       const response = await endpoints.cargos.list();
@@ -67,6 +69,7 @@ const Cargos = () => {
       showAlert('Erro ao carregar cargos', 'danger');
       setCargos([]);
     }
+    setLoading(false); // Finaliza loading
   };
 
   useEffect(() => {
@@ -209,6 +212,7 @@ const Cargos = () => {
           disableSelectionOnClick
           autoHeight
           isRowSelectable={() => false}
+          loading={loading}
         />
       </div>
 

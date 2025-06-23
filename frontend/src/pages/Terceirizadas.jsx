@@ -21,12 +21,14 @@ function Terceirizadas() {
     hierarquia: '' // Novo campo hierarquia
   });
   const [alert, setAlert] = useState({ show: false, message: '', variant: '' });
+  const [loading, setLoading] = useState(true); // Adicionado estado loading
 
   useEffect(() => {
     loadTerceirizadas();
   }, []);
 
   const loadTerceirizadas = async () => {
+    setLoading(true); // Inicia loading
     try {
       console.log('Iniciando carregamento de terceirizadas...');
       const response = await endpoints.terceirizadas.list();
@@ -64,6 +66,7 @@ function Terceirizadas() {
       showAlert('Erro ao carregar terceirizadas', 'danger');
       setTerceirizadas([]);
     }
+    setLoading(false); // Finaliza loading
   };
 
   const handleSubmit = async (e) => {
@@ -242,6 +245,7 @@ function Terceirizadas() {
           checkboxSelection={false}
           isRowSelectable={() => false}
           autoHeight
+          loading={loading}
         />
       </div>
       <Modal show={showModal} onHide={handleCloseModal} size="lg" centered>
