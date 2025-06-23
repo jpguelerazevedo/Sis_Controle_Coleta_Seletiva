@@ -157,7 +157,7 @@ function Colaboradores() {
         dataAdmissao: formData.dataAdmissao || new Date().toISOString().split('T')[0],
         carga_horaria: 36,
         nacionalidade: formData.nacionalidade || 'Brasileiro',
-id_cargo: parseInt(formData.cargo),
+        id_cargo: parseInt(formData.cargo),
         estado: formData.estado || 'ativo' // Include state in data
       };
 
@@ -328,12 +328,14 @@ id_cargo: parseInt(formData.cargo),
 
   return (
     <div className="container mt-4">
-      <div className="d-flex justify-content-between align-items-center mb-4">
+      <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap">
         <h2>Colaboradores</h2>
-        <Button variant="primary" onClick={() => setShowModal(true)}>
-          <FontAwesomeIcon icon={faPlus} className="me-2" />
-          Novo Colaborador
-        </Button>
+        <div className="col-12 col-md-auto px-0 mt-2 mt-md-0">
+          <Button variant="primary" onClick={() => setShowModal(true)} className="mb-3 w-100">
+            <FontAwesomeIcon icon={faPlus} className="me-2" />
+            Novo Colaborador
+          </Button>
+        </div>
       </div>
 
       {alert.show && (
@@ -516,7 +518,7 @@ id_cargo: parseInt(formData.cargo),
                     onChange={handleInputChange}
                     required
                   >
-                    <option value="">Selecione um cargo</option>
+                    <option value="">Selecione... </option>
                     {cargos && cargos.length > 0 ? (
                       cargos.map(cargo => (
                         <option key={cargo.idCargo} value={cargo.idCargo}>

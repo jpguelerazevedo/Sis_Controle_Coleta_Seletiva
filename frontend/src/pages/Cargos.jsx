@@ -179,26 +179,27 @@ const Cargos = () => {
 
   return (
     <div className="container mt-4">
-      <div className='d-flex justify-content-between align-items-center mb-4'>
-        <h2 className='mb-0'>Cargos</h2>
-        <Button
-          variant="primary"
-          className="mb-3"
-          onClick={() => {
-            setSelectedCargo(null);
-            setFormData({
-              nome: '',
-              descricao: '',
-              salario: 0,
-              hierarquia: ''
-            });
-            setShowModal(true);
-          }}
-        >
-          <FontAwesomeIcon icon={faPlus} className="me-2" />
-          Novo Cargo
-        </Button>
-
+      <div className='d-flex justify-content-between align-items-center mb-4 flex-wrap'>
+        <h2 className=''>Cargos</h2>
+        <div className="col-12 col-md-auto px-0 mt-2 mt-md-0">
+          <Button
+            variant="primary"
+            className="mb-3 w-100"
+            onClick={() => {
+              setSelectedCargo(null);
+              setFormData({
+                nome: '',
+                descricao: '',
+                salario: 0,
+                hierarquia: ''
+              });
+              setShowModal(true);
+            }}
+          >
+            <FontAwesomeIcon icon={faPlus} className="me-2" />
+            Novo Cargo
+          </Button>
+        </div>
       </div>
 
 
@@ -279,7 +280,7 @@ const Cargos = () => {
                     onChange={handleInputChange}
                     required
                   >
-                    <option value="">Selecione a hierarquia</option>
+                    <option value="">Selecione...</option>
                     <option value="1">Alto</option>
                     <option value="2">Médio</option>
                     <option value="3">Baixo</option>

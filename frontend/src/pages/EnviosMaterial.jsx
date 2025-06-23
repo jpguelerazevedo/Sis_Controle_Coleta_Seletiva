@@ -145,35 +145,37 @@ function EnviosMaterial() {
             width: 200,
             renderCell: (params) => {
                 const terceirizada = terceirizadas.find(t => String(t.cnpj) === String(params.row.cnpj));
-                return terceirizada ? `${terceirizada.nome} - ${terceirizada.cnpj}` : params.row.cnpj;
+                return terceirizada ? terceirizada.nome : '';
             }
         },
-        { field: 'pesoEnviado', headerName: 'Peso Enviado (kg)', width: 150 },
-        { field: 'volumeEnviado', headerName: 'Volume Enviado (m³)', width: 150 } // Added volumeEnviado column
+        { field: 'pesoEnviado', headerName: 'Peso (kg)', width: 150 },
+        { field: 'volumeEnviado', headerName: 'Volume (m³)', width: 150 } // Added volumeEnviado column
         // Removido o campo 'acoes'
     ];
 
     return (
         <Container className="mt-4">
-            <div className="d-flex justify-content-between align-items-center mb-4">
+            <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap">
                 <h2>Envios de Material</h2>
-                <Button
-                    variant="primary"
-                    onClick={() => {
-                        setSelectedEnvio(null);
-                        setFormData({
-                            idMaterial: '',
-                            cnpj: '',
-                            pesoEnviado: '',
-                            volumeEnviado: '' // Added volumeEnviado
-                        });
-                        setShowModal(true);
-                    }}
-                    className="mb-3"
-                >
-                    <FontAwesomeIcon icon={faPlus} className="me-2" />
-                    Novo Envio
-                </Button>
+                <div className="col-12 col-md-auto px-0 mt-2 mt-md-0">
+                    <Button
+                        variant="primary"
+                        onClick={() => {
+                            setSelectedEnvio(null);
+                            setFormData({
+                                idMaterial: '',
+                                cnpj: '',
+                                pesoEnviado: '',
+                                volumeEnviado: '' // Added volumeEnviado
+                            });
+                            setShowModal(true);
+                        }}
+                        className="mb-3 w-100"
+                    >
+                        <FontAwesomeIcon icon={faPlus} className="me-2" />
+                        Novo Envio
+                    </Button>
+                </div>
             </div>
             {alert.show && (
                 <Alert variant={alert.variant} onClose={() => setAlert({ ...alert, show: false })} dismissible>
@@ -213,7 +215,7 @@ function EnviosMaterial() {
                                         onChange={handleInputChange}
                                         required
                                     >
-                                        <option value="">Selecione um material</option>
+                                        <option value="">Selecione...</option>
                                         {materiais.map((material) => (
                                             <option key={material.idMaterial} value={material.idMaterial}>
                                                 {material.nome}
@@ -231,7 +233,7 @@ function EnviosMaterial() {
                                         onChange={handleInputChange}
                                         required
                                     >
-                                        <option value="">Selecione a terceirizada</option>
+                                        <option value="">Selecione...</option>
                                         {terceirizadas.map((t) => (
                                             <option key={t.cnpj} value={t.cnpj}>
                                                 {t.nome}

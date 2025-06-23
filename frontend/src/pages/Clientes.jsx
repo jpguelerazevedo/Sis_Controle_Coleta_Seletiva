@@ -435,36 +435,36 @@ function Clientes() {
 
   return (
     <Container className='mt-4'>
-      <div className='d-flex justify-content-between align-items-center mb-4'>
+      <div className='d-flex justify-content-between align-items-center mb-4 flex-wrap'>
         <h2>Clientes</h2>
-        <Button
-          variant="primary"
-          onClick={() => {
-            setSelectedCliente(null);
-            setFormData({
-              cpf: '',
-              nome: '',
-              email: '',
-              telefone: '',
-              sexo: '',
-              rua: '',
-              numero: '',
-              cep: '',
-              referencia: '',
-              id_bairro: '',
-              turno_preferido_de_coleta: '',
-              status_cliente: '',
-              frequencia_de_pedidos: ''
-            });
-            setShowModal(true);
-          }}
-          className="mb-3"
-        >
-          <FontAwesomeIcon icon={faPlus} className="me-2" />
-          Novo Cliente
-        </Button>
-
-
+        <div className="col-12 col-md-auto px-0 mt-2 mt-md-0">
+          <Button
+            variant="primary"
+            onClick={() => {
+              setSelectedCliente(null);
+              setFormData({
+                cpf: '',
+                nome: '',
+                email: '',
+                telefone: '',
+                sexo: '',
+                rua: '',
+                numero: '',
+                cep: '',
+                referencia: '',
+                id_bairro: '',
+                turno_preferido_de_coleta: '',
+                status_cliente: '',
+                frequencia_de_pedidos: ''
+              });
+              setShowModal(true);
+            }}
+            className="mb-3 w-100"
+          >
+            <FontAwesomeIcon icon={faPlus} className="me-2" />
+            Novo Cliente
+          </Button>
+        </div>
       </div>
       {alert.show && (
         <Alert variant={alert.variant} onClose={() => setAlert({ show: false })} dismissible>
@@ -625,7 +625,7 @@ function Clientes() {
                     onChange={handleBairroChange}
                     required
                   >
-                    <option value="">Selecione um bairro</option>
+                    <option value="">Selecione...</option>
                     {bairros.map(bairro => (
                       <option key={bairro.id_bairro} value={bairro.id_bairro}>
                         {bairro.nome}

@@ -56,7 +56,7 @@ function Sidebar({ isCollapsed }) {
       ]
     }
 
-    
+
   ];
 
   return (
@@ -139,7 +139,10 @@ function Sidebar({ isCollapsed }) {
                   </Dropdown.Menu>
                 </Dropdown>
               ) : (
-                <Nav.Item key={item.path} className="w-100">
+                <Nav.Item
+                  key={item.path}
+                  className={`w-100${item.path === '/bairros' ? ' pb-5' : ''}`}
+                >
                   <Nav.Link
                     as={Link}
                     to={item.path}

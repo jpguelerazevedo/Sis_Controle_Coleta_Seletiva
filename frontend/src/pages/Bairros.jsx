@@ -109,12 +109,14 @@ function Bairros() {
 
     return (
         <div className='container mt-4'>
-            <div className="d-flex justify-content-between align-items-center mb-4">
+            <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap">
                 <h2>Bairros</h2>
-                <Button variant="primary" onClick={handleShowModal}>
-                    <FontAwesomeIcon icon={faPlus} className="me-2" />
-                    Novo Bairro
-                </Button>
+                <div className="col-12 col-md-auto px-0 mt-2 mt-md-0">
+                    <Button variant="primary" onClick={handleShowModal} className="mb-3 w-100">
+                        <FontAwesomeIcon icon={faPlus} className="me-2" />
+                        Novo Bairro
+                    </Button>
+                </div>
             </div>
             {alert.show && (
                 <Alert variant={alert.variant} onClose={() => setAlert({ show: false })} dismissible>
@@ -158,6 +160,7 @@ function Bairros() {
                                 value={formData.distancia_sede}
                                 onChange={e => setFormData({ ...formData, distancia_sede: e.target.value })}
                                 required
+                                placeholder="Distancia (Km)"
                             />
                         </Form.Group>
                         <Form.Group className="mb-3">
@@ -167,7 +170,7 @@ function Bairros() {
                                 onChange={e => setFormData({ ...formData, estado_de_acesso: e.target.value })}
                                 required
                             >
-                                <option value="">Selecione o estado de acesso</option>
+                                <option value="">Selecione...</option>
                                 <option value="Facil">Facil</option>
                                 <option value="Mediano">Mediano</option>
                                 <option value="Difícil">Difícil</option>

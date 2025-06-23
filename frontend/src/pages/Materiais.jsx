@@ -151,25 +151,27 @@ function Materiais() {
 
   return (
     <div className="container mt-4">
-      <div className="d-flex justify-content-between align-items-center mb-4">
+      <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap">
         <h2>Materiais</h2>
-        <Button
-          variant="primary"
-          className="mb-3"
-          onClick={() => {
-            setSelectedMaterial(null);
-            setFormData({
-              nome: '',
-              peso: '',
-              volume: '',
-              nivelDeRisco: 'baixo'
-            });
-            setShowModal(true);
-          }}
-        >
-          <FontAwesomeIcon icon={faPlus} className="me-2" />
-          Novo Material
-        </Button>
+        <div className="col-12 col-md-auto px-0 mt-2 mt-md-0">
+          <Button
+            variant="primary"
+            className="mb-3 w-100"
+            onClick={() => {
+              setSelectedMaterial(null);
+              setFormData({
+                nome: '',
+                peso: '',
+                volume: '',
+                nivelDeRisco: 'baixo'
+              });
+              setShowModal(true);
+            }}
+          >
+            <FontAwesomeIcon icon={faPlus} className="me-2" />
+            Novo Material
+          </Button>
+        </div>
       </div>
       {alert.show && (
         <Alert variant={alert.variant} onClose={() => setAlert({ show: false })} dismissible>
@@ -216,7 +218,7 @@ function Materiais() {
                 </Form.Group>
               </div>
               <div className="col-md-4">
-                <Form.Group className="mb-3" style={{ minWidth: 180 }}>
+                <Form.Group className="mb-3 w-100">
                   <Form.Label>Nível de Risco</Form.Label>
                   <Form.Select
                     name="nivelDeRisco"
@@ -224,7 +226,7 @@ function Materiais() {
                     onChange={e => setFormData({ ...formData, nivelDeRisco: e.target.value })}
                     required
                   >
-                    <option value="">Selecione o nível de risco</option>
+                    <option value="">Selecione...</option>
                     <option value="Baixo">Baixo</option>
                     <option value="Medio">Médio</option>
                     <option value="Alto">Alto</option>

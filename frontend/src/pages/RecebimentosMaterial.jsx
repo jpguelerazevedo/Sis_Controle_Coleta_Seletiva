@@ -164,26 +164,28 @@ function RecebimentosMaterial() {
 
     return (
         <Container className="mt-4">
-            <div className="d-flex justify-content-between align-items-center mb-4">
+            <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap">
                 <h2>Recebimentos de Material</h2>
-                <Button
-                    variant="primary"
-                    onClick={() => {
-                        setSelectedRecebimento(null);
-                        setFormData({
-                            peso: '',
-                            volume: '',
-                            idMaterial: '',
-                            cpfCliente: '',
-                            cpfColaborador: ''
-                        });
-                        setShowModal(true);
-                    }}
-                    className="mb-3"
-                >
-                    <FontAwesomeIcon icon={faPlus} className="me-2" />
-                    Novo Recebimento
-                </Button>
+                <div className="col-12 col-md-auto px-0 mt-2 mt-md-0">
+                    <Button
+                        variant="primary"
+                        onClick={() => {
+                            setSelectedRecebimento(null);
+                            setFormData({
+                                peso: '',
+                                volume: '',
+                                idMaterial: '',
+                                cpfCliente: '',
+                                cpfColaborador: ''
+                            });
+                            setShowModal(true);
+                        }}
+                        className="mb-3 w-100"
+                    >
+                        <FontAwesomeIcon icon={faPlus} className="me-2" />
+                        Novo Recebimento
+                    </Button>
+                </div>
             </div>
             {alert.show && (
                 <Alert variant={alert.variant} onClose={() => setAlert({ ...alert, show: false })} dismissible>
@@ -223,7 +225,7 @@ function RecebimentosMaterial() {
                                         onChange={handleInputChange}
                                         required
                                     >
-                                        <option value="">Selecione um material</option>
+                                        <option value="">Selecione...</option>
                                         {materiais.map((material) => (
                                             <option key={material.idMaterial} value={material.idMaterial}>
                                                 {material.nome}
@@ -278,7 +280,7 @@ function RecebimentosMaterial() {
                                         onChange={handleInputChange}
                                         required
                                     >
-                                        <option value="">Selecione o cliente</option>
+                                        <option value="">Selecione...</option>
                                         {clientes.map((cliente) => (
                                             <option key={cliente.cpf} value={cliente.cpf}>
                                                 {(cliente.nome || (cliente.pessoa && cliente.pessoa.nome) || '') + ' - ' + cliente.cpf}
@@ -296,7 +298,7 @@ function RecebimentosMaterial() {
                                         onChange={handleInputChange}
                                         required
                                     >
-                                        <option value="">Selecione o colaborador</option>
+                                        <option value="">Selecione...</option>
                                         {colaboradores.map((colab) => (
                                             <option key={colab.cpf} value={colab.cpf}>
                                                 {(colab.nome || (colab.pessoa && colab.pessoa.nome) || '') + ' - ' + colab.cpf}

@@ -222,12 +222,14 @@ function Terceirizadas() {
 
   return (
     <div className="container mt-4">
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <h2 className="mb-0">Terceirizadas</h2>
-        <Button variant="primary" onClick={() => setShowModal(true)}>
-          <FontAwesomeIcon icon={faPlus} className="me-2" />
-          Nova Terceirizada
-        </Button>
+      <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap">
+        <h2 className="">Terceirizadas</h2>
+        <div className="col-12 col-md-auto px-0 mt-2 mt-md-0">
+          <Button variant="primary" onClick={() => setShowModal(true)} className="mb-3 w-100">
+            <FontAwesomeIcon icon={faPlus} className="me-2" />
+            Nova Terceirizada
+          </Button>
+        </div>
       </div>
       {alert.show && (
         <Alert variant={alert.variant} onClose={() => setAlert({ show: false })} dismissible>
@@ -270,7 +272,7 @@ function Terceirizadas() {
                 </Form.Group>
               </div>
               <div className="col-md-4">
-                <Form.Group className="mb-3" style={{ minWidth: 180 }}>
+                <Form.Group className="mb-3 w-100">
                   <Form.Label>CNPJ</Form.Label>
                   <Form.Control
                     type="text"
@@ -381,7 +383,7 @@ function Terceirizadas() {
                 {selectedTerceirizada ? 'Atualizar' : 'Cadastrar'}
               </Button>
             </div>
-                    
+
           </Form>
         </Modal.Body>
       </Modal>
