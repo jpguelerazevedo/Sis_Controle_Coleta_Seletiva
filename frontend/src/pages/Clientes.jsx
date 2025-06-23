@@ -53,11 +53,6 @@ function Clientes() {
       width: 150
     },
     {
-      field: 'status_cliente',
-      headerName: 'Status',
-      width: 150
-    },
-    {
       field: 'turno_preferido_de_coleta',
       headerName: 'Turno de Coleta',
       width: 150

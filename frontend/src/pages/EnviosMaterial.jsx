@@ -234,11 +234,17 @@ function EnviosMaterial() {
                                         required
                                     >
                                         <option value="">Selecione...</option>
-                                        {terceirizadas.map((t) => (
-                                            <option key={t.cnpj} value={t.cnpj}>
-                                                {t.nome}
-                                            </option>
-                                        ))}
+                                        {terceirizadas
+                                            .filter(t => {
+                                                // Considera ativa se estado/status/status_terceirizada contém "ativo" (case-insensitive)
+                                                const estado = (t.estado ?? t.status ?? t.status_terceirizada ?? '').toString().trim().toUpperCase();
+                                                return estado.includes('ATIVO');
+                                            })
+                                            .map((t) => (
+                                                <option key={t.cnpj} value={t.cnpj}>
+                                                    {t.nome}
+                                                </option>
+                                            ))}
                                     </Form.Select>
                                 </Form.Group>
                             </div>

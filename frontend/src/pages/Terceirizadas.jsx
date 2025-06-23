@@ -369,8 +369,8 @@ function Terceirizadas() {
                     onChange={e => setFormData({ ...formData, status: e.target.value })}
                     required
                   >
-                    <option value="ATIVO">Ativo</option>
-                    <option value="INATIVO">Inativo</option>
+                    <option value="ativo">Ativo</option>
+                    <option value="desativado">Desativado</option>
                   </Form.Select>
                 </Form.Group>
               </div>

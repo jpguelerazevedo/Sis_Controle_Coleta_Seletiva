@@ -312,11 +312,17 @@ function PedidosColeta() {
                     required
                   >
                     <option value="">Selecione... </option>
-                    {colaboradores.map((colab) => (
-                      <option key={colab.cpf} value={colab.cpf}>
-                        {(colab.nome || (colab.pessoa && colab.pessoa.nome) || '') + ' - ' + colab.cpf}
-                      </option>
-                    ))}
+                    {colaboradores
+                      .filter(colab => {
+                        // Considera ativo se status/status_colaborador contém "ativo" (case-insensitive)
+                        const status = (colab.status ?? colab.status_colaborador ?? colab.estado ?? '').toString().trim().toUpperCase();
+                        return status.includes('ATIVO');
+                      })
+                      .map((colab) => (
+                        <option key={colab.cpf} value={colab.cpf}>
+                          {(colab.nome || (colab.pessoa && colab.pessoa.nome) || '') + ' - ' + colab.cpf}
+                        </option>
+                      ))}
                   </Form.Select>
                 </Form.Group>
               </div>

@@ -1,177 +1,443 @@
-import { Row, Col, Card, Badge, ProgressBar } from 'react-bootstrap';
+import { useEffect, useState } from 'react';
+import { Row, Col, Card, Badge, ProgressBar, Spinner } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faUsers,
   faRecycle,
   faTruck,
   faBuilding,
+  faBoxOpen,
+  faCheckCircle,
+  faArrowUp
 } from '@fortawesome/free-solid-svg-icons';
+import endpoints from '../services/endpoints';
 
 function Dashboard() {
-  // These would typically come from an API
-  const stats = [
+  const [stats, setStats] = useState({
+    totalClientes: 0,
+    totalMateriais: 0,
+    totalTerceirizadas: 0,
+    totalMateriaisEstoque: 0,
+    clientesNovosMes: 0,
+  });
+  const [recentesPedidos, setRecentesPedidos] = useState([]);
+  const [recentesRecebimentos, setRecentesRecebimentos] = useState([]);
+  const [recentesEnvios, setRecentesEnvios] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchStats() {
+      setLoading(true);
+      try {
+        // Clientes
+        const clientesResp = await endpoints.clientes.list();
+        const clientes = clientesResp?.data || [];
+        const clientesNovosMes = clientes.filter(c => {
+          if (!c.createdAt) return false;
+          const created = new Date(c.createdAt);
+          const now = new Date();
+          return created.getMonth() === now.getMonth() && created.getFullYear() === now.getFullYear();
+        }).length;
+
+        // Materiais
+        const materiaisResp = await endpoints.materiais.list();
+        const materiais = materiaisResp?.data || [];
+        const totalMateriaisEstoque = materiais.reduce((acc, m) => acc + (parseFloat(m.peso) || 0), 0);
+
+        // Pedidos de Coleta
+        const pedidosResp = await endpoints.pedidos?.list?.();
+        const pedidos = pedidosResp?.data || [];
+        const pedidosOrdenados = pedidos.sort((a, b) => new Date(a.data) - new Date(b.data)); // ordem crescente
+        const recentesPedidos = pedidosOrdenados
+          .slice(-3) // pega os 3 últimos
+          .map(p => ({
+            tipo: p.status === 'PENDENTE' ? 'Novo pedido' : 'Pedido concluído',
+            cliente: p.cpf_cliente,
+            data: p.data,
+            status: p.status,
+            material: materiais.find(m => m.idMaterial === p.idMaterial)?.nome || '',
+            peso: p.peso,
+          }));
+
+        // Recebimentos de Material
+        const recebResp = await endpoints.recebimentos?.list?.();
+        const recebimentos = recebResp?.data || [];
+        const recebimentosOrdenados = recebimentos.sort((a, b) => new Date(a.data) - new Date(b.data)); // ordem crescente
+        const recentesRecebimentos = recebimentosOrdenados
+          .slice(-3) // pega os 3 últimos
+          .map(r => ({
+            cliente: r.cpfCliente || r.cpf_cliente,
+            colaborador: r.cpfColaborador || r.cpf_colaborador,
+            data: r.data,
+            material: materiais.find(m => m.idMaterial === r.idMaterial)?.nome || '',
+            peso: r.peso,
+            volume: r.volume,
+          }));
+
+        // Envios de Material
+        const enviosResp = await endpoints.envios?.list?.();
+        const envios = enviosResp?.data || [];
+        const enviosOrdenados = envios.sort((a, b) => new Date(a.data) - new Date(b.data)); // ordem crescente
+        const terceirizadasResp = await endpoints.terceirizadas.list();
+        const terceirizadas = terceirizadasResp?.data || [];
+        const recentesEnvios = enviosOrdenados
+          .slice(-3) // pega os 3 últimos
+          .map(e => ({
+            terceirizada: terceirizadas.find(t => t.cnpj === e.cnpj)?.nome || e.cnpj,
+            data: e.data,
+            material: materiais.find(m => m.idMaterial === e.idMaterial)?.nome || '',
+            peso: e.pesoEnviado || e.peso_enviado,
+            volume: e.volumeEnviado || e.volume_enviado,
+          }));
+
+        setStats({
+          totalClientes: clientes.length,
+          totalMateriais: materiais.length,
+          totalTerceirizadas: terceirizadas.length,
+          totalMateriaisEstoque,
+          clientesNovosMes,
+          totalPedidos: pedidos.length,
+          totalRecebimentos: recebimentos.length,
+          totalEnvios: envios.length,
+        });
+        setRecentesPedidos(recentesPedidos);
+        setRecentesRecebimentos(recentesRecebimentos);
+        setRecentesEnvios(recentesEnvios);
+      } catch (e) {
+        setStats({
+          totalClientes: 0,
+          totalMateriais: 0,
+          totalTerceirizadas: 0,
+          totalMateriaisEstoque: 0,
+          clientesNovosMes: 0,
+          totalPedidos: 0,
+          totalRecebimentos: 0,
+          totalEnvios: 0,
+        });
+        setRecentesPedidos([]);
+        setRecentesRecebimentos([]);
+        setRecentesEnvios([]);
+      }
+      setLoading(false);
+    }
+    fetchStats();
+  }, []);
+
+  const statCards = [
     {
       title: 'Total de Clientes',
-      value: '150',
+      value: stats.totalClientes,
       icon: faUsers,
-      color: 'primary',
-      bg: 'rgba(33,150,243,0.1)',
-      progress: 80,
-      footer: '+12 este mês'
+      color: 'success',
+      bg: 'rgba(40,167,69,0.13)', // verde forte
+      progress: stats.totalClientes ? Math.min(100, (stats.clientesNovosMes / stats.totalClientes) * 100) : 0,
+      footer: `+${stats.clientesNovosMes} este mês`
     },
     {
-      title: 'Materiais em Estoque',
-      value: '1.2 ton',
+      title: 'Materiais Cadastrados',
+      value: stats.totalMateriais,
       icon: faRecycle,
       color: 'success',
-      bg: 'rgba(76,175,80,0.1)',
-      progress: 60,
-      footer: 'Estoque saudável'
-    },
-    {
-      title: 'Pedidos Pendentes',
-      value: '23',
-      icon: faTruck,
-      color: 'warning',
-      bg: 'rgba(255,193,7,0.1)',
-      progress: 35,
-      footer: '5 atrasados'
+      bg: 'rgba(40,167,69,0.13)', // verde forte
+      progress: 100,
+      footer: 'Tipos diferentes'
     },
     {
       title: 'Terceirizadas Ativas',
-      value: '5',
+      value: stats.totalTerceirizadas,
       icon: faBuilding,
-      color: 'info',
-      bg: 'rgba(0,188,212,0.1)',
+      color: 'success',
+      bg: 'rgba(40,167,69,0.13)', // verde forte
       progress: 100,
-      footer: 'Todas ativas'
+      footer: 'Ativas no sistema'
     },
+    {
+      title: 'Estoque Total (kg)',
+      value: stats.totalMateriaisEstoque.toLocaleString('pt-BR', { maximumFractionDigits: 2 }),
+      icon: faBoxOpen,
+      color: 'success',
+      bg: 'rgba(40,167,69,0.13)', // verde forte
+      progress: 100,
+      footer: 'Peso total'
+    }
   ];
 
   return (
-    <div>
+    <div className="container mt-4">
       <h2 className="mb-4">Dashboard</h2>
-
-      <Row className="g-4">
-        {stats.map((stat, index) => (
-          <Col key={index} md={6} lg={3}>
-            <Card
-              className="h-100 border-0"
-              style={{
-                borderRadius: 18,
-                background: stat.bg,
-                boxShadow: '0 4px 24px 0 rgba(0,0,0,0.10), 0 1.5px 6px 0 rgba(0,0,0,0.08)'
-              }}
-            >
-              <Card.Body>
-                <div className="d-flex justify-content-between align-items-center mb-2">
-                  <div>
-                    <h6 className="text-muted mb-1" style={{ fontWeight: 600 }}>{stat.title}</h6>
-                    <h2 className={`mb-0 text-${stat.color}`} style={{ fontWeight: 700 }}>{stat.value}</h2>
-                  </div>
-                  <div
-                    style={{
-                      background: '#fff',
-                      borderRadius: '50%',
-                      width: 54,
-                      height: 54,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      boxShadow: '0 2px 8px #0001'
-                    }}
-                  >
-                    <FontAwesomeIcon
-                      icon={stat.icon}
-                      className={`text-${stat.color}`}
-                      size="2x"
+      {loading ? (
+        <div className="d-flex justify-content-center align-items-center" style={{ minHeight: 200 }}>
+          <Spinner animation="border" variant="success" />
+        </div>
+      ) : (
+        <>
+          <Row className="g-4">
+            {statCards.map((stat, index) => (
+              <Col key={index} md={6} lg={3}>
+                <Card
+                  className="h-100 border-0"
+                  style={{
+                    borderRadius: 18,
+                    background: stat.bg,
+                    boxShadow: '0 4px 24px 0 rgba(0,0,0,0.10), 0 1.5px 6px 0 rgba(0,0,0,0.08)'
+                  }}
+                >
+                  <Card.Body>
+                    <div className="d-flex justify-content-between align-items-center mb-2">
+                      <div>
+                        <h6 className="text-muted mb-1" style={{ fontWeight: 600 }}>{stat.title}</h6>
+                        <h2 className={`mb-0 text-${stat.color}`} style={{ fontWeight: 700 }}>{stat.value}</h2>
+                      </div>
+                      <div
+                        style={{
+                          background: '#fff',
+                          borderRadius: '50%',
+                          width: 54,
+                          height: 54,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          boxShadow: '0 2px 8px #0001'
+                        }}
+                      >
+                        <FontAwesomeIcon
+                          icon={stat.icon}
+                          className={`text-${stat.color}`}
+                          size="2x"
+                        />
+                      </div>
+                    </div>
+                    <ProgressBar
+                      now={stat.progress}
+                      variant={stat.color}
+                      style={{ height: 6, borderRadius: 3, marginBottom: 8, background: '#e9ecef', boxShadow: '0 1.5px 6px 0 rgba(0,0,0,0.08)' }}
                     />
-                  </div>
-                </div>
-                <ProgressBar
-                  now={stat.progress}
-                  variant={stat.color}
-                  style={{ height: 6, borderRadius: 3, marginBottom: 8, background: '#e9ecef', boxShadow: '0 1.5px 6px 0 rgba(0,0,0,0.08)' }}
-                />
-                <div className="d-flex justify-content-between align-items-center">
-                  <Badge bg={stat.color} style={{ fontSize: 12, fontWeight: 500, opacity: 0.85, boxShadow: '0 2px 8px #0001' }}>
-                    {stat.footer}
-                  </Badge>
-                </div>
-              </Card.Body>
-            </Card>
-          </Col>
-        ))}
-      </Row>
+                    <div className="d-flex justify-content-between align-items-center">
+                      <Badge bg={stat.color} style={{ fontSize: 12, fontWeight: 500, opacity: 0.85, boxShadow: '0 2px 8px #0001' }}>
+                        {stat.footer}
+                      </Badge>
+                    </div>
+                  </Card.Body>
+                </Card>
+              </Col>
+            ))}
+          </Row>
 
-      <Row className="mt-4">
-        <Col md={8}>
-          <Card
-            className="border-0 mb-4"
-            style={{
-              borderRadius: 18,
-              boxShadow: '0 4px 24px 0 rgba(0,0,0,0.10), 0 1.5px 6px 0 rgba(0,0,0,0.08)'
-            }}
-          >
-            <Card.Body>
-              <h5 className="card-title">Atividades Recentes</h5>
-              <div className="list-group list-group-flush">
-                <div className="list-group-item border-0" style={{ background: 'rgba(76,175,80,0.07)', boxShadow: '0 1.5px 6px 0 rgba(0,0,0,0.04)' }}>
-                  <div className="d-flex w-100 justify-content-between">
-                    <h6 className="mb-1" style={{ fontWeight: 600 }}>Nova coleta agendada</h6>
-                    <Badge bg="success" pill>3 min atrás</Badge>
+          <Row className="mt-4">
+            <Col md={12}>
+              <h4 className="pb-3">Atividades Recentes</h4>
+            </Col>
+          </Row>
+          <Row className="g-4 mb-4">
+            <Col md={4}>
+              <Card
+                className="h-100 border-0"
+                style={{
+                  borderRadius: 18,
+                  background: 'rgba(40,167,69,0.13)',
+                  boxShadow: '0 4px 24px 0 rgba(0,0,0,0.10), 0 1.5px 6px 0 rgba(0,0,0,0.08)'
+                }}
+              >
+                <Card.Body>
+                  <div className="d-flex justify-content-between align-items-center mb-2">
+                    <div>
+                      <h6 className="text-success mb-1" style={{ fontWeight: 600 }}>Pedidos de Coleta</h6>
+                      <h2 className="mb-0 text-success" style={{ fontWeight: 700 }}>{recentesPedidos.length}</h2>
+                    </div>
+                    <div
+                      style={{
+                        background: '#fff',
+                        borderRadius: '50%',
+                        width: 54,
+                        height: 54,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        boxShadow: '0 2px 8px #0001'
+                      }}
+                    >
+                      <FontAwesomeIcon
+                        icon={faTruck}
+                        className="text-success"
+                        size="2x"
+                      />
+                    </div>
                   </div>
-                  <p className="mb-1">Cliente: <b>João Silva</b> - Bairro: Centro</p>
-                </div>
-                <div className="list-group-item border-0" style={{ background: 'rgba(33,150,243,0.07)', boxShadow: '0 1.5px 6px 0 rgba(0,0,0,0.04)' }}>
-                  <div className="d-flex w-100 justify-content-between">
-                    <h6 className="mb-1" style={{ fontWeight: 600 }}>Material recebido</h6>
-                    <Badge bg="primary" pill>1 hora atrás</Badge>
+                  <ProgressBar
+                    now={100}
+                    variant="success"
+                    style={{ height: 6, borderRadius: 3, marginBottom: 8, background: '#e9ecef', boxShadow: '0 1.5px 6px 0 rgba(0,0,0,0.08)' }}
+                  />
+                  <div className="d-flex justify-content-between align-items-center mb-2">
+                    <Badge bg="success" style={{ fontSize: 12, fontWeight: 500, opacity: 0.95, boxShadow: '0 2px 8px #0001', backgroundColor: '#28a745' }}>
+                      Recentes
+                    </Badge>
                   </div>
-                  <p className="mb-1">Plástico - <b>150kg</b></p>
-                </div>
-                <div className="list-group-item border-0" style={{ background: 'rgba(255,193,7,0.07)', boxShadow: '0 1.5px 6px 0 rgba(0,0,0,0.04)' }}>
-                  <div className="d-flex w-100 justify-content-between">
-                    <h6 className="mb-1" style={{ fontWeight: 600 }}>Novo cliente cadastrado</h6>
-                    <Badge bg="warning" pill>2 horas atrás</Badge>
+                  <div className="list-group list-group-flush">
+                    {recentesPedidos.length === 0 && (
+                      <div className="list-group-item border-0 text-muted bg-transparent">
+                        Nenhuma atividade recente encontrada.
+                      </div>
+                    )}
+                    {recentesPedidos.map((item, idx) => (
+                      <div key={idx} className="list-group-item border-0 bg-transparent">
+                        <div className="d-flex w-100 justify-content-between">
+                          <h6 className="mb-1" style={{ fontWeight: 600 }}>{item.tipo}</h6>
+                          <Badge bg={item.status === 'PENDENTE' ? 'warning' : 'success'} pill>
+                            {item.status}
+                          </Badge>
+                        </div>
+                        <p className="mb-1">
+                          Cliente: <b>{item.cliente}</b>
+                          {item.material && <> - Material: {item.material}</>}
+                          {item.peso && <> - {item.peso}kg</>}
+                        </p>
+                        <small className="text-muted">{item.data ? new Date(item.data).toLocaleString('pt-BR') : ''}</small>
+                      </div>
+                    ))}
                   </div>
-                  <p className="mb-1"><b>Maria Oliveira</b> - Bairro: Jardim América</p>
-                </div>
-              </div>
-            </Card.Body>
-          </Card>
-        </Col>
-
-        <Col md={4}>
-          <Card
-            className="border-0"
-            style={{
-              borderRadius: 18,
-              boxShadow: '0 4px 24px 0 rgba(0,0,0,0.10), 0 1.5px 6px 0 rgba(0,0,0,0.08)'
-            }}
-          >
-            <Card.Body>
-              <h5 className="card-title">Próximas Coletas</h5>
-              <div className="list-group list-group-flush">
-                <div className="list-group-item border-0" style={{ background: 'rgba(33,150,243,0.07)', boxShadow: '0 1.5px 6px 0 rgba(0,0,0,0.04)' }}>
-                  <div className="d-flex w-100 justify-content-between">
-                    <h6 className="mb-1" style={{ fontWeight: 600 }}>Pedro Santos</h6>
-                    <Badge bg="primary" pill>Hoje, 14:00</Badge>
+                </Card.Body>
+              </Card>
+            </Col>
+            <Col md={4}>
+              <Card
+                className="h-100 border-0"
+                style={{
+                  borderRadius: 18,
+                  background: 'rgba(40,167,69,0.13)',
+                  boxShadow: '0 4px 24px 0 rgba(0,0,0,0.10), 0 1.5px 6px 0 rgba(0,0,0,0.08)'
+                }}
+              >
+                <Card.Body>
+                  <div className="d-flex justify-content-between align-items-center mb-2">
+                    <div>
+                      <h6 className="text-success mb-1" style={{ fontWeight: 600 }}>Recebimento de Material</h6>
+                      <h2 className="mb-0 text-success" style={{ fontWeight: 700 }}>{recentesRecebimentos.length}</h2>
+                    </div>
+                    <div
+                      style={{
+                        background: '#fff',
+                        borderRadius: '50%',
+                        width: 54,
+                        height: 54,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        boxShadow: '0 2px 8px #0001'
+                      }}
+                    >
+                      <FontAwesomeIcon
+                        icon={faCheckCircle}
+                        className="text-success"
+                        size="2x"
+                      />
+                    </div>
                   </div>
-                  <p className="mb-1">Papel e Plástico</p>
-                </div>
-                <div className="list-group-item border-0" style={{ background: 'rgba(76,175,80,0.07)', boxShadow: '0 1.5px 6px 0 rgba(0,0,0,0.04)' }}>
-                  <div className="d-flex w-100 justify-content-between">
-                    <h6 className="mb-1" style={{ fontWeight: 600 }}>Ana Costa</h6>
-                    <Badge bg="success" pill>Amanhã, 10:00</Badge>
+                  <ProgressBar
+                    now={100}
+                    variant="success"
+                    style={{ height: 6, borderRadius: 3, marginBottom: 8, background: '#e9ecef', boxShadow: '0 1.5px 6px 0 rgba(0,0,0,0.08)' }}
+                  />
+                  <div className="d-flex justify-content-between align-items-center mb-2">
+                    <Badge bg="success" style={{ fontSize: 12, fontWeight: 500, opacity: 0.95, boxShadow: '0 2px 8px #0001', backgroundColor: '#28a745' }}>
+                      Recentes
+                    </Badge>
                   </div>
-                  <p className="mb-1">Vidro e Metal</p>
-                </div>
-              </div>
-            </Card.Body>
-          </Card>
-        </Col>
-      </Row>
+                  <div className="list-group list-group-flush">
+                    {recentesRecebimentos.length === 0 && (
+                      <div className="list-group-item border-0 text-muted bg-transparent">
+                        Nenhum recebimento recente encontrado.
+                      </div>
+                    )}
+                    {recentesRecebimentos.map((item, idx) => (
+                      <div key={idx} className="list-group-item border-0 bg-transparent">
+                        <div className="d-flex w-100 justify-content-between">
+                          <h6 className="mb-1" style={{ fontWeight: 600 }}>Recebimento</h6>
+                        </div>
+                        <p className="mb-1">
+                          Cliente: <b>{item.cliente}</b>
+                          {item.material && <> - Material: {item.material}</>}
+                          {item.peso && <> - {item.peso}kg</>}
+                          {item.volume && <> - {item.volume}m³</>}
+                        </p>
+                        <small className="text-muted">{item.data ? new Date(item.data).toLocaleString('pt-BR') : ''}</small>
+                      </div>
+                    ))}
+                  </div>
+                </Card.Body>
+              </Card>
+            </Col>
+            <Col md={4}>
+              <Card
+                className="h-100 border-0"
+                style={{
+                  borderRadius: 18,
+                  background: 'rgba(40,167,69,0.13)',
+                  boxShadow: '0 4px 24px 0 rgba(0,0,0,0.10), 0 1.5px 6px 0 rgba(0,0,0,0.08)'
+                }}
+              >
+                <Card.Body>
+                  <div className="d-flex justify-content-between align-items-center mb-2">
+                    <div>
+                      <h6 className="text-success mb-1" style={{ fontWeight: 600 }}>Envio de Material</h6>
+                      <h2 className="mb-0 text-success" style={{ fontWeight: 700 }}>{recentesEnvios.length}</h2>
+                    </div>
+                    <div
+                      style={{
+                        background: '#fff',
+                        borderRadius: '50%',
+                        width: 54,
+                        height: 54,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        boxShadow: '0 2px 8px #0001'
+                      }}
+                    >
+                      <FontAwesomeIcon
+                        icon={faArrowUp}
+                        className="text-success"
+                        size="2x"
+                      />
+                    </div>
+                  </div>
+                  <ProgressBar
+                    now={100}
+                    variant="success"
+                    style={{ height: 6, borderRadius: 3, marginBottom: 8, background: '#e9ecef', boxShadow: '0 1.5px 6px 0 rgba(0,0,0,0.08)' }}
+                  />
+                  <div className="d-flex justify-content-between align-items-center mb-2">
+                    <Badge bg="success" style={{ fontSize: 12, fontWeight: 500, opacity: 0.95, boxShadow: '0 2px 8px #0001', backgroundColor: '#28a745' }}>
+                      Recentes
+                    </Badge>
+                  </div>
+                  <div className="list-group list-group-flush">
+                    {recentesEnvios.length === 0 && (
+                      <div className="list-group-item border-0 text-muted bg-transparent">
+                        Nenhum envio recente encontrado.
+                      </div>
+                    )}
+                    {recentesEnvios.map((item, idx) => (
+                      <div key={idx} className="list-group-item border-0 bg-transparent">
+                        <div className="d-flex w-100 justify-content-between">
+                          <h6 className="mb-1" style={{ fontWeight: 600 }}>Envio</h6>
+                        </div>
+                        <p className="mb-1">
+                          Terceirizada: <b>{item.terceirizada}</b>
+                          {item.material && <> - Material: {item.material}</>}
+                          {item.peso && <> - {item.peso}kg</>}
+                          {item.volume && <> - {item.volume}m³</>}
+                        </p>
+                        <small className="text-muted">{item.data ? new Date(item.data).toLocaleString('pt-BR') : ''}</small>
+                      </div>
+                    ))}
+                  </div>
+                </Card.Body>
+              </Card>
+            </Col>
+          </Row>
+        </>
+      )}
     </div>
   );
 }
