@@ -84,13 +84,13 @@ function Bairros() {
     };
 
     const columns = [
-        { field: 'nome', headerName: 'Nome', width: 250 },
+        { field: 'nome', headerName: 'Nome', width: 200 },
         { field: 'distancia_sede', headerName: 'Distância Sede', width: 120 },
         { field: 'estado_de_acesso', headerName: 'Estado de Acesso', width: 140 },
         {
             field: 'acoes',
             headerName: 'Ações',
-            width: 120,
+            width: 70,
             sortable: false,
             renderCell: (params) => (
                 <div>
@@ -112,29 +112,37 @@ function Bairros() {
             <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap">
                 <h2>Bairros</h2>
                 <div className="col-12 col-md-auto px-0 mt-2 mt-md-0">
-                    <Button variant="primary" onClick={handleShowModal} className="mb-3 w-100">
+                    <Button variant="primary" onClick={handleShowModal} className=" w-100">
                         <FontAwesomeIcon icon={faPlus} className="me-2" />
                         Novo Bairro
                     </Button>
                 </div>
             </div>
             {alert.show && (
-                <Alert variant={alert.variant} onClose={() => setAlert({ show: false })} dismissible>
+                <Alert
+                    variant={alert.variant}
+                    onClose={() => setAlert({ show: false })}
+                    dismissible
+                    className="position-fixed top-0 end-0 m-3"
+                    style={{ zIndex: 1050 }}
+                >
                     {alert.message}
                 </Alert>
             )}
-            <div style={{ height: 500, width: '100%', marginBottom: 24 }}>
+            <div style={{ width: '100%', marginBottom: 24 }}>
                 <DataGrid
                     rows={bairros}
                     columns={columns}
                     getRowId={row => row.id_bairro}
-                    pageSize={10}
-                    rowsPerPageOptions={[10, 20, 50]}
+                    initialState={{
+                        pagination: { paginationModel: { pageSize: 5, page: 0 } }
+                    }}
+                    pageSizeOptions={[5]}
+                    pagination
                     disableSelectionOnClick
-                    filterMode="client"
                     isRowSelectable={() => false}
-                    autoHeight
                     loading={loading}
+                    autoHeight={true}
                 />
             </div>
 

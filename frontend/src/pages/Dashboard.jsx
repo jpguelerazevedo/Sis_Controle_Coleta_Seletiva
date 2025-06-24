@@ -24,6 +24,11 @@ function Dashboard() {
   const [recentesRecebimentos, setRecentesRecebimentos] = useState([]);
   const [recentesEnvios, setRecentesEnvios] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [totais, setTotais] = useState({
+    pedidos: 0,
+    recebimentos: 0,
+    envios: 0,
+  });
 
   useEffect(() => {
     async function fetchStats() {
@@ -49,15 +54,26 @@ function Dashboard() {
         const pedidos = pedidosResp?.data || [];
         const pedidosOrdenados = pedidos.sort((a, b) => new Date(a.data) - new Date(b.data)); // ordem crescente
         const recentesPedidos = pedidosOrdenados
-          .slice(-3) // pega os 3 últimos
-          .map(p => ({
-            tipo: p.status === 'PENDENTE' ? 'Novo pedido' : 'Pedido concluído',
-            cliente: p.cpf_cliente,
-            data: p.data,
-            status: p.status,
-            material: materiais.find(m => m.idMaterial === p.idMaterial)?.nome || '',
-            peso: p.peso,
-          }));
+          .slice(-3)
+          .map(p => {
+            // Formata o CPF para 000.000.000-00
+            const clienteObj = clientes.find(c => c.cpf === p.cpf_cliente);
+            let cpfFormatado = p.cpf_cliente;
+            if (cpfFormatado && cpfFormatado.length === 11) {
+              cpfFormatado = cpfFormatado.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+            }
+            return {
+              tipo: p.status === 'PENDENTE' ? 'Novo pedido' : 'Pedido concluído',
+              cliente: clienteObj?.nome
+                ? `${clienteObj.nome} (${cpfFormatado})`
+                : cpfFormatado,
+              data: p.data,
+              status: p.status,
+              material: materiais.find(m => m.idMaterial === p.idMaterial)?.nome || '',
+              peso: p.peso,
+              volume: p.volume,
+            };
+          });
 
         // Recebimentos de Material
         const recebResp = await endpoints.recebimentos?.list?.();
@@ -65,14 +81,20 @@ function Dashboard() {
         const recebimentosOrdenados = recebimentos.sort((a, b) => new Date(a.data) - new Date(b.data)); // ordem crescente
         const recentesRecebimentos = recebimentosOrdenados
           .slice(-3) // pega os 3 últimos
-          .map(r => ({
-            cliente: r.cpfCliente || r.cpf_cliente,
-            colaborador: r.cpfColaborador || r.cpf_colaborador,
-            data: r.data,
-            material: materiais.find(m => m.idMaterial === r.idMaterial)?.nome || '',
-            peso: r.peso,
-            volume: r.volume,
-          }));
+          .map(r => {
+            let cpf = r.cpfCliente || r.cpf_cliente || '';
+            if (cpf && cpf.length === 11) {
+              cpf = cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+            }
+            return {
+              cliente: cpf,
+              colaborador: r.cpfColaborador || r.cpf_colaborador,
+              data: r.data,
+              material: materiais.find(m => m.idMaterial === r.idMaterial)?.nome || '',
+              peso: r.peso,
+              volume: r.volume,
+            };
+          });
 
         // Envios de Material
         const enviosResp = await endpoints.envios?.list?.();
@@ -80,25 +102,37 @@ function Dashboard() {
         const enviosOrdenados = envios.sort((a, b) => new Date(a.data) - new Date(b.data)); // ordem crescente
         const terceirizadasResp = await endpoints.terceirizadas.list();
         const terceirizadas = terceirizadasResp?.data || [];
+        const terceirizadasAtivas = terceirizadas.filter(t => t.estado === 'ativo');
         const recentesEnvios = enviosOrdenados
           .slice(-3) // pega os 3 últimos
-          .map(e => ({
-            terceirizada: terceirizadas.find(t => t.cnpj === e.cnpj)?.nome || e.cnpj,
-            data: e.data,
-            material: materiais.find(m => m.idMaterial === e.idMaterial)?.nome || '',
-            peso: e.pesoEnviado || e.peso_enviado,
-            volume: e.volumeEnviado || e.volume_enviado,
-          }));
+          .map(e => {
+            let cnpj = e.cnpj || '';
+            if (cnpj && cnpj.length === 14) {
+              cnpj = cnpj.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5');
+            }
+            return {
+              terceirizada: cnpj,
+              data: e.data,
+              material: materiais.find(m => m.idMaterial === e.idMaterial)?.nome || '',
+              peso: e.pesoEnviado || e.peso_enviado,
+              volume: e.volumeEnviado || e.volume_enviado,
+            };
+          });
 
         setStats({
           totalClientes: clientes.length,
           totalMateriais: materiais.length,
-          totalTerceirizadas: terceirizadas.length,
+          totalTerceirizadas: terceirizadasAtivas.length,
           totalMateriaisEstoque,
           clientesNovosMes,
           totalPedidos: pedidos.length,
           totalRecebimentos: recebimentos.length,
           totalEnvios: envios.length,
+        });
+        setTotais({
+          pedidos: pedidos.length,
+          recebimentos: recebimentos.length,
+          envios: envios.length,
         });
         setRecentesPedidos(recentesPedidos);
         setRecentesRecebimentos(recentesRecebimentos);
@@ -113,6 +147,11 @@ function Dashboard() {
           totalPedidos: 0,
           totalRecebimentos: 0,
           totalEnvios: 0,
+        });
+        setTotais({
+          pedidos: 0,
+          recebimentos: 0,
+          envios: 0,
         });
         setRecentesPedidos([]);
         setRecentesRecebimentos([]);
@@ -173,10 +212,11 @@ function Dashboard() {
         <>
           <Row className="g-4">
             {statCards.map((stat, index) => (
-              <Col key={index} md={6} lg={3}>
+              <Col key={index} md={12} lg={6} xl={3}>
                 <Card
                   className="h-100 border-0"
                   style={{
+
                     borderRadius: 18,
                     background: stat.bg,
                     boxShadow: '0 4px 24px 0 rgba(0,0,0,0.10), 0 1.5px 6px 0 rgba(0,0,0,0.08)'
@@ -229,7 +269,7 @@ function Dashboard() {
             </Col>
           </Row>
           <Row className="g-4 mb-4">
-            <Col md={4}>
+            <Col xl={4} md={12}>
               <Card
                 className="h-100 border-0"
                 style={{
@@ -239,10 +279,13 @@ function Dashboard() {
                 }}
               >
                 <Card.Body>
+                  {/* Pedidos de Coleta */}
                   <div className="d-flex justify-content-between align-items-center mb-2">
                     <div>
                       <h6 className="text-success mb-1" style={{ fontWeight: 600 }}>Pedidos de Coleta</h6>
-                      <h2 className="mb-0 text-success" style={{ fontWeight: 700 }}>{recentesPedidos.length}</h2>
+                      <h2 className="mb-0 text-success" style={{ fontWeight: 700 }}>
+                        {totais.pedidos}
+                      </h2>
                     </div>
                     <div
                       style={{
@@ -281,16 +324,10 @@ function Dashboard() {
                     )}
                     {recentesPedidos.map((item, idx) => (
                       <div key={idx} className="list-group-item border-0 bg-transparent">
-                        <div className="d-flex w-100 justify-content-between">
-                          <h6 className="mb-1" style={{ fontWeight: 600 }}>{item.tipo}</h6>
-                          <Badge bg={item.status === 'PENDENTE' ? 'warning' : 'success'} pill>
-                            {item.status}
-                          </Badge>
-                        </div>
-                        <p className="mb-1">
-                          Cliente: <b>{item.cliente}</b>
-                          {item.material && <> - Material: {item.material}</>}
-                          {item.peso && <> - {item.peso}kg</>}
+                        <p className="mt-3" style={{ marginBottom: 0, borderTop: '1px solid green' }}>
+                          CPF: <b>{item.cliente}</b><br />
+                          MATERIAL: {item.material || '-'}<br />
+                          PESO/VOLUME: {item.peso ? `${item.peso}kg` : '-'} -{item.volume ? ` ${item.volume}m³` : '-'}
                         </p>
                         <small className="text-muted">{item.data ? new Date(item.data).toLocaleString('pt-BR') : ''}</small>
                       </div>
@@ -299,7 +336,7 @@ function Dashboard() {
                 </Card.Body>
               </Card>
             </Col>
-            <Col md={4}>
+            <Col xl={4} md={12}>
               <Card
                 className="h-100 border-0"
                 style={{
@@ -309,10 +346,13 @@ function Dashboard() {
                 }}
               >
                 <Card.Body>
+                  {/* Recebimento de Material */}
                   <div className="d-flex justify-content-between align-items-center mb-2">
                     <div>
                       <h6 className="text-success mb-1" style={{ fontWeight: 600 }}>Recebimento de Material</h6>
-                      <h2 className="mb-0 text-success" style={{ fontWeight: 700 }}>{recentesRecebimentos.length}</h2>
+                      <h2 className="mb-0 text-success" style={{ fontWeight: 700 }}>
+                        {totais.recebimentos}
+                      </h2>
                     </div>
                     <div
                       style={{
@@ -351,14 +391,10 @@ function Dashboard() {
                     )}
                     {recentesRecebimentos.map((item, idx) => (
                       <div key={idx} className="list-group-item border-0 bg-transparent">
-                        <div className="d-flex w-100 justify-content-between">
-                          <h6 className="mb-1" style={{ fontWeight: 600 }}>Recebimento</h6>
-                        </div>
-                        <p className="mb-1">
-                          Cliente: <b>{item.cliente}</b>
-                          {item.material && <> - Material: {item.material}</>}
-                          {item.peso && <> - {item.peso}kg</>}
-                          {item.volume && <> - {item.volume}m³</>}
+                        <p className="mt-3" style={{ marginBottom: 0, borderTop: '1px solid green' }}>
+                          CPF: <b>{item.cliente}</b><br />
+                          MATERIAL: {item.material || '-'}<br />
+                          PESO/VOLUME: {item.peso ? `${item.peso}kg` : '-'} -{item.volume ? ` ${item.volume}m³` : '-'}
                         </p>
                         <small className="text-muted">{item.data ? new Date(item.data).toLocaleString('pt-BR') : ''}</small>
                       </div>
@@ -367,7 +403,7 @@ function Dashboard() {
                 </Card.Body>
               </Card>
             </Col>
-            <Col md={4}>
+            <Col xl={4} md={12}>
               <Card
                 className="h-100 border-0"
                 style={{
@@ -377,10 +413,13 @@ function Dashboard() {
                 }}
               >
                 <Card.Body>
+                  {/* Envio de Material */}
                   <div className="d-flex justify-content-between align-items-center mb-2">
                     <div>
                       <h6 className="text-success mb-1" style={{ fontWeight: 600 }}>Envio de Material</h6>
-                      <h2 className="mb-0 text-success" style={{ fontWeight: 700 }}>{recentesEnvios.length}</h2>
+                      <h2 className="mb-0 text-success" style={{ fontWeight: 700 }}>
+                        {totais.envios}
+                      </h2>
                     </div>
                     <div
                       style={{
@@ -419,14 +458,10 @@ function Dashboard() {
                     )}
                     {recentesEnvios.map((item, idx) => (
                       <div key={idx} className="list-group-item border-0 bg-transparent">
-                        <div className="d-flex w-100 justify-content-between">
-                          <h6 className="mb-1" style={{ fontWeight: 600 }}>Envio</h6>
-                        </div>
-                        <p className="mb-1">
-                          Terceirizada: <b>{item.terceirizada}</b>
-                          {item.material && <> - Material: {item.material}</>}
-                          {item.peso && <> - {item.peso}kg</>}
-                          {item.volume && <> - {item.volume}m³</>}
+                        <p className="mt-3" style={{ marginBottom: 0, borderTop: '1px solid green' }}>
+                          TERCEIRIZADA: <b>{item.terceirizada}</b><br />
+                          MATERIAL: {item.material || '-'}<br />
+                          PESO/VOLUME: {item.peso ? `${item.peso}kg` : '-'} -{item.volume ? ` ${item.volume}m³` : '-'}
                         </p>
                         <small className="text-muted">{item.data ? new Date(item.data).toLocaleString('pt-BR') : ''}</small>
                       </div>

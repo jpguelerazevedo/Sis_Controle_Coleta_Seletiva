@@ -183,7 +183,7 @@ function Terceirizadas() {
     {
       field: 'telefone',
       headerName: 'Telefone',
-      width: 150
+      width: 130
     },
     {
       field: 'email',
@@ -203,7 +203,7 @@ function Terceirizadas() {
     {
       field: 'acoes',
       headerName: 'Ações',
-      width: 150,
+      width: 70,
       sortable: false,
       renderCell: (params) => (
         <div>
@@ -225,29 +225,38 @@ function Terceirizadas() {
       <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap">
         <h2 className="">Terceirizadas</h2>
         <div className="col-12 col-md-auto px-0 mt-2 mt-md-0">
-          <Button variant="primary" onClick={() => setShowModal(true)} className="mb-3 w-100">
+          <Button variant="primary" onClick={() => setShowModal(true)} className=" w-100">
             <FontAwesomeIcon icon={faPlus} className="me-2" />
             Nova Terceirizada
           </Button>
         </div>
       </div>
       {alert.show && (
-        <Alert variant={alert.variant} onClose={() => setAlert({ show: false })} dismissible>
+        <Alert
+          variant={alert.variant}
+          onClose={() => setAlert({ show: false })}
+          dismissible
+          className="position-fixed top-0 end-0 m-3"
+          style={{ zIndex: 1050 }}
+        >
           {alert.message}
         </Alert>
       )}
-      <div style={{ height: 400, width: '100%' }}>
+      <div style={{ width: '100%' }}>
         <DataGrid
           rows={terceirizadas}
           columns={columns}
-          pageSize={5}
-          rowsPerPageOptions={[5]}
+          initialState={{
+            pagination: { paginationModel: { pageSize: 5, page: 0 } }
+          }}
+          pageSizeOptions={[5]}
+          pagination
           disableSelectionOnClick
           getRowId={(row) => row.id || row.cnpj}
           checkboxSelection={false}
           isRowSelectable={() => false}
-          autoHeight
           loading={loading}
+          autoHeight={true}
         />
       </div>
       <Modal show={showModal} onHide={handleCloseModal} size="lg" centered>

@@ -35,7 +35,7 @@ function Clientes() {
     {
       field: 'cpf',
       headerName: 'CPF',
-      width: 130
+      width: 110
     },
     {
       field: 'nome',
@@ -50,22 +50,22 @@ function Clientes() {
     {
       field: 'telefone',
       headerName: 'Telefone',
-      width: 150
+      width: 130
     },
     {
       field: 'turno_preferido_de_coleta',
       headerName: 'Turno de Coleta',
-      width: 150
+      width: 130
     },
     {
       field: 'frequencia_de_pedidos',
       headerName: 'Frequência',
-      width: 150
+      width: 95
     },
     {
       field: 'acoes',
       headerName: 'Ações',
-      width: 150,
+      width: 70,
       renderCell: (params) => (
         <div>
           <Button
@@ -454,7 +454,7 @@ function Clientes() {
               });
               setShowModal(true);
             }}
-            className="mb-3 w-100"
+            className="w-100"
           >
             <FontAwesomeIcon icon={faPlus} className="me-2" />
             Novo Cliente
@@ -462,23 +462,32 @@ function Clientes() {
         </div>
       </div>
       {alert.show && (
-        <Alert variant={alert.variant} onClose={() => setAlert({ show: false })} dismissible>
+        <Alert
+          variant={alert.variant}
+          onClose={() => setAlert({ show: false })}
+          dismissible
+          className="position-fixed top-0 end-0 m-3"
+          style={{ zIndex: 1050 }}
+        >
           {alert.message}
         </Alert>
       )}
 
 
-
-      <div style={{ height: 400, width: '100%' }}>
+      <div style={{ width: '100%' }}>
         <DataGrid
           rows={clientes}
           columns={columns}
-          pageSize={5}
-          rowsPerPageOptions={[5]}
+          initialState={{
+            pagination: { paginationModel: { pageSize: 5, page: 0 } }
+          }}
+          pageSizeOptions={[5]}
+          pagination
           disableSelectionOnClick
-          autoHeight
+          checkboxSelection={false}
           isRowSelectable={() => false}
           loading={loading}
+          autoHeight={true}
         />
       </div>
 

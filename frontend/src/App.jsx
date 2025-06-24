@@ -5,21 +5,21 @@ import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
 import Dashboard from './pages/Dashboard';
 import Clientes from './pages/Clientes';
-import PedidosColeta from './pages/PedidosColeta';
+import PedidosColeta from './pages/servicos/PedidosColeta';
 import Colaboradores from './pages/Colaboradores';
 import Terceirizadas from './pages/Terceirizadas';
 import Materiais from './pages/Materiais';
 import Bairros from './pages/Bairros';
-import Pessoas from './pages/Pessoas';
-import RecebimentosMaterial from './pages/RecebimentosMaterial';
-import EnviosMaterial from './pages/EnviosMaterial';
+// import Pessoas from './pages/Pessoas';
+import RecebimentosMaterial from './pages/servicos/RecebimentosMaterial';
+import EnviosMaterial from './pages/servicos/EnviosMaterial';
 import Cargos from './pages/Cargos';
-import MateriaisColetados from './pages/MateriaisColetados';
-import PedidoColetaBairros from './pages/PedidoColetaBairros';
-import ListarPedidos from './pages/ListarPedidos';
-import ListarMateriais from './pages/ListarMateriais';
-import ListarMateriaisEnviados from './pages/ListarMateriaisEnviados';
-import ListarClientesNovos from './pages/ListarClientesNovos';
+import MateriaisColetados from './pages/listagens/MateriaisColetados';
+import PedidoColetaBairros from './pages/listagens/PedidoColetaBairros';
+import ListarPedidos from './pages/listagens/ListarPedidos';
+import ListarMateriais from './pages/listagens/ListarMateriais';
+import ListarMateriaisEnviados from './pages/listagens/ListarMateriaisEnviados';
+import ListarClientesNovos from './pages/listagens/ListarClientesNovos';
 import './App.css';
 
 function App() {
@@ -62,7 +62,7 @@ function App() {
             <Route path="/colaboradores" element={<Colaboradores />} />
             <Route path="/terceirizadas" element={<Terceirizadas />} />
             <Route path="/bairros" element={<Bairros />} />
-            <Route path="/pessoas" element={<Pessoas />} />
+            {/* <Route path="/pessoas" element={<Pessoas />} /> */}
             <Route path="/recebimentos-material" element={<RecebimentosMaterial />} />
             <Route path="/envios-material" element={<EnviosMaterial />} />
             <Route path="/materiais-coletados" element={<MateriaisColetados />} />

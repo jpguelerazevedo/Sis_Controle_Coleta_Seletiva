@@ -134,17 +134,17 @@ function Materiais() {
     {
       field: 'peso',
       headerName: 'Peso (kg)',
-      width: 150,
+      width: 120,
     },
     {
       field: 'volume',
       headerName: 'Volume (m³)',
-      width: 150,
+      width: 120,
     },
     {
       field: 'nivelDeRisco',
       headerName: 'Nível de Risco',
-      width: 150,
+      width: 120,
     }
     // Removido o campo 'acoes'
   ];
@@ -156,7 +156,7 @@ function Materiais() {
         <div className="col-12 col-md-auto px-0 mt-2 mt-md-0">
           <Button
             variant="primary"
-            className="mb-3 w-100"
+            className=" w-100"
             onClick={() => {
               setSelectedMaterial(null);
               setFormData({
@@ -174,24 +174,32 @@ function Materiais() {
         </div>
       </div>
       {alert.show && (
-        <Alert variant={alert.variant} onClose={() => setAlert({ show: false })} dismissible>
+        <Alert
+          variant={alert.variant}
+          onClose={() => setAlert({ show: false })}
+          dismissible
+          className="position-fixed top-0 end-0 m-3"
+          style={{ zIndex: 1050 }}
+        >
           {alert.message}
         </Alert>
       )}
 
-
-
-      <div style={{ height: 400, width: '100%' }}>
+      <div style={{ width: '100%' }}>
         <DataGrid
           rows={materiais}
           columns={columns}
-          getRowId={(row) => row.id}
-          pageSize={5}
-          rowsPerPageOptions={[5]}
+          initialState={{
+            pagination: { paginationModel: { pageSize: 5, page: 0 } }
+          }}
+          pageSizeOptions={[5]}
+          pagination
           disableSelectionOnClick
-          autoHeight
+          getRowId={(row) => row.id}
+          checkboxSelection={false}
           isRowSelectable={() => false}
           loading={loading}
+          autoHeight={true}
         />
       </div>
 

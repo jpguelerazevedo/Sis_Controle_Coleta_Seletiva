@@ -90,18 +90,18 @@ const Cargos = () => {
     {
       field: 'hierarquia',
       headerName: 'Hierarquia',
-      width: 100,
+      width: 90,
 
     },
     {
       field: 'salario',
       headerName: 'Salário (R$)',
-      width: 150,
+      width: 100,
     },
     {
       field: 'acoes',
       headerName: 'Ações',
-      width: 150,
+      width: 70,
       renderCell: (params) => (
         <Button
           variant="outline-primary"
@@ -184,7 +184,7 @@ const Cargos = () => {
         <div className="col-12 col-md-auto px-0 mt-2 mt-md-0">
           <Button
             variant="primary"
-            className="mb-3 w-100"
+            className=" w-100"
             onClick={() => {
               setSelectedCargo(null);
               setFormData({
@@ -202,16 +202,18 @@ const Cargos = () => {
         </div>
       </div>
 
-
-      <div style={{ height: 400, width: '100%' }}>
+      <div style={{ width: '100%' }}>
         <DataGrid
           rows={cargos}
           columns={columns}
           getRowId={(row) => row.id}
-          pageSize={5}
-          rowsPerPageOptions={[5]}
+          initialState={{
+            pagination: { paginationModel: { pageSize: 5, page: 0 } }
+          }}
+          pageSizeOptions={[5]}
+          pagination
           disableSelectionOnClick
-          autoHeight
+          autoHeight={true}
           isRowSelectable={() => false}
           loading={loading}
         />

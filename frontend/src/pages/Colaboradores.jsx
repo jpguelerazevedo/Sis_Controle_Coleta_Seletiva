@@ -273,12 +273,12 @@ function Colaboradores() {
     {
       field: 'cpf',
       headerName: 'CPF',
-      width: 130,
+      width: 110,
     },
     {
       field: 'telefone',
       headerName: 'Telefone',
-      width: 150
+      width: 130
     },
     {
       field: 'email',
@@ -288,7 +288,7 @@ function Colaboradores() {
     {
       field: 'dataAdmissao',
       headerName: 'Data de Admissão',
-      width: 150,
+      width: 140,
 
     },
     {
@@ -309,7 +309,7 @@ function Colaboradores() {
     {
       field: 'acoes',
       headerName: 'Ações',
-      width: 150,
+      width: 70,
       sortable: false,
       renderCell: (params) => (
         <div>
@@ -331,7 +331,7 @@ function Colaboradores() {
       <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap">
         <h2>Colaboradores</h2>
         <div className="col-12 col-md-auto px-0 mt-2 mt-md-0">
-          <Button variant="primary" onClick={() => setShowModal(true)} className="mb-3 w-100">
+          <Button variant="primary" onClick={() => setShowModal(true)} className=" w-100">
             <FontAwesomeIcon icon={faPlus} className="me-2" />
             Novo Colaborador
           </Button>
@@ -339,22 +339,32 @@ function Colaboradores() {
       </div>
 
       {alert.show && (
-        <Alert variant={alert.variant} onClose={() => setAlert({ show: false })} dismissible>
+        <Alert
+          variant={alert.variant}
+          onClose={() => setAlert({ show: false })}
+          dismissible
+          className="position-fixed top-0 end-0 m-3"
+          style={{ zIndex: 1050 }}
+        >
           {alert.message}
         </Alert>
       )}
 
-      <div style={{ height: 400, width: '100%' }}>
+      <div style={{ width: '100%' }}>
         <DataGrid
           rows={colaboradores}
           columns={columns}
-          pageSize={5}
-          rowsPerPageOptions={[5]}
+          initialState={{
+            pagination: { paginationModel: { pageSize: 5, page: 0 } }
+          }}
+          pageSizeOptions={[5]}
+          pagination
           disableSelectionOnClick
-          autoHeight
           getRowId={(row) => row.id || row.cpf}
+          checkboxSelection={false}
           isRowSelectable={() => false}
           loading={loading}
+          autoHeight={true}
         />
       </div>
 
