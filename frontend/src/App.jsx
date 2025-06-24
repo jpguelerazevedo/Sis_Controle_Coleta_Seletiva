@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
@@ -32,7 +32,6 @@ function App() {
 
   useEffect(() => {
     const handleResize = () => {
-      // If screen is small, collapse sidebar. If large, expand it.
       if (window.innerWidth >= mdBreakpoint) {
         setIsSidebarCollapsed(false); // Auto-expand on large screens
       } else {
@@ -40,29 +39,19 @@ function App() {
       }
     };
 
-    // Set initial state on mount
     handleResize();
-
     window.addEventListener('resize', handleResize);
 
-    // Cleanup the event listener on component unmount
-    return () => {
-      window.removeEventListener('resize', handleResize);
-    };
-  }, []); // Empty dependency array means this effect runs once on mount and cleans up on unmount
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   return (
     <Router>
-      {/* Sidebar */}
       <Sidebar isCollapsed={isSidebarCollapsed} />
 
-      {/* Navbar and Main Content Wrapper */}
-      {/* Apply class based on sidebar state to adjust layout */}
       <div className={`main-content-wrapper ${isSidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
-        {/* Navbar */}
         <Navbar toggleSidebar={toggleSidebar} isSidebarCollapsed={isSidebarCollapsed} />
 
-        {/* Page content area - scrolls vertically */}
         <div className="content-area">
           <Routes>
             <Route path="/" element={<Dashboard />} />
@@ -90,4 +79,3 @@ function App() {
 }
 
 export default App;
-
