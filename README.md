@@ -1,6 +1,6 @@
 # Sistema de Controle de Coleta Seletiva
 
-- Este é um sistema completo para gerenciamento de coleta de materiais recicláveis, desenvolvido com Node.js, Express e Sequelize.
+- Este é um sistema completo para gerenciamento de coleta de materiais recicláveis, desenvolvido com NNode.js, Express, Sequelize e React.
 - O repositorio é composto por 3 branches, onde são separados as camadas do projeto:
   - main (backend)
   - `frontend-local (frontend)`
