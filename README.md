@@ -1,6 +1,10 @@
 # Sistema de Coleta de Materiais Recicláveis
 
-Este é um sistema backend para gerenciamento de coleta de materiais recicláveis, desenvolvido com Node.js, Express e Sequelize.
+- Este é um sistema completo para gerenciamento de coleta de materiais recicláveis, desenvolvido com Node.js, Express e Sequelize.
+- O repositorio é composto por 3 branches, onde são separados as camadas do projeto:
+  - main (backend)
+  - frontend-local (frontend)
+  - gh-pages (configurações do GitHub Pages) 
 
 ## 🚀 Funcionalidades
 
@@ -16,7 +20,7 @@ Este é um sistema backend para gerenciamento de coleta de materiais reciclávei
 Antes de começar, você precisa ter instalado:
 - Node.js (versão 14 ou superior)
 - npm (gerenciador de pacotes do Node.js)
-- SQLite3 (banco de dados)
+- PostgreSQL (banco de dados)
 
 ## 🔧 Instalação
 
@@ -26,8 +30,9 @@ npm install
 ```
 
 3. Configure o banco de dados:
-- O sistema utiliza SQLite3 como banco de dados
+- O sistema utiliza PostgreSQL como banco de dados
 - O arquivo de configuração está em `src/config/database-config.js`
+- No momento o servidor ja esta hospedado, configure no modo de sua preferencia
 
 ## 🛠️ Estrutura do Projeto
 
@@ -36,7 +41,7 @@ src/
 ├── config/             # Configurações do sistema
 ├── controllers/        # Controladores da aplicação
 ├── models/            # Modelos do banco de dados
-├── routes/            # Rotas da API
+├── routes.js            # Rotas da API
 └── server.js          # Arquivo principal da aplicação
 ```
 
@@ -59,22 +64,25 @@ O sistema possui os seguintes modelos principais:
 
 1. Inicie o servidor:
 ```bash
-npm start
+npm run dev
 ```
 
 2. Para popular o banco de dados com dados de exemplo:
 ```bash
-node src/config/database-seed.js
+node nodeRequest.js
 ```
 
 ## 🔍 Endpoints da API
 
-A API oferece os seguintes endpoints principais:
+A API oferece os seguintes endpoints principais (você pode encontrar os outros em: `src/routes.js` )
 
 - `GET /bairros` - Lista todos os bairros
+- `GET /cargos` - Listar todos os cargos
+- `GET /colaboradores` - Listar todos os colaboradores
+- `GET /terceirizadas` - Listar todas as terceirizadas
 - `GET /clientes` - Lista todos os clientes
-- `POST /pedidos-coleta` - Cria um novo pedido de coleta
 - `GET /materiais` - Lista todos os materiais
+- `POST /pedidos-coleta` - Cria um novo pedido de coleta
 - `POST /recebimentos` - Registra um recebimento de material
 - `POST /envios` - Registra um envio de material
 
