@@ -9,11 +9,15 @@ import {
   faBuilding,
   faMapMarkedAlt,
   faIdCard,
-  faArrowDown,
-  faArrowUp,
   faMedal,
   faTools,
-  faList // Novo ícone para serviços
+  faList,
+  faUserClock,
+  faArrowLeft,
+  faArrowRight,
+  faBoxesStacked,
+  faLocationDot,
+  // Novo ícone para serviços
 } from '@fortawesome/free-solid-svg-icons';
 import logo from '../assets/logo.png';
 import '../App.css';
@@ -36,23 +40,20 @@ function Sidebar({ isCollapsed }) {
     { path: '/colaboradores', icon: faIdCard, label: 'COLABORADORES' },
     { path: '/cargos', icon: faMedal, label: 'CARGOS' },
     { path: '/terceirizadas', icon: faBuilding, label: 'TERCEIRIZADAS' },
-    { path: '/bairros', icon: faMapMarkedAlt, label: 'BAIRROS' },
+    { path: '/bairros', icon: faLocationDot, label: 'BAIRROS' },
     // Serviços será um dropdown com ícone melhor
     {
       dropdown: true, label: 'SERVIÇOS', icon: faTools, items: [
-        { path: '/pedidos-coleta', icon: faTruck, label: 'Pedidos de Coleta' },
-        { path: '/recebimentos-material', icon: faArrowDown, label: 'Recebimentos Material' },
-        { path: '/envios-material', icon: faArrowUp, label: 'Envios Material' },
+        { path: '/pedidos-coleta', icon: faTruck, label: 'Pedido de Coleta' },
+        { path: '/recebimentos-material', icon: faArrowLeft, label: 'Receb. de Material' },
+        { path: '/envios-material', icon: faArrowRight, label: 'Envio de Material' },
       ]
     },
     {
       dropdown: true, label: 'LISTAGENS', icon: faList, items: [
-        { path: '/materiais-coletados', icon: faRecycle, label: 'Materiais Coletados' },
+        { path: '/materiais-coletados', icon: faBoxesStacked, label: 'Materiais Coletados' },
         { path: '/pedido-coleta-bairros', icon: faMapMarkedAlt, label: 'Utilização de Bairros' },
-        { path: '/listar-pedidos', icon: faList, label: 'Pedidos' },
-        { path: '/listar-materiais', icon: faRecycle, label: 'Materiais' },
-        { path: '/listar-materiais-enviados', icon: faArrowUp, label: 'Materiais Enviados' },
-        { path: '/listar-clientes-novos', icon: faUsers, label: 'Clientes Novos' },
+        { path: '/listar-clientes-novos', icon: faUserClock, label: 'Clientes Novos' },
       ]
     }
 

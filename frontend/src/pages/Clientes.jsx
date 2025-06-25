@@ -31,12 +31,15 @@ function Clientes() {
   const [selectionModel, setSelectionModel] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  const formatCPFTable = (cpf) => {
+    if (!cpf) return '';
+    const cpfNumerico = cpf.replace(/\D/g, '');
+    if (cpfNumerico.length !== 11) return cpf;
+    return `${cpfNumerico.substring(0, 3)}.${cpfNumerico.substring(3, 6)}.${cpfNumerico.substring(6, 9)}-${cpfNumerico.substring(9, 11)}`;
+  };
+
   const columns = [
-    {
-      field: 'cpf',
-      headerName: 'CPF',
-      width: 110
-    },
+
     {
       field: 'nome',
       headerName: 'Nome',
@@ -48,9 +51,20 @@ function Clientes() {
       width: 200
     },
     {
+      field: 'cpf',
+      headerName: 'CPF',
+      width: 130,
+      renderCell: (params) => formatCPFTable(params.value),
+    },
+    {
       field: 'telefone',
       headerName: 'Telefone',
       width: 130
+    },
+    {
+      field: 'sexo',
+      headerName: 'Sexo',
+      width: 60
     },
     {
       field: 'turno_preferido_de_coleta',
@@ -64,15 +78,18 @@ function Clientes() {
     },
     {
       field: 'acoes',
-      headerName: 'Ações',
+      headerName: '',
       width: 70,
+      sortable: false,
+      filterable: false,
+      disableColumnMenu: true,
       renderCell: (params) => (
         <div>
           <Button
             variant="outline-primary"
             size="sm"
             onClick={() => handleEdit(params.row)}
-            style={{ marginRight: '8px' }}
+            style={{}}
           >
             Editar
           </Button>
@@ -99,9 +116,10 @@ function Clientes() {
         // Simplifica a estrutura dos dados
         const clientesFormatados = response.data.map(cliente => {
           console.log('Processando cliente:', cliente);
+          const cpfNumerico = (cliente.cpf || '').replace(/\D/g, '');
           const clienteFormatado = {
-            id: cliente.cpf,
-            cpf: cliente.cpf,
+            id: cpfNumerico,
+            cpf: cpfNumerico,
             nome: cliente.nome || cliente.pessoa?.nome || '',
             email: cliente.email || cliente.pessoa?.email || '',
             telefone: cliente.telefone || cliente.pessoa?.telefone || '',
@@ -358,7 +376,7 @@ function Clientes() {
     console.log('Editando cliente:', cliente);
     setSelectedCliente(cliente);
     setFormData({
-      cpf: cliente.cpf,
+      cpf: formatCPFTable(cliente.cpf),
       nome: cliente.nome,
       email: cliente.email,
       telefone: cliente.telefone,
@@ -509,10 +527,17 @@ function Clientes() {
                     value={formData.cpf}
                     onChange={e => {
                       const cpf = e.target.value.replace(/\D/g, '');
-                      if (cpf.length <= 11) {
-                        const cpfFormatado = cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
-                        setFormData({ ...formData, cpf: cpfFormatado });
+                      let cpfFormatado = cpf;
+                      if (cpf.length > 0) {
+                        cpfFormatado = cpf.replace(/(\d{3})(\d{0,3})(\d{0,3})(\d{0,2})/, (match, p1, p2, p3, p4) => {
+                          let out = p1;
+                          if (p2) out += '.' + p2;
+                          if (p3) out += '.' + p3;
+                          if (p4) out += '-' + p4;
+                          return out;
+                        });
                       }
+                      setFormData({ ...formData, cpf: cpfFormatado });
                     }}
                     placeholder="000.000.000-00"
                     required

@@ -100,8 +100,11 @@ const Cargos = () => {
     },
     {
       field: 'acoes',
-      headerName: 'Ações',
+      headerName: '',
       width: 70,
+      sortable: false,
+      filterable: false,
+      disableColumnMenu: true,
       renderCell: (params) => (
         <Button
           variant="outline-primary"

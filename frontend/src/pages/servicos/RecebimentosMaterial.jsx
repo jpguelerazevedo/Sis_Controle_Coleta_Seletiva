@@ -32,17 +32,51 @@ function RecebimentosMaterial() {
     const loadRecebimentos = async () => {
         setLoading(true);
         try {
-            const response = await endpoints.recebimentos.list();
-            if (response && response.data) {
-                const recebimentosFormatados = response.data.map(r => ({
-                    id: r.idRecebimento || r.id_recebimento,
-                    idRecebimento: r.idRecebimento || r.id_recebimento,
-                    peso: r.peso,
-                    volume: r.volume,
-                    idMaterial: r.idMaterial,
-                    cpfCliente: r.cpfCliente || r.cpf_cliente,
-                    cpfColaborador: r.cpfColaborador || r.cpf_colaborador
-                }));
+            const recebimentosResponse = await endpoints.recebimentos.list();
+            // Carrega materiais, clientes e colaboradores antes de processar recebimentos
+            const materiaisResponse = await endpoints.materiais.list();
+            const clientesResponse = await endpoints.clientes.list();
+            const colaboradoresResponse = await endpoints.colaboradores.list();
+            const materiaisArr = materiaisResponse.data || [];
+            const clientesArr = clientesResponse.data || [];
+            const colaboradoresArr = colaboradoresResponse.data || [];
+
+            if (recebimentosResponse && recebimentosResponse.data) {
+                const recebimentosFormatados = recebimentosResponse.data.map((r, idx) => {
+                    // Mesma lógica de data do EnviosMaterial
+                    let rawData = r.dataRecebimento || r.data_recebimento || r.data || r.createdAt || r.updatedAt || '';
+                    let dataFormatada = '';
+                    if (rawData) {
+                        const dateObj = new Date(rawData);
+                        if (!isNaN(dateObj)) {
+                            const dia = String(dateObj.getDate()).padStart(2, '0');
+                            const mes = String(dateObj.getMonth() + 1).padStart(2, '0');
+                            const ano = dateObj.getFullYear();
+                            dataFormatada = `${dia}/${mes}/${ano}`;
+                        } else {
+                            dataFormatada = rawData;
+                        }
+                    }
+                    const material = materiaisArr.find(m => String(m.idMaterial) === String(r.idMaterial));
+                    const cliente = clientesArr.find(c => String(c.cpf) === String(r.cpfCliente || r.cpf_cliente));
+                    const colab = colaboradoresArr.find(c => String(c.cpf) === String(r.cpfColaborador || r.cpf_colaborador));
+                    return {
+                        id: r.idRecebimento || r.id_recebimento || idx,
+                        idRecebimento: r.idRecebimento || r.id_recebimento,
+                        peso: r.peso,
+                        volume: r.volume,
+                        idMaterial: r.idMaterial,
+                        materialNome: material ? material.nome : '',
+                        cpfCliente: r.cpfCliente || r.cpf_cliente,
+                        clienteNome: cliente ? (cliente.nome || (cliente.pessoa && cliente.pessoa.nome) || '') : '',
+                        cpfColaborador: r.cpfColaborador || r.cpf_colaborador,
+                        colaboradorNome: colab ? (colab.nome || (colab.pessoa && colab.pessoa.nome) || '') : '',
+                        data: dataFormatada
+                    };
+                });
+                setMateriais(materiaisArr);
+                setClientes(clientesArr);
+                setColaboradores(colaboradoresArr);
                 setRecebimentos(recebimentosFormatados);
             } else {
                 setRecebimentos([]);
@@ -144,28 +178,59 @@ function RecebimentosMaterial() {
         setTimeout(() => setAlert({ show: false, message: '', variant: '' }), 3000);
     };
 
+    // Função para formatar CPF
+    const formatCPFTable = (cpf) => {
+        if (!cpf) return '';
+        const cpfNumerico = cpf.replace(/\D/g, '');
+        if (cpfNumerico.length !== 11) return cpf;
+        return `${cpfNumerico.substring(0, 3)}.${cpfNumerico.substring(3, 6)}.${cpfNumerico.substring(6, 9)}-${cpfNumerico.substring(9, 11)}`;
+    };
+
     const columns = [
         {
-            field: 'idMaterial',
+            field: 'materialNome',
             headerName: 'Material',
             width: 200,
-            renderCell: (params) => {
-                const idMaterial = params.row.idMaterial;
-                const material = materiais.find(m => String(m.idMaterial) === String(idMaterial));
-                return material ? material.nome : '';
-            }
+            filterable: true,
         },
         { field: 'peso', headerName: 'Peso (kg)', width: 120 },
         { field: 'volume', headerName: 'Volume (m³)', width: 120 },
-        { field: 'cpfCliente', headerName: 'Cliente', width: 110 },
-        { field: 'cpfColaborador', headerName: 'Colaborador', width: 110 }
+        {
+            field: 'clienteNome',
+            headerName: 'Cliente',
+            width: 200,
+            filterable: true,
+        },
+        {
+            field: 'cpfCliente',
+            headerName: 'CPF Cliente',
+            width: 130,
+            renderCell: (params) => formatCPFTable(params.value),
+        },
+        {
+            field: 'colaboradorNome',
+            headerName: 'Colaborador',
+            width: 200,
+            filterable: true,
+        },
+        {
+            field: 'cpfColaborador',
+            headerName: 'CPF Colaborador',
+            width: 130,
+            renderCell: (params) => formatCPFTable(params.value),
+        },
+        {
+            field: 'data',
+            headerName: 'Data',
+            width: 100,
+        }
         // Removido o campo 'acoes'
     ];
 
     return (
         <Container className="mt-4">
             <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap">
-                <h2>Recebimentos de Material</h2>
+                <h2>Recebimento de Material</h2>
                 <div className="col-12 col-md-auto px-0 mt-2 mt-md-0">
                     <Button
                         variant="primary"

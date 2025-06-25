@@ -9,19 +9,25 @@ function ListarClientesNovos() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    loadClientes();
-    loadBairros();
+    loadData();
   }, []);
 
-  const loadClientes = async () => {
+  const loadData = async () => {
     setLoading(true);
     try {
-      const response = await endpoints.clientes.list();
-      if (response?.data) {
-        const clientesFormatados = response.data.map((cliente, idx) => {
-          // Tenta pegar o campo de data de cadastro
+      // Carrega bairros primeiro
+      const bairrosResponse = await endpoints.bairros.list();
+      const bairrosArr = bairrosResponse.data || [];
+      setBairros(bairrosArr);
+
+      // Depois carrega clientes
+      const clientesResponse = await endpoints.clientes.list();
+      if (clientesResponse?.data) {
+        const clientesFormatados = clientesResponse.data.map((cliente, idx) => {
           let rawData = cliente.dataCadastro || cliente.data_cadastro || cliente.createdAt || cliente.updatedAt || '';
           let dataFormatada = '';
+          let horaFormatada = '';
+          let createdAt = cliente.createdAt || cliente.dataCadastro || cliente.data_cadastro || cliente.updatedAt || '';
           if (rawData) {
             const dateObj = new Date(rawData);
             if (!isNaN(dateObj)) {
@@ -29,16 +35,33 @@ function ListarClientesNovos() {
               const mes = String(dateObj.getMonth() + 1).padStart(2, '0');
               const ano = dateObj.getFullYear();
               dataFormatada = `${dia}/${mes}/${ano}`;
+              const hora = String(dateObj.getHours()).padStart(2, '0');
+              const min = String(dateObj.getMinutes()).padStart(2, '0');
+              const seg = String(dateObj.getSeconds()).padStart(2, '0');
+              horaFormatada = `${hora}:${min}:${seg}`;
             } else {
               dataFormatada = rawData;
+              horaFormatada = '';
             }
           }
+          // Formata o CPF
+          const cpfNumerico = (cliente.cpf || '').replace(/\D/g, '');
+          const cpfFormatado = cpfNumerico.length === 11
+            ? `${cpfNumerico.substring(0, 3)}.${cpfNumerico.substring(3, 6)}.${cpfNumerico.substring(6, 9)}-${cpfNumerico.substring(9, 11)}`
+            : cliente.cpf || '';
+          // Busca nome do bairro
+          const idBairro = cliente.id_bairro || (cliente.endereco && cliente.endereco.id_bairro) || '';
+          const bairroObj = bairrosArr.find(b => String(b.id_bairro) === String(idBairro));
+          const bairroNome = bairroObj ? bairroObj.nome : '';
           return {
             id: cliente.cpf,
             nome: cliente.nome || (cliente.pessoa && cliente.pessoa.nome) || '',
-            cpf: cliente.cpf,
-            id_bairro: cliente.id_bairro || (cliente.endereco && cliente.endereco.id_bairro) || '',
-            dataCadastro: dataFormatada
+            cpf: cpfFormatado,
+            id_bairro: idBairro,
+            bairroNome,
+            dataCadastro: dataFormatada,
+            hora: horaFormatada,
+            createdAt: createdAt
           };
         });
         setClientes(clientesFormatados);
@@ -47,32 +70,23 @@ function ListarClientesNovos() {
       }
     } catch (error) {
       setClientes([]);
+      setBairros([]);
     }
     setLoading(false);
   };
 
-  const loadBairros = async () => {
-    try {
-      const response = await endpoints.bairros.list();
-      setBairros(response.data || []);
-    } catch (error) {
-      setBairros([]);
-    }
-  };
-
   const columns = [
     { field: 'nome', headerName: 'Nome', width: 200 },
-    { field: 'cpf', headerName: 'CPF', width: 110 },
+    { field: 'cpf', headerName: 'CPF', width: 130 },
     {
-      field: 'id_bairro',
+      field: 'bairroNome',
       headerName: 'Bairro',
       width: 200,
-      renderCell: (params) => {
-        const bairro = bairros.find(b => String(b.id_bairro) === String(params.row.id_bairro));
-        return bairro ? bairro.nome : '';
-      }
+      filterable: true
     },
-    { field: 'dataCadastro', headerName: 'Data', width: 100 }
+    { field: 'dataCadastro', headerName: 'Data', width: 100 },
+    { field: 'hora', headerName: 'Hora', width: 90 }
+    // Removido o campo 'createdAt' da definição de colunas visíveis
   ];
 
   return (
@@ -84,11 +98,17 @@ function ListarClientesNovos() {
 
       <div style={{ width: '100%', marginBottom: 24 }}>
         <DataGrid
-          rows={clientes}
+          rows={[...clientes].sort((a, b) => {
+            // Ordena por createdAt desc (mais recente primeiro)
+            if (!a.createdAt) return 1;
+            if (!b.createdAt) return -1;
+            return new Date(b.createdAt) - new Date(a.createdAt);
+          })}
           columns={columns}
-          getRowId={row => row.id_bairro}
+          getRowId={row => row.id}
           initialState={{
             pagination: { paginationModel: { pageSize: 5, page: 0 } }
+            // Removido sorting do initialState, pois a ordenação é feita manualmente acima
           }}
           pageSizeOptions={[5]}
           pagination

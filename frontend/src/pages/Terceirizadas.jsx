@@ -27,8 +27,15 @@ function Terceirizadas() {
     loadTerceirizadas();
   }, []);
 
+  const formatCNPJTable = (cnpj) => {
+    if (!cnpj) return '';
+    const cnpjNumerico = cnpj.replace(/\D/g, '');
+    if (cnpjNumerico.length !== 14) return cnpj;
+    return `${cnpjNumerico.substring(0, 2)}.${cnpjNumerico.substring(2, 5)}.${cnpjNumerico.substring(5, 8)}/${cnpjNumerico.substring(8, 12)}-${cnpjNumerico.substring(12, 14)}`;
+  };
+
   const loadTerceirizadas = async () => {
-    setLoading(true); // Inicia loading
+    setLoading(true);
     try {
       console.log('Iniciando carregamento de terceirizadas...');
       const response = await endpoints.terceirizadas.list();
@@ -46,19 +53,19 @@ function Terceirizadas() {
       const terceirizadasFormatadas = terceirizadas.map(terceirizada => {
         if (!terceirizada) return null;
 
+        const cnpjNumerico = (terceirizada.cnpj || '').replace(/\D/g, '');
         return {
-          id: terceirizada.cnpj, // Usando o CNPJ como ID
-          cnpj: terceirizada.cnpj || '',
+          id: cnpjNumerico, // Usando o CNPJ puro como ID
+          cnpj: cnpjNumerico,
           nome: terceirizada.nome || '',
           telefone: terceirizada.telefone || '',
           email: terceirizada.email || '',
           horarioDeFuncionamento: terceirizada.horarioDeFuncionamento || '',
           createdAt: terceirizada.createdAt || '',
           updatedAt: terceirizada.updatedAt || '',
-          estado: terceirizada.estado || 'INATIVO' // Include estado attribute, default to INATIVO
+          estado: terceirizada.estado || 'INATIVO'
         };
-      }).filter(Boolean); // Remove possíveis nulls
-
+      }).filter(Boolean);
       console.log('Terceirizadas formatadas:', terceirizadasFormatadas);
       setTerceirizadas(terceirizadasFormatadas);
     } catch (error) {
@@ -66,7 +73,7 @@ function Terceirizadas() {
       showAlert('Erro ao carregar terceirizadas', 'danger');
       setTerceirizadas([]);
     }
-    setLoading(false); // Finaliza loading
+    setLoading(false);
   };
 
   const handleSubmit = async (e) => {
@@ -178,7 +185,8 @@ function Terceirizadas() {
     {
       field: 'cnpj',
       headerName: 'CNPJ',
-      width: 130,
+      width: 150,
+      renderCell: (params) => formatCNPJTable(params.value),
     },
     {
       field: 'telefone',
@@ -202,9 +210,11 @@ function Terceirizadas() {
     },
     {
       field: 'acoes',
-      headerName: 'Ações',
+      headerName: '',
       width: 70,
       sortable: false,
+      filterable: false,
+      disableColumnMenu: true,
       renderCell: (params) => (
         <div>
           <Button

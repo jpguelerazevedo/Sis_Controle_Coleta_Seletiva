@@ -29,16 +29,44 @@ function EnviosMaterial() {
     const loadEnvios = async () => {
         setLoading(true);
         try {
+            // Carrega materiais e terceirizadas antes de processar envios
+            const materiaisResponse = await endpoints.materiais.list();
+            const terceirizadasResponse = await endpoints.terceirizadas.list();
+            const materiaisArr = materiaisResponse.data || [];
+            const terceirizadasArr = terceirizadasResponse.data || [];
+
             const response = await endpoints.envios.list();
             if (response && response.data) {
-                const enviosFormatados = response.data.map(e => ({
-                    id: e.idEnvio || e.id_envio,
-                    idEnvio: e.idEnvio || e.id_envio,
-                    idMaterial: e.idMaterial,
-                    cnpj: e.cnpj,
-                    pesoEnviado: e.pesoEnviado || e.peso_enviado,
-                    volumeEnviado: e.volumeEnviado || e.volume_enviado // Added volumeEnviado
-                }));
+                const enviosFormatados = response.data.map((e, idx) => {
+                    let rawData = e.dataEnvio || e.data_envio || e.data || e.createdAt || e.updatedAt || '';
+                    let dataFormatada = '';
+                    if (rawData) {
+                        const dateObj = new Date(rawData);
+                        if (!isNaN(dateObj)) {
+                            const dia = String(dateObj.getDate()).padStart(2, '0');
+                            const mes = String(dateObj.getMonth() + 1).padStart(2, '0');
+                            const ano = dateObj.getFullYear();
+                            dataFormatada = `${dia}/${mes}/${ano}`;
+                        } else {
+                            dataFormatada = rawData;
+                        }
+                    }
+                    const material = materiaisArr.find(m => String(m.idMaterial) === String(e.idMaterial));
+                    const terceirizada = terceirizadasArr.find(t => String(t.cnpj) === String(e.cnpj));
+                    return {
+                        id: e.idEnvio || e.id_envio || idx,
+                        idEnvio: e.idEnvio || e.id_envio,
+                        idMaterial: e.idMaterial,
+                        materialNome: material ? material.nome : '',
+                        cnpj: e.cnpj,
+                        terceirizadaNome: terceirizada ? terceirizada.nome : '',
+                        pesoEnviado: e.pesoEnviado || e.peso_enviado,
+                        volumeEnviado: e.volumeEnviado || e.volume_enviado,
+                        data: dataFormatada
+                    };
+                });
+                setMateriais(materiaisArr);
+                setTerceirizadas(terceirizadasArr);
                 setEnvios(enviosFormatados);
             } else {
                 setEnvios([]);
@@ -128,35 +156,46 @@ function EnviosMaterial() {
         setTimeout(() => setAlert({ show: false, message: '', variant: '' }), 3000);
     };
 
+    // Função para formatar CNPJ
+    const formatCNPJTable = (cnpj) => {
+        if (!cnpj) return '';
+        const cnpjNumerico = cnpj.replace(/\D/g, '');
+        if (cnpjNumerico.length !== 14) return cnpj;
+        return `${cnpjNumerico.substring(0, 2)}.${cnpjNumerico.substring(2, 5)}.${cnpjNumerico.substring(5, 8)}/${cnpjNumerico.substring(8, 12)}-${cnpjNumerico.substring(12, 14)}`;
+    };
+
     const columns = [
         {
-            field: 'idMaterial',
+            field: 'materialNome',
             headerName: 'Material',
             width: 200,
-            renderCell: (params) => {
-                const idMaterial = params.row.idMaterial;
-                const material = materiais.find(m => String(m.idMaterial) === String(idMaterial));
-                return material ? material.nome : '';
-            }
+            filterable: true,
+        },
+        {
+            field: 'terceirizadaNome',
+            headerName: 'Terceirizada',
+            width: 200,
+            filterable: true,
         },
         {
             field: 'cnpj',
-            headerName: 'Terceirizada',
-            width: 200,
-            renderCell: (params) => {
-                const terceirizada = terceirizadas.find(t => String(t.cnpj) === String(params.row.cnpj));
-                return terceirizada ? terceirizada.nome : '';
-            }
+            headerName: 'CNPJ',
+            width: 150,
+            renderCell: (params) => formatCNPJTable(params.value),
         },
         { field: 'pesoEnviado', headerName: 'Peso (kg)', width: 120 },
-        { field: 'volumeEnviado', headerName: 'Volume (m³)', width: 120 } // Added volumeEnviado column
-        // Removido o campo 'acoes'
+        { field: 'volumeEnviado', headerName: 'Volume (m³)', width: 120 },
+        {
+            field: 'data',
+            headerName: 'Data',
+            width: 100,
+        },
     ];
 
     return (
         <Container className="mt-4">
             <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap">
-                <h2>Envios de Material</h2>
+                <h2>Envio de Material</h2>
                 <div className="col-12 col-md-auto px-0 mt-2 mt-md-0">
                     <Button
                         variant="primary"
@@ -193,7 +232,7 @@ function EnviosMaterial() {
                 <DataGrid
                     rows={envios}
                     columns={columns}
-                    getRowId={row => row.id_envio || row.idEnvio || row.id}
+                    getRowId={row => row.idEnvio || row.id_envio || row.id} // Ajuste para garantir id correto
                     initialState={{
                         pagination: { paginationModel: { pageSize: 5, page: 0 } }
                     }}

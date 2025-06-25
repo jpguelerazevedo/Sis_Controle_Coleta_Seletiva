@@ -169,8 +169,8 @@ function Dashboard() {
       icon: faUsers,
       color: 'success',
       bg: 'rgba(40,167,69,0.13)', // verde forte
-      progress: stats.totalClientes ? Math.min(100, (stats.clientesNovosMes / stats.totalClientes) * 100) : 0,
-      footer: `+${stats.clientesNovosMes} este mês`
+      progress: 100,
+      footer: `Clientes no Sistema`
     },
     {
       title: 'Materiais Cadastrados',
@@ -179,7 +179,7 @@ function Dashboard() {
       color: 'success',
       bg: 'rgba(40,167,69,0.13)', // verde forte
       progress: 100,
-      footer: 'Tipos diferentes'
+      footer: 'Tipos Diferentes'
     },
     {
       title: 'Terceirizadas Ativas',
@@ -188,7 +188,7 @@ function Dashboard() {
       color: 'success',
       bg: 'rgba(40,167,69,0.13)', // verde forte
       progress: 100,
-      footer: 'Ativas no sistema'
+      footer: 'Ativas no Sistema'
     },
     {
       title: 'Estoque Total (kg)',
@@ -197,7 +197,7 @@ function Dashboard() {
       color: 'success',
       bg: 'rgba(40,167,69,0.13)', // verde forte
       progress: 100,
-      footer: 'Peso total'
+      footer: 'Peso Total'
     }
   ];
 

@@ -8,7 +8,22 @@ function MateriaisColetados() {
   const [pedidos, setPedidos] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Carrega materiais e pedidos de coleta
+  useEffect(() => {
+    // Carrega materiais antes de pedidos
+    const fetchAll = async () => {
+      await loadMateriais();
+    };
+    fetchAll();
+  }, []);
+
+  useEffect(() => {
+    // Só carrega pedidos depois que materiais estiverem carregados
+    if (materiais.length > 0) {
+      loadPedidos();
+    }
+    // eslint-disable-next-line
+  }, [materiais]);
+
   const loadMateriais = async () => {
     try {
       const response = await endpoints.materiais.list();
@@ -23,17 +38,27 @@ function MateriaisColetados() {
     try {
       const response = await endpoints.pedidos.list();
       if (response?.data) {
-        // Formata a data já no mapeamento
         const pedidosFormatados = response.data.map((pedido, idx) => {
           let rawData = pedido.data || pedido.dataPedido || pedido.data_pedido || pedido.createdAt || pedido.updatedAt || '';
           let dataFormatada = '';
           if (rawData) {
             const dateObj = new Date(rawData);
-            dataFormatada = !isNaN(dateObj) ? dateObj.toLocaleDateString() : rawData;
+            if (!isNaN(dateObj)) {
+              const dia = String(dateObj.getDate()).padStart(2, '0');
+              const mes = String(dateObj.getMonth() + 1).padStart(2, '0');
+              const ano = dateObj.getFullYear();
+              dataFormatada = `${dia}/${mes}/${ano}`;
+            } else {
+              dataFormatada = rawData;
+            }
           }
+          const material = materiais.find(
+            m => String(m.idMaterial ?? m.id_material) === String(pedido.idMaterial || pedido.id_material)
+          );
           return {
             id: pedido.idPedido || pedido.id_pedido || pedido.id || `row-${idx}`,
             idMaterial: pedido.idMaterial || pedido.id_material || '',
+            materialNome: material ? material.nome : '',
             peso: pedido.peso ?? '',
             volume: pedido.volume ?? '',
             data: dataFormatada
@@ -49,24 +74,12 @@ function MateriaisColetados() {
     setLoading(false);
   };
 
-  useEffect(() => {
-    loadMateriais();
-    loadPedidos();
-  }, []);
-
   const columns = [
     {
-      field: 'idMaterial',
+      field: 'materialNome',
       headerName: 'Material',
       width: 200,
-      renderCell: (params) => {
-        // Garante que params.row e idMaterial existam
-        if (!params.row || !params.row.idMaterial) return '';
-        const material = materiais.find(
-          m => String(m.idMaterial ?? m.id_material) === String(params.row.idMaterial)
-        );
-        return material ? material.nome : params.row.idMaterial || '';
-      }
+      filterable: true,
     },
     { field: 'peso', headerName: 'Peso (kg)', width: 120 },
     { field: 'volume', headerName: 'Volume (m³)', width: 120 },
@@ -74,7 +87,6 @@ function MateriaisColetados() {
       field: 'data',
       headerName: 'Data',
       width: 100
-      // Não use valueGetter aqui
     }
   ];
 

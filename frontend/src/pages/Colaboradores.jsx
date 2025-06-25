@@ -254,6 +254,13 @@ function Colaboradores() {
     setTimeout(() => setAlert({ show: false, message: '', variant: '' }), 3000);
   };
 
+  const formatCPFTable = (cpf) => {
+    if (!cpf) return '';
+    const cpfNumerico = cpf.replace(/\D/g, '');
+    if (cpfNumerico.length !== 11) return cpf;
+    return `${cpfNumerico.substring(0, 3)}.${cpfNumerico.substring(3, 6)}.${cpfNumerico.substring(6, 9)}-${cpfNumerico.substring(9, 11)}`;
+  };
+
   const getStatusBadge = (status) => {
     const variants = {
       ATIVO: 'primary',
@@ -273,7 +280,8 @@ function Colaboradores() {
     {
       field: 'cpf',
       headerName: 'CPF',
-      width: 110,
+      width: 130,
+      renderCell: (params) => formatCPFTable(params.value),
     },
     {
       field: 'telefone',
@@ -308,9 +316,11 @@ function Colaboradores() {
     },
     {
       field: 'acoes',
-      headerName: 'Ações',
+      headerName: '',
       width: 70,
       sortable: false,
+      filterable: false,
+      disableColumnMenu: true,
       renderCell: (params) => (
         <div>
           <Button

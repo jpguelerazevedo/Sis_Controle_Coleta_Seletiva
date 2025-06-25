@@ -89,9 +89,11 @@ function Bairros() {
         { field: 'estado_de_acesso', headerName: 'Estado de Acesso', width: 140 },
         {
             field: 'acoes',
-            headerName: 'Ações',
+            headerName: '',
             width: 70,
             sortable: false,
+            filterable: false,
+            disableColumnMenu: true,
             renderCell: (params) => (
                 <div>
                     <Button

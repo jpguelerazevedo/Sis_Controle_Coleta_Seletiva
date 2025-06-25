@@ -24,29 +24,63 @@ function PedidosColeta() {
   const [loading, setLoading] = useState(true); // Adicionado estado loading
 
   useEffect(() => {
-    loadPedidos();
-    loadClientes();
-    loadMateriais();
-    loadColaboradores();
+    // Carrega clientes, materiais e colaboradores antes de pedidos
+    const fetchAll = async () => {
+      await loadClientes();
+      await loadMateriais();
+      await loadColaboradores();
+    };
+    fetchAll();
+    // eslint-disable-next-line
   }, []);
 
+  useEffect(() => {
+    // Só carrega pedidos depois que todos os dados dependentes estiverem carregados
+    if (clientes.length > 0 && materiais.length > 0 && colaboradores.length > 0) {
+      loadPedidos();
+    }
+    // eslint-disable-next-line
+  }, [clientes, materiais, colaboradores]);
+
   const loadPedidos = async () => {
-    setLoading(true); // Inicia loading
+    setLoading(true);
     try {
       const response = await endpoints.pedidos.list();
       if (response && response.data) {
-        const pedidosFormatados = response.data.map(pedido => ({
-          id: pedido.idPedido || pedido.id_pedido,
-          idPedido: pedido.idPedido || pedido.id_pedido,
-          peso: pedido.peso,
-          volume: pedido.volume,
-          idMaterial: pedido.idMaterial,
-          cpfCliente: pedido.cpf_cliente,
-          cpfColaborador: pedido.cpf_colaborador,
-          data: pedido.data,
-          status: pedido.status,
-          tipo: pedido.tipo,// Garante que tipo seja sempre uma string
-        }));
+        const pedidosFormatados = response.data.map((pedido, idx) => {
+          // Busca nomes já no carregamento para facilitar filtro e exibição
+          const material = materiais.find(m => String(m.idMaterial) === String(pedido.idMaterial));
+          const cliente = clientes.find(c => String(c.cpf) === String(pedido.cpf_cliente));
+          const colab = colaboradores.find(c => String(c.cpf) === String(pedido.cpf_colaborador));
+          let rawData = pedido.dataPedido || pedido.data_pedido || pedido.data || pedido.createdAt || pedido.updatedAt || '';
+          let dataFormatada = '';
+          if (rawData) {
+            const dateObj = new Date(rawData);
+            if (!isNaN(dateObj)) {
+              const dia = String(dateObj.getDate()).padStart(2, '0');
+              const mes = String(dateObj.getMonth() + 1).padStart(2, '0');
+              const ano = dateObj.getFullYear();
+              dataFormatada = `${dia}/${mes}/${ano}`;
+            } else {
+              dataFormatada = rawData;
+            }
+          }
+          return {
+            id: pedido.idPedido || pedido.id_pedido || idx,
+            idPedido: pedido.idPedido || pedido.id_pedido,
+            peso: pedido.peso,
+            volume: pedido.volume,
+            idMaterial: pedido.idMaterial,
+            materialNome: material ? material.nome : '',
+            cpfCliente: pedido.cpf_cliente,
+            clienteNome: cliente ? (cliente.nome || (cliente.pessoa && cliente.pessoa.nome) || '') : '',
+            cpfColaborador: pedido.cpf_colaborador,
+            colaboradorNome: colab ? (colab.nome || (colab.pessoa && colab.pessoa.nome) || '') : '',
+            status: pedido.status,
+            tipo: pedido.tipo,
+            data: dataFormatada
+          };
+        });
         setPedidos(pedidosFormatados);
       } else {
         setPedidos([]);
@@ -55,7 +89,7 @@ function PedidosColeta() {
       showAlert('Erro ao carregar pedidos: ' + error.message, 'danger');
       setPedidos([]);
     }
-    setLoading(false); // Finaliza loading
+    setLoading(false);
   };
 
   const loadClientes = async () => {
@@ -159,27 +193,86 @@ function PedidosColeta() {
     setTimeout(() => setAlert({ show: false, message: '', variant: '' }), 3000);
   };
 
+  // Função para formatar CPF
+  const formatCPFTable = (cpf) => {
+    if (!cpf) return '';
+    const cpfNumerico = cpf.replace(/\D/g, '');
+    if (cpfNumerico.length !== 11) return cpf;
+    return `${cpfNumerico.substring(0, 3)}.${cpfNumerico.substring(3, 6)}.${cpfNumerico.substring(6, 9)}-${cpfNumerico.substring(9, 11)}`;
+  };
+
+  // Função para formatar data
+  const formatDataTable = (data) => {
+    if (!data) return '';
+    const dateObj = new Date(data);
+    if (isNaN(dateObj)) return data;
+    const dia = String(dateObj.getDate()).padStart(2, '0');
+    const mes = String(dateObj.getMonth() + 1).padStart(2, '0');
+    const ano = dateObj.getFullYear();
+    return `${dia}/${mes}/${ano}`;
+  };
+
+  // Função para buscar o valor do campo pelo nome ao filtrar na tabela
+  function getColumnValue(row, field) {
+    if (field === 'idMaterial') {
+      const material = materiais.find(m => String(m.idMaterial) === String(row.idMaterial));
+      return material ? material.nome : '';
+    }
+    if (field === 'clienteNome') {
+      const cliente = clientes.find(c => String(c.cpf) === String(row.cpfCliente));
+      return cliente ? (cliente.nome || (cliente.pessoa && cliente.pessoa.nome) || '') : '';
+    }
+    if (field === 'colaboradorNome') {
+      const colab = colaboradores.find(c => String(c.cpf) === String(row.cpfColaborador));
+      return colab ? (colab.nome || (colab.pessoa && colab.pessoa.nome) || '') : '';
+    }
+    return row[field];
+  }
+
   const columns = [
     {
-      field: 'idMaterial',
+      field: 'materialNome',
       headerName: 'Material',
       width: 200,
-      renderCell: (params) => {
-        const idMaterial = params.row.idMaterial;
-        const material = materiais.find(m => String(m.idMaterial) === String(idMaterial));
-        return material ? material.nome : '';
-      }
+      filterable: true,
     },
     { field: 'peso', headerName: 'Peso (kg)', width: 120 },
     { field: 'volume', headerName: 'Volume (m³)', width: 120 },
-    { field: 'cpfCliente', headerName: 'Cliente', width: 110 },
-    { field: 'cpfColaborador', headerName: 'Colaborador', width: 110 },
+    {
+      field: 'clienteNome',
+      headerName: 'Cliente',
+      width: 200,
+      filterable: true,
+    },
+    {
+      field: 'cpfCliente',
+      headerName: 'CPF Cliente',
+      width: 130,
+      renderCell: (params) => formatCPFTable(params.value),
+    },
+    {
+      field: 'colaboradorNome',
+      headerName: 'Colaborador',
+      width: 200,
+      filterable: true,
+    },
+    {
+      field: 'cpfColaborador',
+      headerName: 'CPF Colaborador',
+      width: 130,
+      renderCell: (params) => formatCPFTable(params.value),
+    },
+    {
+      field: 'data',
+      headerName: 'Data',
+      width: 100,
+    },
   ];
 
   return (
     <Container className="mt-4">
       <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap">
-        <h2>Pedidos de Coleta</h2>
+        <h2>Pedido de Coleta</h2>
         <div className="col-12 col-md-auto px-0 mt-2 mt-md-0">
           <Button
             variant="primary"

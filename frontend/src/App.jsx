@@ -16,9 +16,6 @@ import EnviosMaterial from './pages/servicos/EnviosMaterial';
 import Cargos from './pages/Cargos';
 import MateriaisColetados from './pages/listagens/MateriaisColetados';
 import PedidoColetaBairros from './pages/listagens/PedidoColetaBairros';
-import ListarPedidos from './pages/listagens/ListarPedidos';
-import ListarMateriais from './pages/listagens/ListarMateriais';
-import ListarMateriaisEnviados from './pages/listagens/ListarMateriaisEnviados';
 import ListarClientesNovos from './pages/listagens/ListarClientesNovos';
 import './App.css';
 
@@ -67,9 +64,6 @@ function App() {
             <Route path="/envios-material" element={<EnviosMaterial />} />
             <Route path="/materiais-coletados" element={<MateriaisColetados />} />
             <Route path="/pedido-coleta-bairros" element={<PedidoColetaBairros />} />
-            <Route path="/listar-pedidos" element={<ListarPedidos />} />
-            <Route path="/listar-materiais" element={<ListarMateriais />} />
-            <Route path="/listar-materiais-enviados" element={<ListarMateriaisEnviados />} />
             <Route path="/listar-clientes-novos" element={<ListarClientesNovos />} />
           </Routes>
         </div>
