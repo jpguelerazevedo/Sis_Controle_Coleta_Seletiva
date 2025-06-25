@@ -69,7 +69,7 @@ npm run dev
 
 2. Para popular o banco de dados com dados de exemplo:
 ```bash
-node nodeRequest.js
+node postRequest.js
 ```
 
 ## 🔍 Endpoints da API
