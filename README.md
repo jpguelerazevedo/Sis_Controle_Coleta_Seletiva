@@ -2,7 +2,7 @@
 
 - Este é um sistema completo para gerenciamento de coleta de materiais recicláveis, desenvolvido com Node.js, Express e Sequelize.
 - O repositorio é composto por 3 branches, onde são separados as camadas do projeto:
-  - main (backend)
+  - `main (backend)`
   - frontend-local (frontend)
   - gh-pages (configurações do GitHub Pages) 
 
