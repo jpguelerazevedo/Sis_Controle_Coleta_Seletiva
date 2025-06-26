@@ -41,33 +41,37 @@ function Terceirizadas() {
       const response = await endpoints.terceirizadas.list();
       console.log('Resposta da API de terceirizadas:', response);
 
-      if (response?.data && response.data.length > 0) {
-        const terceirizadas = response.data;
-        const terceirizadasFormatadas = terceirizadas.map(terceirizada => {
-          if (!terceirizada) return null;
-
-          const cnpjNumerico = (terceirizada.cnpj || '').replace(/\D/g, '');
-          return {
-            id: cnpjNumerico, // Usando o CNPJ puro como ID
-            cnpj: cnpjNumerico,
-            nome: terceirizada.nome || '',
-            telefone: terceirizada.telefone || '',
-            email: terceirizada.email || '',
-            horarioDeFuncionamento: terceirizada.horarioDeFuncionamento || '',
-            createdAt: terceirizada.createdAt || '',
-            updatedAt: terceirizada.updatedAt || '',
-            estado: terceirizada.estado || 'INATIVO'
-          };
-        }).filter(Boolean);
-        setTerceirizadas(terceirizadasFormatadas);
-      } else if (response?.data && response.data.length === 0) {
-        showAlert('Nenhuma terceirizada encontrada.', 'warning');
-      } else {
-        showAlert('Erro ao buscar terceirizadas. Tente novamente.', 'danger');
+      if (!response?.data) {
+        console.log('Nenhum dado recebido da API');
+        setTerceirizadas([]);
+        return;
       }
+
+      const terceirizadas = response.data;
+      console.log('Dados das terceirizadas recebidos:', terceirizadas);
+
+      const terceirizadasFormatadas = terceirizadas.map(terceirizada => {
+        if (!terceirizada) return null;
+
+        const cnpjNumerico = (terceirizada.cnpj || '').replace(/\D/g, '');
+        return {
+          id: cnpjNumerico, // Usando o CNPJ puro como ID
+          cnpj: cnpjNumerico,
+          nome: terceirizada.nome || '',
+          telefone: terceirizada.telefone || '',
+          email: terceirizada.email || '',
+          horarioDeFuncionamento: terceirizada.horarioDeFuncionamento || '',
+          createdAt: terceirizada.createdAt || '',
+          updatedAt: terceirizada.updatedAt || '',
+          estado: terceirizada.estado || 'INATIVO'
+        };
+      }).filter(Boolean);
+      console.log('Terceirizadas formatadas:', terceirizadasFormatadas);
+      setTerceirizadas(terceirizadasFormatadas);
     } catch (error) {
       console.error('Erro ao carregar terceirizadas:', error);
       showAlert('Erro ao carregar terceirizadas', 'danger');
+      setTerceirizadas([]);
     }
     setLoading(false);
   };
@@ -121,6 +125,7 @@ function Terceirizadas() {
     } catch (error) {
       let backendMsg = error?.response?.data?.error || error?.response?.data?.message || error.message || 'Erro ao salvar terceirizada';
       showAlert(backendMsg, 'danger', true);
+      // Não fecha o modal em caso de erro!
     }
   };
 

@@ -58,8 +58,7 @@ function PedidoColetaBairros() {
 
       setRows(rowsData);
     } catch (error) {
-      // Apenas alerta, não zera as listas
-      alert('Erro ao carregar dados.');
+      setRows([]);
     }
     setLoading(false);
   };

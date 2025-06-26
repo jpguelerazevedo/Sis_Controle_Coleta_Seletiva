@@ -41,7 +41,7 @@ function RecebimentosMaterial() {
             const clientesArr = clientesResponse.data || [];
             const colaboradoresArr = colaboradoresResponse.data || [];
 
-            if (recebimentosResponse && recebimentosResponse.data && recebimentosResponse.data.length > 0) {
+            if (recebimentosResponse && recebimentosResponse.data) {
                 const recebimentosFormatados = recebimentosResponse.data.map((r, idx) => {
                     // Mesma lógica de data do EnviosMaterial/PedidosColeta
                     let rawData = r.dataRecebimento || r.data_recebimento || r.data || r.createdAt || r.updatedAt || '';
@@ -86,13 +86,12 @@ function RecebimentosMaterial() {
                 setClientes(clientesArr);
                 setColaboradores(colaboradoresArr);
                 setRecebimentos(recebimentosFormatados);
-            } else if (recebimentosResponse && recebimentosResponse.data && recebimentosResponse.data.length === 0) {
-                showAlert('Nenhum recebimento encontrado.', 'warning');
             } else {
-                showAlert('Erro ao buscar recebimentos. Tente novamente.', 'danger');
+                setRecebimentos([]);
             }
         } catch (error) {
             showAlert('Erro ao carregar recebimentos: ' + error.message, 'danger');
+            setRecebimentos([]);
         }
         setLoading(false);
     };
