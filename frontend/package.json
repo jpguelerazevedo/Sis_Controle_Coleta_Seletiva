@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "homepage": "https://louzada27.github.io/scv/",
+  "homepage": "https://jpguelerazevedo.github.io/Sis_Controle_Coleta_Seletiva/",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
