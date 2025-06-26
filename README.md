@@ -1,6 +1,6 @@
 # Sistema de Controle de Coleta Seletiva
 
-- Este é um Fork que criei de um sistema completo para gerenciamento de coleta de materiais recicláveis que fiz com um amigo. link do perfil: https://github.com/Louzada27
+- Este é um Fork do sistema para gerenciamento de coleta de materiais recicláveis que fiz com um amigo. link do perfil: https://github.com/Louzada27
 - Stack: Node.js, Express, Sequelize e React.
 - O repositorio é composto por 3 branches, onde são separados as camadas do projeto:
   - `main (backend)`
