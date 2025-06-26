@@ -7,7 +7,7 @@ import { DataGrid } from '@mui/x-data-grid';
 
 function Bairros() {
     const [bairros, setBairros] = useState([]);
-    const [alert, setAlert] = useState({ show: false, message: '', variant: '' });
+    const [alert, setAlert] = useState({ show: false, message: '', variant: '', modal: false });
     const [showModal, setShowModal] = useState(false);
     const [formData, setFormData] = useState({
         nome: '',
@@ -44,20 +44,42 @@ function Bairros() {
         });
     };
 
+    const showAlert = (message, variant, modal = false) => {
+        setAlert({ show: true, message, variant, modal });
+        setTimeout(() => setAlert({ show: false, message: '', variant: '', modal: false }), 3000);
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
+        let hadError = false;
         try {
             if (selectedBairro) {
-                await endpoints.bairros.update(selectedBairro.id_bairro, formData);
-                setAlert({ show: true, message: 'Bairro atualizado com sucesso!', variant: 'success' });
+                try {
+                    await endpoints.bairros.update(selectedBairro.id_bairro, formData);
+                    showAlert('Bairro atualizado com sucesso!', 'success');
+                } catch (updateError) {
+                    let backendMsg = updateError?.response?.data?.error || updateError?.response?.data?.message || updateError.message || 'Erro ao atualizar bairro';
+                    showAlert(backendMsg, 'danger', true);
+                    hadError = true;
+                }
             } else {
-                await endpoints.bairros.create(formData);
-                setAlert({ show: true, message: 'Bairro cadastrado com sucesso!', variant: 'success' });
+                try {
+                    await endpoints.bairros.create(formData);
+                    showAlert('Bairro cadastrado com sucesso!', 'success');
+                } catch (createError) {
+                    let backendMsg = createError?.response?.data?.error || createError?.response?.data?.message || createError.message || 'Erro ao cadastrar bairro';
+                    showAlert(backendMsg, 'danger', true);
+                    hadError = true;
+                }
             }
-            handleCloseModal();
+            if (!hadError) {
+                handleCloseModal();
+            }
             loadBairros();
         } catch (error) {
-            setAlert({ show: true, message: 'Erro ao salvar bairro', variant: 'danger' });
+            let backendMsg = error?.response?.data?.error || error?.response?.data?.message || error.message || 'Erro ao salvar bairro';
+            showAlert(backendMsg, 'danger', true);
+            // Não fecha o modal em caso de erro!
         }
     };
 
@@ -120,17 +142,6 @@ function Bairros() {
                     </Button>
                 </div>
             </div>
-            {alert.show && (
-                <Alert
-                    variant={alert.variant}
-                    onClose={() => setAlert({ show: false })}
-                    dismissible
-                    className="position-fixed top-0 end-0 m-3"
-                    style={{ zIndex: 1050 }}
-                >
-                    {alert.message}
-                </Alert>
-            )}
             <div style={{ width: '100%', marginBottom: 24 }}>
                 <DataGrid
                     rows={bairros}
@@ -153,6 +164,17 @@ function Bairros() {
                     <Modal.Title>{selectedBairro ? 'Editar Bairro' : 'Novo Bairro'}</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
+                    {/* Mostra alerta dentro do modal se erro ao cadastrar */}
+                    {alert.show && alert.modal && (
+                        <Alert
+                            variant={alert.variant}
+                            onClose={() => setAlert({ show: false, message: '', variant: '', modal: false })}
+                            dismissible
+                            className="mb-3"
+                        >
+                            {alert.message}
+                        </Alert>
+                    )}
                     <Form onSubmit={handleSubmit}>
                         <Form.Group className="mb-3">
                             <Form.Label>Nome</Form.Label>
@@ -197,6 +219,18 @@ function Bairros() {
                     </Form>
                 </Modal.Body>
             </Modal>
+            {/* Alerta global só aparece se não for modal */}
+            {alert.show && !alert.modal && (
+                <Alert
+                    variant={alert.variant}
+                    onClose={() => setAlert({ show: false, message: '', variant: '', modal: false })}
+                    dismissible
+                    className="position-fixed top-0 end-0 m-3"
+                    style={{ zIndex: 1050 }}
+                >
+                    {alert.message}
+                </Alert>
+            )}
         </div>
     );
 }

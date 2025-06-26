@@ -15,12 +15,12 @@ const Cargos = () => {
     salario: 0,
     hierarquia: 1
   });
-  const [alert, setAlert] = useState({ show: false, message: '', variant: '' });
+  const [alert, setAlert] = useState({ show: false, message: '', variant: '', modal: false });
   const [loading, setLoading] = useState(true); // Adicionado estado loading
 
-  const showAlert = (message, variant) => {
-    setAlert({ show: true, message, variant });
-    setTimeout(() => setAlert({ show: false, message: '', variant: '' }), 3000);
+  const showAlert = (message, variant, modal = false) => {
+    setAlert({ show: true, message, variant, modal });
+    setTimeout(() => setAlert({ show: false, message: '', variant: '', modal: false }), 3000);
   };
 
   const handleCloseModal = () => {
@@ -131,6 +131,7 @@ const Cargos = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    let hadError = false;
     try {
       console.log('Iniciando operação com cargo...');
       console.log('Dados do formulário:', formData);
@@ -148,35 +149,39 @@ const Cargos = () => {
         console.log('Atualizando cargo existente...');
         try {
           await endpoints.cargos.update(selectedCargo.id, cargoData);
-          console.log('Cargo atualizado com sucesso');
           showAlert('Cargo atualizado com sucesso!', 'success');
         } catch (updateError) {
-          console.warn('Aviso: Erro ao atualizar cargo, mas continuando...', updateError);
-          showAlert('Cargo pode ter sido atualizado, mas houve erro na resposta.', 'warning');
+          let backendMsg = updateError?.response?.data?.error || updateError?.response?.data?.message || updateError.message || 'Erro ao atualizar cargo';
+          showAlert(backendMsg, 'danger', true);
+          hadError = true;
         }
       } else {
         console.log('Criando novo cargo...');
         try {
           await endpoints.cargos.create(cargoData);
-          console.log('Cargo criado com sucesso');
           showAlert('Cargo cadastrado com sucesso!', 'success');
         } catch (createError) {
-          console.warn('Aviso: Erro ao criar cargo, mas continuando...', createError);
-          showAlert('Cargo pode ter sido cadastrado, mas houve erro na resposta.', 'warning');
+          let backendMsg = createError?.response?.data?.error || createError?.response?.data?.message || createError.message || 'Erro ao cadastrar cargo';
+          showAlert(backendMsg, 'danger', true);
+          hadError = true;
         }
       }
 
       // Tenta recarregar os dados mesmo com erro
       try {
         await loadCargos();
-        handleCloseModal();
+        if (!hadError) {
+          handleCloseModal();
+        }
       } catch (loadError) {
-        console.error('Erro ao recarregar cargos:', loadError);
-        handleCloseModal();
+        if (!hadError) {
+          handleCloseModal();
+        }
       }
     } catch (error) {
-      console.error('Erro geral na operação:', error);
-      showAlert('Erro ao processar operação', 'danger');
+      let backendMsg = error?.response?.data?.error || error?.response?.data?.message || error.message || 'Erro ao processar operação';
+      showAlert(backendMsg, 'danger', true);
+      // Não fecha o modal em caso de erro!
     }
   };
 
@@ -229,6 +234,17 @@ const Cargos = () => {
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
+          {/* Mostra alerta dentro do modal se erro ao cadastrar */}
+          {alert.show && alert.modal && (
+            <Alert
+              variant={alert.variant}
+              onClose={() => setAlert({ show: false, message: '', variant: '', modal: false })}
+              dismissible
+              className="mb-3"
+            >
+              {alert.message}
+            </Alert>
+          )}
           <Form onSubmit={handleSubmit}>
             <div className="row">
               <div className="col-md-12">
@@ -306,10 +322,11 @@ const Cargos = () => {
         </Modal.Body>
       </Modal>
 
-      {alert.show && (
+      {/* Alerta global só aparece se não for modal */}
+      {alert.show && !alert.modal && (
         <Alert
           variant={alert.variant}
-          onClose={() => setAlert({ show: false, message: '', variant: '' })}
+          onClose={() => setAlert({ show: false, message: '', variant: '', modal: false })}
           dismissible
           className="position-fixed top-0 end-0 m-3"
           style={{ zIndex: 1050 }}

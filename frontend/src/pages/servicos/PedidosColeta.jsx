@@ -20,7 +20,7 @@ function PedidosColeta() {
     cpfColaborador: '',
     tipo: ''
   });
-  const [alert, setAlert] = useState({ show: false, message: '', variant: '' });
+  const [alert, setAlert] = useState({ show: false, message: '', variant: '', modal: false });
   const [loading, setLoading] = useState(true); // Adicionado estado loading
 
   useEffect(() => {
@@ -54,6 +54,8 @@ function PedidosColeta() {
           const colab = colaboradores.find(c => String(c.cpf) === String(pedido.cpf_colaborador));
           let rawData = pedido.dataPedido || pedido.data_pedido || pedido.data || pedido.createdAt || pedido.updatedAt || '';
           let dataFormatada = '';
+          let horaFormatada = '';
+          let createdAt = pedido.createdAt || pedido.dataPedido || pedido.data_pedido || pedido.data || pedido.updatedAt || '';
           if (rawData) {
             const dateObj = new Date(rawData);
             if (!isNaN(dateObj)) {
@@ -61,8 +63,13 @@ function PedidosColeta() {
               const mes = String(dateObj.getMonth() + 1).padStart(2, '0');
               const ano = dateObj.getFullYear();
               dataFormatada = `${dia}/${mes}/${ano}`;
+              const hora = String(dateObj.getHours()).padStart(2, '0');
+              const min = String(dateObj.getMinutes()).padStart(2, '0');
+              const seg = String(dateObj.getSeconds()).padStart(2, '0');
+              horaFormatada = `${hora}:${min}:${seg}`;
             } else {
               dataFormatada = rawData;
+              horaFormatada = '';
             }
           }
           return {
@@ -78,7 +85,9 @@ function PedidosColeta() {
             colaboradorNome: colab ? (colab.nome || (colab.pessoa && colab.pessoa.nome) || '') : '',
             status: pedido.status,
             tipo: pedido.tipo,
-            data: dataFormatada
+            data: dataFormatada,
+            hora: horaFormatada,
+            createdAt: createdAt
           };
         });
         setPedidos(pedidosFormatados);
@@ -129,13 +138,14 @@ function PedidosColeta() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    let hadError = false;
     try {
       const materialSelecionado = materiais.find(m => m.idMaterial === parseInt(formData.idMaterial));
       if (!materialSelecionado) {
-        showAlert('Material não encontrado', 'danger');
+        showAlert('Material não encontrado', 'danger', true);
+        hadError = true;
         return;
       }
-      // Inclui o campo data ao salvar
       const pedidoData = {
         peso: parseFloat(formData.peso),
         volume: parseFloat(formData.volume),
@@ -146,16 +156,32 @@ function PedidosColeta() {
         data: formData.data ? new Date(formData.data) : new Date()
       };
       if (selectedPedido) {
-        await endpoints.pedidos.update(selectedPedido.idPedido, pedidoData);
-        showAlert('Pedido atualizado com sucesso!', 'success');
+        try {
+          await endpoints.pedidos.update(selectedPedido.idPedido, pedidoData);
+          showAlert('Pedido atualizado com sucesso!', 'success');
+        } catch (updateError) {
+          let backendMsg = updateError?.response?.data?.error || updateError?.response?.data?.message || updateError.message || 'Erro ao atualizar pedido';
+          showAlert(backendMsg, 'danger', true);
+          hadError = true;
+        }
       } else {
-        await endpoints.pedidos.create(pedidoData);
-        showAlert('Pedido registrado com sucesso!', 'success');
+        try {
+          await endpoints.pedidos.create(pedidoData);
+          showAlert('Pedido registrado com sucesso!', 'success');
+        } catch (createError) {
+          let backendMsg = createError?.response?.data?.error || createError?.response?.data?.message || createError.message || 'Erro ao cadastrar pedido';
+          showAlert(backendMsg, 'danger', true);
+          hadError = true;
+        }
       }
-      handleCloseModal();
+      if (!hadError) {
+        handleCloseModal();
+      }
       loadPedidos();
     } catch (error) {
-      showAlert('Erro ao salvar pedido: ' + error.message, 'danger');
+      let backendMsg = error?.response?.data?.error || error?.response?.data?.message || error.message || 'Erro ao salvar pedido';
+      showAlert(backendMsg, 'danger', true);
+      // Não fecha o modal em caso de erro!
     }
   };
 
@@ -188,9 +214,9 @@ function PedidosColeta() {
     });
   };
 
-  const showAlert = (message, variant) => {
-    setAlert({ show: true, message, variant });
-    setTimeout(() => setAlert({ show: false, message: '', variant: '' }), 3000);
+  const showAlert = (message, variant, modal = false) => {
+    setAlert({ show: true, message, variant, modal });
+    setTimeout(() => setAlert({ show: false, message: '', variant: '', modal: false }), 3000);
   };
 
   // Função para formatar CPF
@@ -262,11 +288,8 @@ function PedidosColeta() {
       width: 130,
       renderCell: (params) => formatCPFTable(params.value),
     },
-    {
-      field: 'data',
-      headerName: 'Data',
-      width: 100,
-    },
+    { field: 'data', headerName: 'Data', width: 100 },
+    { field: 'hora', headerName: 'Hora', width: 90 }
   ];
 
   return (
@@ -294,20 +317,14 @@ function PedidosColeta() {
           </Button>
         </div>
       </div>
-      {alert.show && (
-        <Alert
-          variant={alert.variant}
-          onClose={() => setAlert({ show: false })}
-          dismissible
-          className="position-fixed top-0 end-0 m-3"
-          style={{ zIndex: 1050 }}
-        >
-          {alert.message}
-        </Alert>
-      )}
       <div style={{ width: '100%', marginBottom: 24 }}>
         <DataGrid
-          rows={pedidos}
+          rows={[...pedidos].sort((a, b) => {
+            // Ordena por createdAt desc (mais recente primeiro)
+            if (!a.createdAt) return 1;
+            if (!b.createdAt) return -1;
+            return new Date(b.createdAt) - new Date(a.createdAt);
+          })}
           columns={columns}
           getRowId={row => row.id_pedidos || row.idPedido || row.id}
           initialState={{
@@ -330,6 +347,17 @@ function PedidosColeta() {
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
+          {/* Mostra alerta dentro do modal se erro ao cadastrar */}
+          {alert.show && alert.modal && (
+            <Alert
+              variant={alert.variant}
+              onClose={() => setAlert({ show: false, message: '', variant: '', modal: false })}
+              dismissible
+              className="mb-3"
+            >
+              {alert.message}
+            </Alert>
+          )}
           <Form onSubmit={handleSubmit}>
             {/* Linha 1: Material e Estado do Material */}
             <div className="row">
@@ -442,6 +470,18 @@ function PedidosColeta() {
           </Form>
         </Modal.Body>
       </Modal>
+      {/* Alerta global só aparece se não for modal */}
+      {alert.show && !alert.modal && (
+        <Alert
+          variant={alert.variant}
+          onClose={() => setAlert({ show: false, message: '', variant: '', modal: false })}
+          dismissible
+          className="position-fixed top-0 end-0 m-3"
+          style={{ zIndex: 1050 }}
+        >
+          {alert.message}
+        </Alert>
+      )}
     </Container>
   );
 }

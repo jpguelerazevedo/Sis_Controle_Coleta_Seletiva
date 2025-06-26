@@ -17,7 +17,7 @@ function EnviosMaterial() {
         pesoEnviado: '',
         volumeEnviado: '' // Added volumeEnviado
     });
-    const [alert, setAlert] = useState({ show: false, message: '', variant: '' });
+    const [alert, setAlert] = useState({ show: false, message: '', variant: '', modal: false });
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -40,6 +40,8 @@ function EnviosMaterial() {
                 const enviosFormatados = response.data.map((e, idx) => {
                     let rawData = e.dataEnvio || e.data_envio || e.data || e.createdAt || e.updatedAt || '';
                     let dataFormatada = '';
+                    let horaFormatada = '';
+                    let createdAt = e.createdAt || e.dataEnvio || e.data_envio || e.data || e.updatedAt || '';
                     if (rawData) {
                         const dateObj = new Date(rawData);
                         if (!isNaN(dateObj)) {
@@ -47,8 +49,13 @@ function EnviosMaterial() {
                             const mes = String(dateObj.getMonth() + 1).padStart(2, '0');
                             const ano = dateObj.getFullYear();
                             dataFormatada = `${dia}/${mes}/${ano}`;
+                            const hora = String(dateObj.getHours()).padStart(2, '0');
+                            const min = String(dateObj.getMinutes()).padStart(2, '0');
+                            const seg = String(dateObj.getSeconds()).padStart(2, '0');
+                            horaFormatada = `${hora}:${min}:${seg}`;
                         } else {
                             dataFormatada = rawData;
+                            horaFormatada = '';
                         }
                     }
                     const material = materiaisArr.find(m => String(m.idMaterial) === String(e.idMaterial));
@@ -62,7 +69,9 @@ function EnviosMaterial() {
                         terceirizadaNome: terceirizada ? terceirizada.nome : '',
                         pesoEnviado: e.pesoEnviado || e.peso_enviado,
                         volumeEnviado: e.volumeEnviado || e.volume_enviado,
-                        data: dataFormatada
+                        data: dataFormatada,
+                        hora: horaFormatada,
+                        createdAt: createdAt
                     };
                 });
                 setMateriais(materiaisArr);
@@ -108,24 +117,41 @@ function EnviosMaterial() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        let hadError = false;
         try {
             const envioData = {
                 idMaterial: parseInt(formData.idMaterial),
                 cnpj: String(formData.cnpj),
                 pesoEnviado: parseFloat(formData.pesoEnviado),
-                volumeEnviado: parseFloat(formData.volumeEnviado) // Added volumeEnviado
+                volumeEnviado: parseFloat(formData.volumeEnviado)
             };
             if (selectedEnvio) {
-                await endpoints.envios.update(selectedEnvio.idEnvio, envioData);
-                showAlert('Envio atualizado com sucesso!', 'success');
+                try {
+                    await endpoints.envios.update(selectedEnvio.idEnvio, envioData);
+                    showAlert('Envio atualizado com sucesso!', 'success');
+                } catch (updateError) {
+                    let backendMsg = updateError?.response?.data?.error || updateError?.response?.data?.message || updateError.message || 'Erro ao atualizar envio';
+                    showAlert(backendMsg, 'danger', true);
+                    hadError = true;
+                }
             } else {
-                await endpoints.envios.create(envioData);
-                showAlert('Envio registrado com sucesso!', 'success');
+                try {
+                    await endpoints.envios.create(envioData);
+                    showAlert('Envio registrado com sucesso!', 'success');
+                } catch (createError) {
+                    let backendMsg = createError?.response?.data?.error || createError?.response?.data?.message || createError.message || 'Erro ao cadastrar envio';
+                    showAlert(backendMsg, 'danger', true);
+                    hadError = true;
+                }
             }
-            handleCloseModal();
+            if (!hadError) {
+                handleCloseModal();
+            }
             loadEnvios();
         } catch (error) {
-            showAlert('Erro ao salvar envio: ' + error.message, 'danger');
+            let backendMsg = error?.response?.data?.error || error?.response?.data?.message || error.message || 'Erro ao salvar envio';
+            showAlert(backendMsg, 'danger', true);
+            // Não fecha o modal em caso de erro!
         }
     };
 
@@ -151,9 +177,9 @@ function EnviosMaterial() {
         });
     };
 
-    const showAlert = (message, variant) => {
-        setAlert({ show: true, message, variant });
-        setTimeout(() => setAlert({ show: false, message: '', variant: '' }), 3000);
+    const showAlert = (message, variant, modal = false) => {
+        setAlert({ show: true, message, variant, modal });
+        setTimeout(() => setAlert({ show: false, message: '', variant: '', modal: false }), 3000);
     };
 
     // Função para formatar CNPJ
@@ -185,11 +211,8 @@ function EnviosMaterial() {
         },
         { field: 'pesoEnviado', headerName: 'Peso (kg)', width: 120 },
         { field: 'volumeEnviado', headerName: 'Volume (m³)', width: 120 },
-        {
-            field: 'data',
-            headerName: 'Data',
-            width: 100,
-        },
+        { field: 'data', headerName: 'Data', width: 100 },
+        { field: 'hora', headerName: 'Hora', width: 90 }
     ];
 
     return (
@@ -216,23 +239,16 @@ function EnviosMaterial() {
                     </Button>
                 </div>
             </div>
-            {alert.show && (
-                <Alert
-                    variant={alert.variant}
-                    onClose={() => setAlert({ show: false })}
-                    dismissible
-                    className="position-fixed top-0 end-0 m-3"
-                    style={{ zIndex: 1050 }}
-                >
-                    {alert.message}
-                </Alert>
-            )}
-
             <div style={{ width: '100%', marginBottom: 24 }}>
                 <DataGrid
-                    rows={envios}
+                    rows={[...envios].sort((a, b) => {
+                        // Ordena por createdAt desc (mais recente primeiro)
+                        if (!a.createdAt) return 1;
+                        if (!b.createdAt) return -1;
+                        return new Date(b.createdAt) - new Date(a.createdAt);
+                    })}
                     columns={columns}
-                    getRowId={row => row.idEnvio || row.id_envio || row.id} // Ajuste para garantir id correto
+                    getRowId={row => row.idEnvio || row.id_envio || row.id}
                     initialState={{
                         pagination: { paginationModel: { pageSize: 5, page: 0 } }
                     }}
@@ -252,6 +268,17 @@ function EnviosMaterial() {
                     </Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
+                    {/* Mostra alerta dentro do modal se erro ao cadastrar */}
+                    {alert.show && alert.modal && (
+                        <Alert
+                            variant={alert.variant}
+                            onClose={() => setAlert({ show: false, message: '', variant: '', modal: false })}
+                            dismissible
+                            className="mb-3"
+                        >
+                            {alert.message}
+                        </Alert>
+                    )}
                     <Form onSubmit={handleSubmit}>
                         {/* Linha 1: Material e Terceirizada */}
                         <div className="row">
@@ -343,6 +370,18 @@ function EnviosMaterial() {
                     </Form>
                 </Modal.Body>
             </Modal>
+            {/* Alerta global só aparece se não for modal */}
+            {alert.show && !alert.modal && (
+                <Alert
+                    variant={alert.variant}
+                    onClose={() => setAlert({ show: false, message: '', variant: '', modal: false })}
+                    dismissible
+                    className="position-fixed top-0 end-0 m-3"
+                    style={{ zIndex: 1050 }}
+                >
+                    {alert.message}
+                </Alert>
+            )}
         </Container>
     );
 }

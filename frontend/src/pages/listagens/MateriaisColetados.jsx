@@ -41,6 +41,8 @@ function MateriaisColetados() {
         const pedidosFormatados = response.data.map((pedido, idx) => {
           let rawData = pedido.data || pedido.dataPedido || pedido.data_pedido || pedido.createdAt || pedido.updatedAt || '';
           let dataFormatada = '';
+          let horaFormatada = '';
+          let createdAt = pedido.createdAt || pedido.data || pedido.dataPedido || pedido.data_pedido || pedido.updatedAt || '';
           if (rawData) {
             const dateObj = new Date(rawData);
             if (!isNaN(dateObj)) {
@@ -48,8 +50,13 @@ function MateriaisColetados() {
               const mes = String(dateObj.getMonth() + 1).padStart(2, '0');
               const ano = dateObj.getFullYear();
               dataFormatada = `${dia}/${mes}/${ano}`;
+              const hora = String(dateObj.getHours()).padStart(2, '0');
+              const min = String(dateObj.getMinutes()).padStart(2, '0');
+              const seg = String(dateObj.getSeconds()).padStart(2, '0');
+              horaFormatada = `${hora}:${min}:${seg}`;
             } else {
               dataFormatada = rawData;
+              horaFormatada = '';
             }
           }
           const material = materiais.find(
@@ -61,7 +68,9 @@ function MateriaisColetados() {
             materialNome: material ? material.nome : '',
             peso: pedido.peso ?? '',
             volume: pedido.volume ?? '',
-            data: dataFormatada
+            data: dataFormatada,
+            hora: horaFormatada,
+            createdAt: createdAt
           };
         });
         setPedidos(pedidosFormatados);
@@ -83,11 +92,8 @@ function MateriaisColetados() {
     },
     { field: 'peso', headerName: 'Peso (kg)', width: 120 },
     { field: 'volume', headerName: 'Volume (m³)', width: 120 },
-    {
-      field: 'data',
-      headerName: 'Data',
-      width: 100
-    }
+    { field: 'data', headerName: 'Data', width: 100 },
+    { field: 'hora', headerName: 'Hora', width: 90 }
   ];
 
   return (
@@ -99,7 +105,12 @@ function MateriaisColetados() {
 
       <div style={{ width: '100%', marginBottom: 24 }}>
         <DataGrid
-          rows={pedidos}
+          rows={[...pedidos].sort((a, b) => {
+            // Ordena por createdAt desc (mais recente primeiro)
+            if (!a.createdAt) return 1;
+            if (!b.createdAt) return -1;
+            return new Date(b.createdAt) - new Date(a.createdAt);
+          })}
           columns={columns}
           getRowId={row => row.id}
           initialState={{

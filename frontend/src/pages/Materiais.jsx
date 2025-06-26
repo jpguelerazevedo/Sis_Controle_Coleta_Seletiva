@@ -82,7 +82,14 @@ function Materiais() {
       await loadMateriais();
       handleCloseModal();
     } catch (error) {
-      showAlert('Erro ao processar material', 'danger');
+      // Mostra mensagem do backend se existir, apenas no modal
+      let backendMsg =
+        error?.response?.data?.error ||
+        error?.response?.data?.message ||
+        (error?.response?.status === 500
+          ? 'Já existe um material com este nome ou ocorreu um erro interno no servidor.'
+          : error.message || 'Erro ao processar material');
+      setAlert({ show: true, message: backendMsg, variant: 'danger', modal: true });
     }
   };
 
@@ -173,7 +180,8 @@ function Materiais() {
           </Button>
         </div>
       </div>
-      {alert.show && (
+      {/* Mostra alerta global apenas se não for erro de modal */}
+      {alert.show && !alert.modal && (
         <Alert
           variant={alert.variant}
           onClose={() => setAlert({ show: false })}
@@ -203,7 +211,6 @@ function Materiais() {
         />
       </div>
 
-      {/* Removido o botão de editar do modal e da tabela */}
       <Modal show={showModal} onHide={handleCloseModal} centered size="lg">
         <Modal.Header closeButton>
           <Modal.Title>
@@ -211,6 +218,17 @@ function Materiais() {
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
+          {/* Mostra alerta dentro do modal se erro ao cadastrar */}
+          {alert.show && alert.variant === 'danger' && alert.modal && (
+            <Alert
+              variant={alert.variant}
+              onClose={() => setAlert({ show: false, message: '', variant: '', modal: false })}
+              dismissible
+              className="mb-3"
+            >
+              {alert.message}
+            </Alert>
+          )}
           <Form onSubmit={handleSubmit}>
             <div className="row">
               <div className="col-md-8">

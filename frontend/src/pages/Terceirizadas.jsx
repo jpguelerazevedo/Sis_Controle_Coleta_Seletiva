@@ -20,7 +20,7 @@ function Terceirizadas() {
     horarioDeFuncionamento: '', // Valor padrão em horas
     hierarquia: '' // Novo campo hierarquia
   });
-  const [alert, setAlert] = useState({ show: false, message: '', variant: '' });
+  const [alert, setAlert] = useState({ show: false, message: '', variant: '', modal: false });
   const [loading, setLoading] = useState(true); // Adicionado estado loading
 
   useEffect(() => {
@@ -78,39 +78,54 @@ function Terceirizadas() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    let hadError = false;
     try {
       const cnpjNumerico = formData.cnpj.replace(/\D/g, '');
       if (!cnpjNumerico || cnpjNumerico.length !== 14) {
-        showAlert('CNPJ deve conter 14 dígitos', 'danger');
+        showAlert('CNPJ deve conter 14 dígitos', 'danger', true);
+        hadError = true;
         return;
       }
 
-      // Envia o horário de funcionamento como string completa (ex: "08:00-18:00")
       const terceirizadaData = {
         nome: formData.nome,
         cnpj: cnpjNumerico,
         telefone: formData.telefone,
         email: formData.email,
         horarioDeFuncionamento: formData.horarioDeFuncionamento,
-        hierarquia: formData.hierarquia, // Incluindo hierarquia nos dados da terceirizada
-        estado: formData.status // Enviando o estado para a API
+        hierarquia: formData.hierarquia,
+        estado: formData.status
       };
 
       if (selectedTerceirizada) {
-        // Garante que o CNPJ enviado na URL está sem formatação
         const cnpjNumericoEdit = (selectedTerceirizada.cnpj || '').replace(/\D/g, '');
-        await endpoints.terceirizadas.update(cnpjNumericoEdit, terceirizadaData);
-        showAlert('Terceirizada atualizada com sucesso!', 'success');
+        try {
+          await endpoints.terceirizadas.update(cnpjNumericoEdit, terceirizadaData);
+          showAlert('Terceirizada atualizada com sucesso!', 'success');
+        } catch (updateError) {
+          let backendMsg = updateError?.response?.data?.error || updateError?.response?.data?.message || updateError.message || 'Erro ao atualizar terceirizada';
+          showAlert(backendMsg, 'danger', true);
+          hadError = true;
+        }
       } else {
-        await endpoints.terceirizadas.create(terceirizadaData);
-        showAlert('Terceirizada cadastrada com sucesso!', 'success');
+        try {
+          await endpoints.terceirizadas.create(terceirizadaData);
+          showAlert('Terceirizada cadastrada com sucesso!', 'success');
+        } catch (createError) {
+          let backendMsg = createError?.response?.data?.error || createError?.response?.data?.message || createError.message || 'Erro ao cadastrar terceirizada';
+          showAlert(backendMsg, 'danger', true);
+          hadError = true;
+        }
       }
 
       await loadTerceirizadas();
-      handleCloseModal();
+      if (!hadError) {
+        handleCloseModal();
+      }
     } catch (error) {
-      console.error('Erro ao salvar terceirizada:', error);
-      showAlert('Erro ao salvar terceirizada', 'danger');
+      let backendMsg = error?.response?.data?.error || error?.response?.data?.message || error.message || 'Erro ao salvar terceirizada';
+      showAlert(backendMsg, 'danger', true);
+      // Não fecha o modal em caso de erro!
     }
   };
 
@@ -158,9 +173,9 @@ function Terceirizadas() {
     });
   };
 
-  const showAlert = (message, variant) => {
-    setAlert({ show: true, message, variant });
-    setTimeout(() => setAlert({ show: false, message: '', variant: '' }), 3000);
+  const showAlert = (message, variant, modal = false) => {
+    setAlert({ show: true, message, variant, modal });
+    setTimeout(() => setAlert({ show: false, message: '', variant: '', modal: false }), 3000);
   };
 
   const getStatusBadge = (status) => {
@@ -241,17 +256,12 @@ function Terceirizadas() {
           </Button>
         </div>
       </div>
-      {alert.show && (
-        <Alert
-          variant={alert.variant}
-          onClose={() => setAlert({ show: false })}
-          dismissible
-          className="position-fixed top-0 end-0 m-3"
-          style={{ zIndex: 1050 }}
-        >
-          {alert.message}
-        </Alert>
-      )}
+      {/* <div className="mb-3">
+        <Button variant="secondary" onClick={exportToExcel}>
+          <FontAwesomeIcon icon={faFileExcel} className="me-2" />
+          Exportar para Excel
+        </Button>
+      </div> */}
       <div style={{ width: '100%' }}>
         <DataGrid
           rows={terceirizadas}
@@ -276,6 +286,17 @@ function Terceirizadas() {
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
+          {/* Mostra alerta dentro do modal se erro ao cadastrar */}
+          {alert.show && alert.modal && (
+            <Alert
+              variant={alert.variant}
+              onClose={() => setAlert({ show: false, message: '', variant: '', modal: false })}
+              dismissible
+              className="mb-3"
+            >
+              {alert.message}
+            </Alert>
+          )}
           <Form onSubmit={handleSubmit}>
             <div className="row">
               <div className="col-md-8">
@@ -406,6 +427,18 @@ function Terceirizadas() {
           </Form>
         </Modal.Body>
       </Modal>
+      {/* Alerta global só aparece se não for modal */}
+      {alert.show && !alert.modal && (
+        <Alert
+          variant={alert.variant}
+          onClose={() => setAlert({ show: false, message: '', variant: '', modal: false })}
+          dismissible
+          className="position-fixed top-0 end-0 m-3"
+          style={{ zIndex: 1050 }}
+        >
+          {alert.message}
+        </Alert>
+      )}
     </div>
   );
 }

@@ -261,8 +261,10 @@ function Clientes() {
       await loadClientes();
     } catch (error) {
       console.error('Erro ao cadastrar cliente:', error);
-      console.error('Detalhes do erro:', error);
-      showAlert(error.message || 'Erro ao cadastrar cliente', 'danger');
+      // Mostra mensagem do backend se existir, apenas no modal
+      let backendMsg = error?.response?.data?.error || error?.response?.data?.message || error.message || 'Erro ao cadastrar cliente';
+      setAlert({ show: true, message: backendMsg, variant: 'danger', modal: true });
+      // Não fecha o modal em caso de erro!
     }
   };
 
@@ -369,6 +371,7 @@ function Clientes() {
       }
 
       showAlert(errorMessage, 'danger');
+      // Não fecha o modal em caso de erro!
     }
   };
 
@@ -479,7 +482,8 @@ function Clientes() {
           </Button>
         </div>
       </div>
-      {alert.show && (
+      {/* Remover alerta global para erro de cadastro, manter só no modal */}
+      {alert.show && (!alert.modal) && (
         <Alert
           variant={alert.variant}
           onClose={() => setAlert({ show: false })}
@@ -516,6 +520,17 @@ function Clientes() {
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
+          {/* Mostra alerta dentro do modal se erro ao cadastrar */}
+          {alert.show && alert.variant === 'danger' && alert.modal && (
+            <Alert
+              variant={alert.variant}
+              onClose={() => setAlert({ show: false, message: '', variant: '', modal: false })}
+              dismissible
+              className="mb-3"
+            >
+              {alert.message}
+            </Alert>
+          )}
           <Form onSubmit={selectedCliente ? handleUpdate : handleSubmit}>
             <h6 className="mb-3 text-success">Dados Pessoais</h6>
             <div className="row">

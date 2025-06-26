@@ -19,7 +19,7 @@ function RecebimentosMaterial() {
         cpfCliente: '',
         cpfColaborador: ''
     });
-    const [alert, setAlert] = useState({ show: false, message: '', variant: '' });
+    const [alert, setAlert] = useState({ show: false, message: '', variant: '', modal: false });
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -43,9 +43,10 @@ function RecebimentosMaterial() {
 
             if (recebimentosResponse && recebimentosResponse.data) {
                 const recebimentosFormatados = recebimentosResponse.data.map((r, idx) => {
-                    // Mesma lógica de data do EnviosMaterial
+                    // Mesma lógica de data do EnviosMaterial/PedidosColeta
                     let rawData = r.dataRecebimento || r.data_recebimento || r.data || r.createdAt || r.updatedAt || '';
                     let dataFormatada = '';
+                    let horaFormatada = '';
                     if (rawData) {
                         const dateObj = new Date(rawData);
                         if (!isNaN(dateObj)) {
@@ -53,8 +54,13 @@ function RecebimentosMaterial() {
                             const mes = String(dateObj.getMonth() + 1).padStart(2, '0');
                             const ano = dateObj.getFullYear();
                             dataFormatada = `${dia}/${mes}/${ano}`;
+                            const hora = String(dateObj.getHours()).padStart(2, '0');
+                            const min = String(dateObj.getMinutes()).padStart(2, '0');
+                            const seg = String(dateObj.getSeconds()).padStart(2, '0');
+                            horaFormatada = `${hora}:${min}:${seg}`;
                         } else {
                             dataFormatada = rawData;
+                            horaFormatada = '';
                         }
                     }
                     const material = materiaisArr.find(m => String(m.idMaterial) === String(r.idMaterial));
@@ -71,7 +77,9 @@ function RecebimentosMaterial() {
                         clienteNome: cliente ? (cliente.nome || (cliente.pessoa && cliente.pessoa.nome) || '') : '',
                         cpfColaborador: r.cpfColaborador || r.cpf_colaborador,
                         colaboradorNome: colab ? (colab.nome || (colab.pessoa && colab.pessoa.nome) || '') : '',
-                        data: dataFormatada
+                        data: dataFormatada,
+                        hora: horaFormatada,
+                        createdAt: rawData
                     };
                 });
                 setMateriais(materiaisArr);
@@ -127,6 +135,7 @@ function RecebimentosMaterial() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        let hadError = false;
         try {
             const recebimentoData = {
                 peso: parseFloat(formData.peso),
@@ -136,16 +145,32 @@ function RecebimentosMaterial() {
                 cpfColaborador: String(formData.cpfColaborador)
             };
             if (selectedRecebimento) {
-                await endpoints.recebimentos.update(selectedRecebimento.idRecebimento, recebimentoData);
-                showAlert('Recebimento atualizado com sucesso!', 'success');
+                try {
+                    await endpoints.recebimentos.update(selectedRecebimento.idRecebimento, recebimentoData);
+                    showAlert('Recebimento atualizado com sucesso!', 'success');
+                } catch (updateError) {
+                    let backendMsg = updateError?.response?.data?.error || updateError?.response?.data?.message || updateError.message || 'Erro ao atualizar recebimento';
+                    showAlert(backendMsg, 'danger', true);
+                    hadError = true;
+                }
             } else {
-                await endpoints.recebimentos.create(recebimentoData);
-                showAlert('Recebimento registrado com sucesso!', 'success');
+                try {
+                    await endpoints.recebimentos.create(recebimentoData);
+                    showAlert('Recebimento registrado com sucesso!', 'success');
+                } catch (createError) {
+                    let backendMsg = createError?.response?.data?.error || createError?.response?.data?.message || createError.message || 'Erro ao cadastrar recebimento';
+                    showAlert(backendMsg, 'danger', true);
+                    hadError = true;
+                }
             }
-            handleCloseModal();
+            if (!hadError) {
+                handleCloseModal();
+            }
             loadRecebimentos();
         } catch (error) {
-            showAlert('Erro ao salvar recebimento: ' + error.message, 'danger');
+            let backendMsg = error?.response?.data?.error || error?.response?.data?.message || error.message || 'Erro ao salvar recebimento';
+            showAlert(backendMsg, 'danger', true);
+            // Não fecha o modal em caso de erro!
         }
     };
 
@@ -173,9 +198,9 @@ function RecebimentosMaterial() {
         });
     };
 
-    const showAlert = (message, variant) => {
-        setAlert({ show: true, message, variant });
-        setTimeout(() => setAlert({ show: false, message: '', variant: '' }), 3000);
+    const showAlert = (message, variant, modal = false) => {
+        setAlert({ show: true, message, variant, modal });
+        setTimeout(() => setAlert({ show: false, message: '', variant: '', modal: false }), 3000);
     };
 
     // Função para formatar CPF
@@ -223,8 +248,12 @@ function RecebimentosMaterial() {
             field: 'data',
             headerName: 'Data',
             width: 100,
+        },
+        {
+            field: 'hora',
+            headerName: 'Hora',
+            width: 90,
         }
-        // Removido o campo 'acoes'
     ];
 
     return (
@@ -252,20 +281,14 @@ function RecebimentosMaterial() {
                     </Button>
                 </div>
             </div>
-            {alert.show && (
-                <Alert
-                    variant={alert.variant}
-                    onClose={() => setAlert({ show: false })}
-                    dismissible
-                    className="position-fixed top-0 end-0 m-3"
-                    style={{ zIndex: 1050 }}
-                >
-                    {alert.message}
-                </Alert>
-            )}
             <div style={{ width: '100%', marginBottom: 24 }}>
                 <DataGrid
-                    rows={recebimentos}
+                    rows={[...recebimentos].sort((a, b) => {
+                        // Ordena por createdAt desc (mais recente primeiro)
+                        if (!a.createdAt) return 1;
+                        if (!b.createdAt) return -1;
+                        return new Date(b.createdAt) - new Date(a.createdAt);
+                    })}
                     columns={columns}
                     getRowId={row => row.id_Recebimento || row.idRecebimento || row.id}
                     initialState={{
@@ -287,6 +310,17 @@ function RecebimentosMaterial() {
                     </Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
+                    {/* Mostra alerta dentro do modal se erro ao cadastrar */}
+                    {alert.show && alert.modal && (
+                        <Alert
+                            variant={alert.variant}
+                            onClose={() => setAlert({ show: false, message: '', variant: '', modal: false })}
+                            dismissible
+                            className="mb-3"
+                        >
+                            {alert.message}
+                        </Alert>
+                    )}
                     <Form onSubmit={handleSubmit}>
                         {/* Linha 1: Material, Peso */}
                         <div className="row">
@@ -400,6 +434,18 @@ function RecebimentosMaterial() {
                     </Form>
                 </Modal.Body>
             </Modal>
+            {/* Alerta global só aparece se não for modal */}
+            {alert.show && !alert.modal && (
+                <Alert
+                    variant={alert.variant}
+                    onClose={() => setAlert({ show: false, message: '', variant: '', modal: false })}
+                    dismissible
+                    className="position-fixed top-0 end-0 m-3"
+                    style={{ zIndex: 1050 }}
+                >
+                    {alert.message}
+                </Alert>
+            )}
         </Container>
     );
 }

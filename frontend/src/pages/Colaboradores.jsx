@@ -20,7 +20,7 @@ function Colaboradores() {
     cargo: '',
     nacionalidade: 'Brasileiro'
   });
-  const [alert, setAlert] = useState({ show: false, message: '', variant: '' });
+  const [alert, setAlert] = useState({ show: false, message: '', variant: '', modal: false });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -143,11 +143,18 @@ function Colaboradores() {
           await endpoints.pessoas.update(cpfNumerico, pessoaData);
         } else {
           // Se for novo, cria a pessoa
-          await endpoints.pessoas.create(pessoaData);
+          try {
+            await endpoints.pessoas.create(pessoaData);
+          } catch (pessoaCreateError) {
+            // Mostra mensagem do backend se CPF já existe ou outro erro
+            let backendMsg = pessoaCreateError?.response?.data?.error || pessoaCreateError?.response?.data?.message || pessoaCreateError.message || 'Erro ao salvar dados da pessoa';
+            showAlert(backendMsg, 'danger', true);
+            return;
+          }
         }
       } catch (pessoaError) {
         console.error('Erro ao salvar pessoa:', pessoaError);
-        showAlert('Erro ao salvar dados da pessoa', 'danger');
+        showAlert('Erro ao salvar dados da pessoa', 'danger', true);
         return;
       }
 
@@ -169,7 +176,9 @@ function Colaboradores() {
           showAlert('Colaborador atualizado com sucesso!', 'success');
         } catch (updateError) {
           console.warn('Aviso: Erro ao atualizar colaborador, mas continuando...', updateError);
-          showAlert('Colaborador pode ter sido atualizado, mas houve erro na resposta.', 'warning');
+          // Mostra mensagem do backend se existir
+          let backendMsg = updateError?.response?.data?.error || updateError?.response?.data?.message || updateError.message || 'Erro ao atualizar colaborador';
+          showAlert(backendMsg, 'danger', true);
         }
       } else {
         console.log('Criando novo colaborador...');
@@ -179,7 +188,9 @@ function Colaboradores() {
           showAlert('Colaborador cadastrado com sucesso!', 'success');
         } catch (createError) {
           console.warn('Aviso: Erro ao criar colaborador, mas continuando...', createError);
-          showAlert('Colaborador pode ter sido cadastrado, mas houve erro na resposta.', 'warning');
+          // Mostra mensagem do backend se existir
+          let backendMsg = createError?.response?.data?.error || createError?.response?.data?.message || createError.message || 'Erro ao cadastrar colaborador';
+          showAlert(backendMsg, 'danger', true);
         }
       }
 
@@ -193,7 +204,9 @@ function Colaboradores() {
       }
     } catch (error) {
       console.error('Erro geral na operação:', error);
-      showAlert('Erro ao processar operação', 'danger');
+      // Mostra mensagem do backend se existir, apenas no modal
+      let backendMsg = error?.response?.data?.error || error?.response?.data?.message || error.message || 'Erro ao processar operação';
+      setAlert({ show: true, message: backendMsg, variant: 'danger', modal: true });
     }
   };
 
@@ -249,9 +262,9 @@ function Colaboradores() {
     });
   };
 
-  const showAlert = (message, variant) => {
-    setAlert({ show: true, message, variant });
-    setTimeout(() => setAlert({ show: false, message: '', variant: '' }), 3000);
+  const showAlert = (message, variant, modal = false) => {
+    setAlert({ show: true, message, variant, modal });
+    setTimeout(() => setAlert({ show: false, message: '', variant: '', modal: false }), 3000);
   };
 
   const formatCPFTable = (cpf) => {
@@ -348,10 +361,10 @@ function Colaboradores() {
         </div>
       </div>
 
-      {alert.show && (
+      {alert.show && !alert.modal && (
         <Alert
           variant={alert.variant}
-          onClose={() => setAlert({ show: false })}
+          onClose={() => setAlert({ show: false, message: '', variant: '', modal: false })}
           dismissible
           className="position-fixed top-0 end-0 m-3"
           style={{ zIndex: 1050 }}
@@ -385,6 +398,17 @@ function Colaboradores() {
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
+          {/* Mostra alerta dentro do modal se erro ao cadastrar */}
+          {alert.show && alert.modal && (
+            <Alert
+              variant={alert.variant}
+              onClose={() => setAlert({ show: false, message: '', variant: '', modal: false })}
+              dismissible
+              className="mb-3"
+            >
+              {alert.message}
+            </Alert>
+          )}
           <Form onSubmit={handleSubmit}>
             <div className="row">
               <div className="col-md-12">

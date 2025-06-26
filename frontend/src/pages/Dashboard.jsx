@@ -17,6 +17,7 @@ function Dashboard() {
     totalClientes: 0,
     totalMateriais: 0,
     totalTerceirizadas: 0,
+    totalColaboradores: 0, // novo campo
     totalMateriaisEstoque: 0,
     clientesNovosMes: 0,
   });
@@ -100,7 +101,7 @@ function Dashboard() {
         const enviosResp = await endpoints.envios?.list?.();
         const envios = enviosResp?.data || [];
         const enviosOrdenados = envios.sort((a, b) => new Date(a.data) - new Date(b.data)); // ordem crescente
-        const terceirizadasResp = await endpoints.terceirizadas.list();
+        const terceirizadasResp = await endpoints.terceirizadas?.list?.();
         const terceirizadas = terceirizadasResp?.data || [];
         const terceirizadasAtivas = terceirizadas.filter(t => t.estado === 'ativo');
         const recentesEnvios = enviosOrdenados
@@ -119,10 +120,16 @@ function Dashboard() {
             };
           });
 
+        // Colaboradores
+        const colaboradoresResp = await endpoints.colaboradores?.list?.();
+        const colaboradores = colaboradoresResp?.data || [];
+        const colaboradoresAtivos = colaboradores.filter(c => c.estado === 'ativo');
+
         setStats({
           totalClientes: clientes.length,
           totalMateriais: materiais.length,
           totalTerceirizadas: terceirizadasAtivas.length,
+          totalColaboradores: colaboradoresAtivos.length, // novo campo
           totalMateriaisEstoque,
           clientesNovosMes,
           totalPedidos: pedidos.length,
@@ -142,6 +149,7 @@ function Dashboard() {
           totalClientes: 0,
           totalMateriais: 0,
           totalTerceirizadas: 0,
+          totalColaboradores: 0, // novo campo
           totalMateriaisEstoque: 0,
           clientesNovosMes: 0,
           totalPedidos: 0,
@@ -191,6 +199,15 @@ function Dashboard() {
       footer: 'Ativas no Sistema'
     },
     {
+      title: 'Colaboradores Ativos',
+      value: stats.totalColaboradores,
+      icon: faUsers,
+      color: 'success',
+      bg: 'rgba(40,167,69,0.13)', // verde forte
+      progress: 100,
+      footer: 'Ativos no Sistema'
+    },
+    {
       title: 'Estoque Total (kg)',
       value: stats.totalMateriaisEstoque.toLocaleString('pt-BR', { maximumFractionDigits: 2 }),
       icon: faBoxOpen,
@@ -210,57 +227,119 @@ function Dashboard() {
         </div>
       ) : (
         <>
-          <Row className="g-4">
-            {statCards.map((stat, index) => (
-              <Col key={index} md={12} lg={6} xl={3}>
-                <Card
-                  className="h-100 border-0"
-                  style={{
-
-                    borderRadius: 18,
-                    background: stat.bg,
-                    boxShadow: '0 4px 24px 0 rgba(0,0,0,0.10), 0 1.5px 6px 0 rgba(0,0,0,0.08)'
-                  }}
-                >
-                  <Card.Body>
-                    <div className="d-flex justify-content-between align-items-center mb-2">
-                      <div>
-                        <h6 className="text-muted mb-1" style={{ fontWeight: 600 }}>{stat.title}</h6>
-                        <h2 className={`mb-0 text-${stat.color}`} style={{ fontWeight: 700 }}>{stat.value}</h2>
-                      </div>
-                      <div
-                        style={{
-                          background: '#fff',
-                          borderRadius: '50%',
-                          width: 54,
-                          height: 54,
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          boxShadow: '0 2px 8px #0001'
-                        }}
-                      >
-                        <FontAwesomeIcon
-                          icon={stat.icon}
-                          className={`text-${stat.color}`}
-                          size="2x"
+          <Row className="g-4 justify-content-center">
+            {statCards.map((stat, index) => {
+              // Peso Total sempre col-6 centralizado, exceto se todos forem col-12
+              if (stat.title === 'Estoque Total (kg)') {
+                // Ajuste para centralizar perfeitamente em todas as telas
+                return (
+                  <Col
+                    key={index}
+                    xs={12}
+                    lg={6}
+                    xl={6}
+                    className="mx-auto"
+                  >
+                    <Card
+                      className="h-100 border-0 w-100"
+                      style={{
+                        borderRadius: 18,
+                        background: stat.bg,
+                        boxShadow: '0 4px 24px 0 rgba(0,0,0,0.10), 0 1.5px 6px 0 rgba(0,0,0,0.08)'
+                      }}
+                    >
+                      <Card.Body>
+                        <div className="d-flex justify-content-between align-items-center mb-2">
+                          <div>
+                            <h6 className="text-muted mb-1" style={{ fontWeight: 600 }}>{stat.title}</h6>
+                            <h2 className={`mb-0 text-${stat.color}`} style={{ fontWeight: 700 }}>{stat.value}</h2>
+                          </div>
+                          <div
+                            style={{
+                              background: '#fff',
+                              borderRadius: '50%',
+                              width: 54,
+                              height: 54,
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              boxShadow: '0 2px 8px #0001'
+                            }}
+                          >
+                            <FontAwesomeIcon
+                              icon={stat.icon}
+                              className={`text-${stat.color}`}
+                              size="2x"
+                            />
+                          </div>
+                        </div>
+                        <ProgressBar
+                          now={stat.progress}
+                          variant={stat.color}
+                          style={{ height: 6, borderRadius: 3, marginBottom: 8, background: '#e9ecef', boxShadow: '0 1.5px 6px 0 rgba(0,0,0,0.08)' }}
                         />
+                        <div className="d-flex justify-content-between align-items-center">
+                          <Badge bg={stat.color} style={{ fontSize: 12, fontWeight: 500, opacity: 0.85, boxShadow: '0 2px 8px #0001' }}>
+                            {stat.footer}
+                          </Badge>
+                        </div>
+                      </Card.Body>
+                    </Card>
+                  </Col>
+                );
+              }
+              // Os demais cards continuam ocupando xl={3}
+              return (
+                <Col key={index} md={12} lg={6} xl={3}>
+                  <Card
+                    className="h-100 border-0"
+                    style={{
+
+                      borderRadius: 18,
+                      background: stat.bg,
+                      boxShadow: '0 4px 24px 0 rgba(0,0,0,0.10), 0 1.5px 6px 0 rgba(0,0,0,0.08)'
+                    }}
+                  >
+                    <Card.Body>
+                      <div className="d-flex justify-content-between align-items-center mb-2">
+                        <div>
+                          <h6 className="text-muted mb-1" style={{ fontWeight: 600 }}>{stat.title}</h6>
+                          <h2 className={`mb-0 text-${stat.color}`} style={{ fontWeight: 700 }}>{stat.value}</h2>
+                        </div>
+                        <div
+                          style={{
+                            background: '#fff',
+                            borderRadius: '50%',
+                            width: 54,
+                            height: 54,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            boxShadow: '0 2px 8px #0001'
+                          }}
+                        >
+                          <FontAwesomeIcon
+                            icon={stat.icon}
+                            className={`text-${stat.color}`}
+                            size="2x"
+                          />
+                        </div>
                       </div>
-                    </div>
-                    <ProgressBar
-                      now={stat.progress}
-                      variant={stat.color}
-                      style={{ height: 6, borderRadius: 3, marginBottom: 8, background: '#e9ecef', boxShadow: '0 1.5px 6px 0 rgba(0,0,0,0.08)' }}
-                    />
-                    <div className="d-flex justify-content-between align-items-center">
-                      <Badge bg={stat.color} style={{ fontSize: 12, fontWeight: 500, opacity: 0.85, boxShadow: '0 2px 8px #0001' }}>
-                        {stat.footer}
-                      </Badge>
-                    </div>
-                  </Card.Body>
-                </Card>
-              </Col>
-            ))}
+                      <ProgressBar
+                        now={stat.progress}
+                        variant={stat.color}
+                        style={{ height: 6, borderRadius: 3, marginBottom: 8, background: '#e9ecef', boxShadow: '0 1.5px 6px 0 rgba(0,0,0,0.08)' }}
+                      />
+                      <div className="d-flex justify-content-between align-items-center">
+                        <Badge bg={stat.color} style={{ fontSize: 12, fontWeight: 500, opacity: 0.85, boxShadow: '0 2px 8px #0001' }}>
+                          {stat.footer}
+                        </Badge>
+                      </div>
+                    </Card.Body>
+                  </Card>
+                </Col>
+              );
+            })}
           </Row>
 
           <Row className="mt-4">
