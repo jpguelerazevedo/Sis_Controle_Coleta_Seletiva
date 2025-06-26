@@ -111,9 +111,8 @@ function Clientes() {
       const response = await endpoints.clientes.list();
       console.log('Resposta da API de clientes:', response);
 
-      if (response?.data) {
+      if (response?.data && response.data.length > 0) {
         console.log('Dados dos clientes recebidos:', response.data);
-        // Simplifica a estrutura dos dados
         const clientesFormatados = response.data.map(cliente => {
           console.log('Processando cliente:', cliente);
           const cpfNumerico = (cliente.cpf || '').replace(/\D/g, '');
@@ -139,19 +138,17 @@ function Clientes() {
         });
         console.log('Clientes formatados:', clientesFormatados);
         setClientes(clientesFormatados);
+      } else if (response?.data && response.data.length === 0) {
+        showAlert('Nenhum cliente encontrado.', 'warning');
+        // Não zera a tabela
       } else {
-        console.log('Nenhum dado recebido da API');
-        setClientes([]);
+        showAlert('Erro ao buscar clientes. Tente novamente.', 'danger');
+        // Não zera a tabela
       }
     } catch (error) {
       console.error('Erro ao carregar clientes:', error);
-      console.error('Detalhes do erro:', {
-        message: error.message,
-        response: error.response?.data,
-        status: error.response?.status
-      });
       showAlert('Erro ao carregar clientes: ' + (error.response?.data?.error || error.message), 'danger');
-      setClientes([]);
+      // Não zera a tabela
     }
     setLoading(false);
   };
@@ -167,12 +164,10 @@ function Clientes() {
         setBairros(response.data);
       } else {
         console.log('Nenhum bairro recebido da API');
-        setBairros([]);
       }
     } catch (error) {
       console.error('Erro ao carregar bairros:', error);
       showAlert('Erro ao carregar bairros', 'danger');
-      setBairros([]);
     }
   };
 

@@ -35,38 +35,33 @@ function Colaboradores() {
       const response = await endpoints.colaboradores.list();
       console.log('Resposta da API de colaboradores:', response);
 
-      if (!response?.data) {
-        console.log('Nenhum dado recebido da API');
-        setColaboradores([]);
-        return;
+      if (response?.data && response.data.length > 0) {
+        const colaboradores = response.data;
+        const colaboradoresFormatados = colaboradores.map(colaborador => {
+          if (!colaborador) return null;
+
+          return {
+            id: colaborador.cpf || '',
+            nome: colaborador.pessoa?.nome || '',
+            cpf: colaborador.cpf || '',
+            telefone: colaborador.pessoa?.telefone || '',
+            email: colaborador.pessoa?.email || '',
+            dataAdmissao: colaborador.dataAdmissao ? new Date(colaborador.dataAdmissao).toLocaleDateString() : '',
+            sexo: colaborador.pessoa?.sexo || '',
+            cargo: colaborador.cargos?.nomeCargo || '',
+            idCargo: colaborador.idCargo || '',
+            estado: colaborador.estado || 'ativo' // Map the new attribute
+          };
+        }).filter(Boolean);
+        setColaboradores(colaboradoresFormatados);
+      } else if (response?.data && response.data.length === 0) {
+        showAlert('Nenhum colaborador encontrado.', 'warning');
+      } else {
+        showAlert('Erro ao buscar colaboradores. Tente novamente.', 'danger');
       }
-
-      const colaboradores = response.data;
-      console.log('Dados dos colaboradores recebidos:', colaboradores);
-
-      const colaboradoresFormatados = colaboradores.map(colaborador => {
-        if (!colaborador) return null;
-
-        return {
-          id: colaborador.cpf || '',
-          nome: colaborador.pessoa?.nome || '',
-          cpf: colaborador.cpf || '',
-          telefone: colaborador.pessoa?.telefone || '',
-          email: colaborador.pessoa?.email || '',
-          dataAdmissao: colaborador.dataAdmissao ? new Date(colaborador.dataAdmissao).toLocaleDateString() : '',
-          sexo: colaborador.pessoa?.sexo || '',
-          cargo: colaborador.cargos?.nomeCargo || '',
-          idCargo: colaborador.idCargo || '',
-          estado: colaborador.estado || 'ativo' // Map the new attribute
-        };
-      }).filter(Boolean); // Remove possíveis nulls
-
-      console.log('Colaboradores formatados:', colaboradoresFormatados);
-      setColaboradores(colaboradoresFormatados);
     } catch (error) {
       console.error('Erro ao carregar colaboradores:', error);
       showAlert('Erro ao carregar colaboradores', 'danger');
-      setColaboradores([]);
     }
     setLoading(false);
   };

@@ -145,25 +145,8 @@ function Dashboard() {
         setRecentesRecebimentos(recentesRecebimentos);
         setRecentesEnvios(recentesEnvios);
       } catch (e) {
-        setStats({
-          totalClientes: 0,
-          totalMateriais: 0,
-          totalTerceirizadas: 0,
-          totalColaboradores: 0, // novo campo
-          totalMateriaisEstoque: 0,
-          clientesNovosMes: 0,
-          totalPedidos: 0,
-          totalRecebimentos: 0,
-          totalEnvios: 0,
-        });
-        setTotais({
-          pedidos: 0,
-          recebimentos: 0,
-          envios: 0,
-        });
-        setRecentesPedidos([]);
-        setRecentesRecebimentos([]);
-        setRecentesEnvios([]);
+        // Apenas alerta, não zera as listas nem os contadores
+        alert('Erro ao carregar dados do dashboard.');
       }
       setLoading(false);
     }

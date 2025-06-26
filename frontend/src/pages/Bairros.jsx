@@ -25,7 +25,13 @@ function Bairros() {
         setLoading(true);
         try {
             const response = await endpoints.bairros.list();
-            setBairros(response.data);
+            if (response?.data && response.data.length > 0) {
+                setBairros(response.data);
+            } else if (response?.data && response.data.length === 0) {
+                showAlert('Nenhum bairro encontrado.', 'warning');
+            } else {
+                showAlert('Erro ao buscar bairros. Tente novamente.', 'danger');
+            }
         } catch (error) {
             setAlert({ show: true, message: 'Erro ao carregar bairros', variant: 'danger' });
         }
@@ -79,7 +85,6 @@ function Bairros() {
         } catch (error) {
             let backendMsg = error?.response?.data?.error || error?.response?.data?.message || error.message || 'Erro ao salvar bairro';
             showAlert(backendMsg, 'danger', true);
-            // Não fecha o modal em caso de erro!
         }
     };
 
@@ -164,7 +169,6 @@ function Bairros() {
                     <Modal.Title>{selectedBairro ? 'Editar Bairro' : 'Novo Bairro'}</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    {/* Mostra alerta dentro do modal se erro ao cadastrar */}
                     {alert.show && alert.modal && (
                         <Alert
                             variant={alert.variant}
@@ -219,7 +223,6 @@ function Bairros() {
                     </Form>
                 </Modal.Body>
             </Modal>
-            {/* Alerta global só aparece se não for modal */}
             {alert.show && !alert.modal && (
                 <Alert
                     variant={alert.variant}
