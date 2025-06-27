@@ -29,8 +29,7 @@ function MateriaisColetados() {
       const response = await endpoints.materiais.list();
       setMateriais(response.data || []);
     } catch (error) {
-      // Apenas alerta, não zera as listas
-      // Opcional: alert('Erro ao carregar materiais.');
+      setMateriais([]);
     }
   };
 
@@ -76,12 +75,10 @@ function MateriaisColetados() {
         });
         setPedidos(pedidosFormatados);
       } else {
-        // Apenas alerta, não zera as listas
-        alert('Nenhum pedido encontrado.');
+        setPedidos([]);
       }
     } catch (error) {
-      // Apenas alerta, não zera as listas
-      alert('Erro ao carregar pedidos.');
+      setPedidos([]);
     }
     setLoading(false);
   };

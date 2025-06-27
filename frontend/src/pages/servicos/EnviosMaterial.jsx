@@ -36,7 +36,7 @@ function EnviosMaterial() {
             const terceirizadasArr = terceirizadasResponse.data || [];
 
             const response = await endpoints.envios.list();
-            if (response && response.data && response.data.length > 0) {
+            if (response && response.data) {
                 const enviosFormatados = response.data.map((e, idx) => {
                     let rawData = e.dataEnvio || e.data_envio || e.data || e.createdAt || e.updatedAt || '';
                     let dataFormatada = '';
@@ -77,13 +77,12 @@ function EnviosMaterial() {
                 setMateriais(materiaisArr);
                 setTerceirizadas(terceirizadasArr);
                 setEnvios(enviosFormatados);
-            } else if (response && response.data && response.data.length === 0) {
-                showAlert('Nenhum envio encontrado.', 'warning');
             } else {
-                showAlert('Erro ao buscar envios. Tente novamente.', 'danger');
+                setEnvios([]);
             }
         } catch (error) {
             showAlert('Erro ao carregar envios: ' + error.message, 'danger');
+            setEnvios([]);
         }
         setLoading(false);
     };

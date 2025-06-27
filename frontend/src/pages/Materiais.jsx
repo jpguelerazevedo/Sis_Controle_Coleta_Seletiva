@@ -29,7 +29,8 @@ function Materiais() {
       const response = await endpoints.materiais.list();
       console.log('Resposta da API de materiais:', response);
 
-      if (response?.data && response.data.length > 0) {
+      if (response?.data) {
+        console.log('Dados dos materiais recebidos:', response.data);
         const materiaisFormatados = response.data.map(material => ({
           id: material.idMaterial,
           nome: material.nome,
@@ -37,15 +38,16 @@ function Materiais() {
           volume: material.volume,
           nivelDeRisco: material.nivelDeRisco
         }));
+        console.log('Materiais formatados:', materiaisFormatados);
         setMateriais(materiaisFormatados);
-      } else if (response?.data && response.data.length === 0) {
-        showAlert('Nenhum material encontrado.', 'warning');
       } else {
-        showAlert('Erro ao buscar materiais. Tente novamente.', 'danger');
+        console.log('Nenhum material recebido da API');
+        setMateriais([]);
       }
     } catch (error) {
       console.error('Erro ao carregar materiais:', error);
       showAlert('Erro ao carregar materiais', 'danger');
+      setMateriais([]);
     }
     setLoading(false);
   };

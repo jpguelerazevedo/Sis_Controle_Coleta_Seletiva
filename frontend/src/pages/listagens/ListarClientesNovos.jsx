@@ -66,12 +66,11 @@ function ListarClientesNovos() {
         });
         setClientes(clientesFormatados);
       } else {
-        // Apenas alerta, não zera as listas
-        alert('Nenhum cliente encontrado.');
+        setClientes([]);
       }
     } catch (error) {
-      // Apenas alerta, não zera as listas
-      alert('Erro ao carregar dados.');
+      setClientes([]);
+      setBairros([]);
     }
     setLoading(false);
   };

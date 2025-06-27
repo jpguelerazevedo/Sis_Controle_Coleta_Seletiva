@@ -43,13 +43,14 @@ const Cargos = () => {
   };
 
   const loadCargos = async () => {
-    setLoading(true);
+    setLoading(true); // Inicia loading
     try {
       console.log('Iniciando carregamento de cargos...');
       const response = await endpoints.cargos.list();
       console.log('Resposta da API de cargos:', response);
 
-      if (response?.data && response.data.length > 0) {
+      if (response?.data) {
+        console.log('Dados dos cargos recebidos:', response.data);
         const cargosFormatados = response.data.map(cargo => ({
           id: cargo.idCargo,
           nome: cargo.nomeCargo,
@@ -57,17 +58,18 @@ const Cargos = () => {
           salario: cargo.salario,
           hierarquia: cargo.hierarquia
         }));
+        console.log('Cargos formatados:', cargosFormatados);
         setCargos(cargosFormatados);
-      } else if (response?.data && response.data.length === 0) {
-        showAlert('Nenhum cargo encontrado.', 'warning');
       } else {
-        showAlert('Erro ao buscar cargos. Tente novamente.', 'danger');
+        console.log('Nenhum cargo recebido da API');
+        setCargos([]);
       }
     } catch (error) {
       console.error('Erro ao carregar cargos:', error);
       showAlert('Erro ao carregar cargos', 'danger');
+      setCargos([]);
     }
-    setLoading(false);
+    setLoading(false); // Finaliza loading
   };
 
   useEffect(() => {

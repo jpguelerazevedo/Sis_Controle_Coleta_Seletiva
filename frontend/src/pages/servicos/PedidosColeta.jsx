@@ -46,7 +46,7 @@ function PedidosColeta() {
     setLoading(true);
     try {
       const response = await endpoints.pedidos.list();
-      if (response && response.data && response.data.length > 0) {
+      if (response && response.data) {
         const pedidosFormatados = response.data.map((pedido, idx) => {
           // Busca nomes já no carregamento para facilitar filtro e exibição
           const material = materiais.find(m => String(m.idMaterial) === String(pedido.idMaterial));
@@ -91,13 +91,12 @@ function PedidosColeta() {
           };
         });
         setPedidos(pedidosFormatados);
-      } else if (response && response.data && response.data.length === 0) {
-        showAlert('Nenhum pedido encontrado.', 'warning');
       } else {
-        showAlert('Erro ao buscar pedidos. Tente novamente.', 'danger');
+        setPedidos([]);
       }
     } catch (error) {
       showAlert('Erro ao carregar pedidos: ' + error.message, 'danger');
+      setPedidos([]);
     }
     setLoading(false);
   };
